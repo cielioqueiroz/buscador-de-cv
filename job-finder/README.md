@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vaga Certa — encontre vagas pelo seu currículo
 
-## Getting Started
+Envie seu CV, a IA analisa seu perfil e busca **vagas reais** em fontes legais
+(agregadores), pontuando a compatibilidade de cada uma e entregando o **link
+oficial de candidatura**. Foco em Brasil + remoto global, interface PT-BR.
 
-First, run the development server:
+> Não fazemos scraping de LinkedIn/Indeed/Glassdoor/Gupy. Usamos agregadores
+> legais — incluindo o Google for Jobs (via JSearch), que indexa essas fontes —
+> e sempre direcionamos ao link oficial da vaga.
+
+## Stack
+
+- **Next.js 15** (App Router) + **TypeScript**
+- **Tailwind CSS v4** (design system próprio, sem UI kit genérico)
+- **Claude API** (`@anthropic-ai/sdk`) — análise do CV e matching, com prompt caching
+- **Vitest** — testes unitários e de integração (APIs externas mockadas)
+- Parsers: `pdf-parse` (v2), `mammoth` (DOCX), TXT nativo
+- `zod` para validação de tipos · `sonner` para toasts
+
+## Como rodar
+
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
+2. Crie o `.env.local` a partir do exemplo e preencha as chaves:
+   ```bash
+   cp .env.example .env.local
+   ```
+3. Rode em desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+   Abra http://localhost:3000
+
+> Sem as chaves a interface abre normalmente, mas a análise do CV e a busca de
+> vagas falham com aviso. As chaves ficam **só no servidor** (API Routes) — nunca
+> vão para o navegador.
+
+## Variáveis de ambiente
+
+| Variável | Para quê | Onde obter |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Análise do CV e matching | https://console.anthropic.com → API Keys |
+| `RAPIDAPI_KEY` | Provider JSearch (Google for Jobs) | https://rapidapi.com → assine a API "JSearch" → copie a chave |
+| `ADZUNA_APP_ID` | Provider Adzuna (vagas Brasil) | https://developer.adzuna.com → registre um app |
+| `ADZUNA_APP_KEY` | Provider Adzuna | idem acima |
+
+Opcionais (login futuro via Supabase): `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+> Cada provider degrada com elegância: faltando uma chave, ele só retorna vazio e
+> os outros continuam funcionando.
+
+## Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev      # desenvolvimento (http://localhost:3000)
+npm run build    # build de produção
+npm start        # serve o build
+npm test         # roda os testes (Vitest)
+npm run lint     # ESLint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Arquitetura
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/
+  page.tsx              landing + upload do CV
+  resultados/page.tsx   vagas com score + filtros
+  perfil/page.tsx       perfil extraído do CV
+  api/
+    cv/analyze          extrai texto do CV → Claude devolve CVProfile
+    jobs/search         busca em todos os providers (paralelo) → normaliza → dedup
+    jobs/match          Claude pontua CV × vaga (top N), com prompt caching
+lib/
+  providers/            adapters isolados (adzuna, remotive, jsearch) + agregador
+  cv/parser.ts          extração de texto (PDF/DOCX/TXT)
+  ai/claude.ts          analyzeCV + matchJob
+  matching.ts           rankJobs (orquestra o match em lote)
+  store.ts              persistência local (localStorage)
+components/             componentes de UI próprios
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Cada fonte de vaga é um **adapter** que implementa `JobProvider` e devolve o
+tipo `Job` unificado — adicionar uma fonte nova é criar um arquivo.
 
-## Learn More
+## Persistência
 
-To learn more about Next.js, take a look at the following resources:
+MVP usa **localStorage** (CV analisado, último ranking e favoritos). Login com
+Supabase é incremento futuro (campos já previstos no `.env.example`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Licença
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
