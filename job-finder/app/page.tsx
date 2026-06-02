@@ -1,65 +1,103 @@
-import Image from "next/image";
+import { SiteHeader } from '@/components/SiteHeader';
+import { CVUpload } from '@/components/CVUpload';
+
+const STEPS = [
+  {
+    n: '01',
+    title: 'Envie seu currículo',
+    desc: 'PDF, DOCX ou TXT. Ele é lido no servidor — suas chaves e dados não vão para o navegador.',
+  },
+  {
+    n: '02',
+    title: 'A IA lê o seu perfil',
+    desc: 'Claude extrai cargo, senioridade, habilidades e gera as melhores buscas para você.',
+  },
+  {
+    n: '03',
+    title: 'Vagas reais com score',
+    desc: 'Buscamos em fontes legais e pontuamos cada vaga — com o link oficial de candidatura.',
+  },
+];
+
+const MARQUEE = ['Adzuna', 'Google for Jobs', 'Remotive', 'LinkedIn', 'Indeed', 'Glassdoor', 'Gupy'];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      <SiteHeader />
+
+      <main className="flex-1">
+        {/* HERO */}
+        <section className="relative mx-auto max-w-6xl px-5 pt-16 pb-10 sm:pt-24">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent-bright/20 blur-3xl"
+          />
+          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="animate-rise">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-muted">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent-bright" />
+                vagas reais · fontes legais
+              </span>
+              <h1 className="mt-5 font-display text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
+                Seu currículo
+                <br />
+                vira um <span className="text-accent">radar</span>
+                <br />
+                de vagas.
+              </h1>
+              <p className="mt-6 max-w-md text-lg text-muted">
+                Solte o CV, a IA entende quem você é e encontra as vagas que mais combinam — com
+                nota de compatibilidade e o porquê de cada uma.
+              </p>
+            </div>
+
+            <div className="animate-rise" style={{ animationDelay: '120ms' }}>
+              <CVUpload />
+              <p className="mt-3 text-center font-mono text-xs text-muted">
+                Sem cadastro. Seus dados ficam no seu navegador.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* MARQUEE de fontes */}
+        <section className="overflow-hidden border-y border-border bg-surface py-4">
+          <div className="flex w-max animate-marquee gap-10 pr-10 font-display text-2xl font-bold text-muted/60">
+            {[...MARQUEE, ...MARQUEE].map((s, i) => (
+              <span key={i} className="flex items-center gap-10">
+                {s} <span className="text-accent">✦</span>
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* COMO FUNCIONA */}
+        <section className="mx-auto max-w-6xl px-5 py-20">
+          <h2 className="font-display text-3xl font-extrabold sm:text-4xl">Como funciona</h2>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {STEPS.map((s) => (
+              <div
+                key={s.n}
+                className="rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-accent"
+              >
+                <span className="font-mono text-sm text-accent">{s.n}</span>
+                <h3 className="mt-3 font-display text-xl font-bold">{s.title}</h3>
+                <p className="mt-2 text-sm text-muted">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border">
+        <div className="mx-auto max-w-6xl px-5 py-8 text-sm text-muted">
+          <p>
+            Vagas vindas de agregadores legais (Adzuna, Google for Jobs via JSearch, Remotive). Sem
+            scraping. Cada vaga leva ao link oficial de candidatura.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </footer>
+    </>
   );
 }
