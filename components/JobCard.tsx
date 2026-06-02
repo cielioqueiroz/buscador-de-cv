@@ -18,7 +18,7 @@ export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: numb
 
   return (
     <article
-      className="animate-rise group relative rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-accent sm:p-6"
+      className="animate-rise hover-lift group relative rounded-2xl border border-border bg-surface p-5 sm:p-6"
       style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -50,7 +50,7 @@ export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: numb
             <ul className="space-y-1.5">
               {match.reasons.slice(0, 3).map((r, i) => (
                 <li key={i} className="flex gap-2 text-sm">
-                  <FiCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  <FiCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent-ink" />
                   <span className="text-foreground/90">{r}</span>
                 </li>
               ))}
@@ -83,7 +83,7 @@ export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: numb
           href={job.applyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground transition-transform hover:-translate-y-0.5 sm:flex-none"
+          className="hover-glow inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground sm:flex-none"
         >
           Candidatar-se <FiExternalLink className="h-4 w-4" />
         </a>

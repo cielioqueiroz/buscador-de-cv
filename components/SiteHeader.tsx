@@ -5,12 +5,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-display text-lg font-extrabold text-accent-foreground">
+        <Link href="/" className="group flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-display text-lg font-extrabold text-accent-foreground transition-transform group-hover:-rotate-6">
             V
           </span>
           <span className="font-display text-lg font-extrabold tracking-tight">
-            Vaga<span className="text-accent">Certa</span>
+            Vaga<span className="text-accent-ink">Certa</span>
           </span>
         </Link>
         <nav className="flex items-center gap-2">

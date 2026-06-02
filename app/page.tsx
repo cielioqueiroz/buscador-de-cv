@@ -1,5 +1,9 @@
+import Link from 'next/link';
+import { FiCpu, FiShield, FiZap, FiTarget } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
+import { SiteFooter } from '@/components/SiteFooter';
 import { CVUpload } from '@/components/CVUpload';
+import { LogoMarquee } from '@/components/LogoMarquee';
 
 const STEPS = [
   {
@@ -19,7 +23,12 @@ const STEPS = [
   },
 ];
 
-const MARQUEE = ['Adzuna', 'Google for Jobs', 'Remotive', 'LinkedIn', 'Indeed', 'Glassdoor', 'Gupy'];
+const FEATURES = [
+  { icon: FiCpu, title: 'Análise com IA de verdade', desc: 'Nada de palavra-chave boba. O Claude entende contexto, senioridade e o que você sabe fazer.' },
+  { icon: FiShield, title: 'Só fontes legais', desc: 'Agregadores oficiais e Google for Jobs. Sem scraping, sem cair em site duvidoso.' },
+  { icon: FiTarget, title: 'Score explicado', desc: 'Cada vaga vem com a nota de match, os motivos a favor e o que falta no seu CV.' },
+  { icon: FiZap, title: 'Sem cadastro', desc: 'Comece em segundos. Seus dados ficam no seu navegador, sob seu controle.' },
+];
 
 export default function Home() {
   return (
@@ -28,7 +37,7 @@ export default function Home() {
 
       <main className="flex-1">
         {/* HERO */}
-        <section className="relative mx-auto max-w-6xl px-5 pt-16 pb-10 sm:pt-24">
+        <section className="relative mx-auto max-w-6xl px-5 pt-16 pb-12 sm:pt-24">
           <div
             aria-hidden
             className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent-bright/20 blur-3xl"
@@ -36,13 +45,13 @@ export default function Home() {
           <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="animate-rise">
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-muted">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-bright" />
+                <span className="h-1.5 w-1.5 rounded-full bg-accent-bright animate-pulse-ring" />
                 vagas reais · fontes legais
               </span>
               <h1 className="mt-5 font-display text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                 Seu currículo
                 <br />
-                vira um <span className="text-accent">radar</span>
+                vira um <span className="text-accent-ink">radar</span>
                 <br />
                 de vagas.
               </h1>
@@ -50,6 +59,13 @@ export default function Home() {
                 Solte o CV, a IA entende quem você é e encontra as vagas que mais combinam — com
                 nota de compatibilidade e o porquê de cada uma.
               </p>
+              <div className="mt-8 flex flex-wrap items-center gap-6">
+                <Stat value="3" label="fontes agregadas" />
+                <span className="h-8 w-px bg-border" />
+                <Stat value="0–100" label="score por vaga" />
+                <span className="h-8 w-px bg-border" />
+                <Stat value="100%" label="link oficial" />
+              </div>
             </div>
 
             <div className="animate-rise" style={{ animationDelay: '120ms' }}>
@@ -61,43 +77,76 @@ export default function Home() {
           </div>
         </section>
 
-        {/* MARQUEE de fontes */}
-        <section className="overflow-hidden border-y border-border bg-surface py-4">
-          <div className="flex w-max animate-marquee gap-10 pr-10 font-display text-2xl font-bold text-muted/60">
-            {[...MARQUEE, ...MARQUEE].map((s, i) => (
-              <span key={i} className="flex items-center gap-10">
-                {s} <span className="text-accent">✦</span>
-              </span>
-            ))}
-          </div>
-        </section>
+        {/* CARROSSEL de fontes */}
+        <LogoMarquee />
 
         {/* COMO FUNCIONA */}
         <section className="mx-auto max-w-6xl px-5 py-20">
           <h2 className="font-display text-3xl font-extrabold sm:text-4xl">Como funciona</h2>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {STEPS.map((s) => (
-              <div
-                key={s.n}
-                className="rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-accent"
-              >
-                <span className="font-mono text-sm text-accent">{s.n}</span>
+              <div key={s.n} className="hover-lift rounded-2xl border border-border bg-surface p-6">
+                <span className="font-mono text-sm text-accent-ink">{s.n}</span>
                 <h3 className="mt-3 font-display text-xl font-bold">{s.title}</h3>
                 <p className="mt-2 text-sm text-muted">{s.desc}</p>
               </div>
             ))}
           </div>
         </section>
+
+        {/* DIFERENCIAIS */}
+        <section className="border-y border-border bg-surface-2/40">
+          <div className="mx-auto max-w-6xl px-5 py-20">
+            <h2 className="font-display text-3xl font-extrabold sm:text-4xl">
+              Por que a <span className="text-accent-ink">Vaga Certa</span>
+            </h2>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {FEATURES.map((f) => (
+                <div key={f.title} className="hover-lift rounded-2xl border border-border bg-surface p-6">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+                    <f.icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 font-display text-lg font-bold">{f.title}</h3>
+                  <p className="mt-2 text-sm text-muted">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA final */}
+        <section className="mx-auto max-w-6xl px-5 py-20">
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center sm:p-16">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -bottom-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-accent-bright/20 blur-3xl"
+            />
+            <h2 className="relative font-display text-3xl font-extrabold sm:text-5xl">
+              Pronto para achar a sua vaga?
+            </h2>
+            <p className="relative mx-auto mt-3 max-w-md text-muted">
+              Leva menos de um minuto. Sem cadastro, sem enrolação.
+            </p>
+            <Link
+              href="/"
+              className="hover-glow relative mt-7 inline-flex items-center rounded-full bg-accent px-7 py-3 font-display text-base font-bold text-accent-foreground"
+            >
+              Enviar meu currículo
+            </Link>
+          </div>
+        </section>
       </main>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-5 py-8 text-sm text-muted">
-          <p>
-            Vagas vindas de agregadores legais (Adzuna, Google for Jobs via JSearch, Remotive). Sem
-            scraping. Cada vaga leva ao link oficial de candidatura.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <p className="font-display text-2xl font-extrabold leading-none">{value}</p>
+      <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted">{label}</p>
+    </div>
   );
 }

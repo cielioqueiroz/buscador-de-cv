@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { FiArrowLeft, FiSearch } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
+import { SiteFooter } from '@/components/SiteFooter';
 import { JobCard } from '@/components/JobCard';
 import { Filters, type FilterState } from '@/components/Filters';
 import { loadProfile, saveRanked, loadRanked } from '@/lib/store';
@@ -88,12 +89,12 @@ export default function ResultadosPage() {
           <div>
             <Link
               href="/"
-              className="mb-2 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted hover:text-foreground"
+              className="group mb-2 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted hover:text-foreground"
             >
-              <FiArrowLeft className="h-3.5 w-3.5" /> trocar currículo
+              <FiArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" /> trocar currículo
             </Link>
             <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
-              Vagas para <span className="text-accent">{profile?.title ?? 'você'}</span>
+              Vagas para <span className="text-accent-ink">{profile?.title ?? 'você'}</span>
             </h1>
           </div>
         </div>
@@ -124,6 +125,7 @@ export default function ResultadosPage() {
           </div>
         </div>
       </main>
+      <SiteFooter />
     </>
   );
 }
@@ -132,7 +134,7 @@ function LoadingState({ status }: { status: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4">
-        <FiSearch className="h-5 w-5 animate-pulse text-accent" />
+        <FiSearch className="h-5 w-5 animate-pulse text-accent-ink" />
         <p className="text-sm text-muted">
           {status === 'searching' ? 'Buscando vagas nas fontes…' : 'A IA está pontuando cada vaga para o seu perfil…'}
         </p>

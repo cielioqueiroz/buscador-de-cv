@@ -51,7 +51,7 @@ export function Filters({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <span className="text-sm font-medium">Score mínimo</span>
-          <span className="font-mono text-sm text-accent">{value.minScore}</span>
+          <span className="font-mono text-sm text-accent-ink">{value.minScore}</span>
         </div>
         <input
           type="range"
@@ -75,7 +75,7 @@ export function Filters({
                 'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                 value.source === s.value
                   ? 'border-accent bg-accent text-accent-foreground'
-                  : 'border-border bg-surface-2 text-muted hover:text-foreground',
+                  : 'border-border bg-surface-2 text-muted hover:border-accent-ink hover:text-foreground',
               )}
             >
               {s.label}
