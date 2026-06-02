@@ -38,3 +38,8 @@ pnpm-debug.log*
 .idea/
 Thumbs.db
 *.pem
+
+# Planejamento / instruções de agentes (não fazem parte do app)
+/docs/
+/AGENTS.md
+/CLAUDE.md

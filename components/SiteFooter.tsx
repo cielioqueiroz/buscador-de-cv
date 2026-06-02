@@ -55,7 +55,9 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} Vaga Certa. Sem scraping — vagas de agregadores legais, sempre com link oficial.</p>
-          <p className="font-mono">feito com Next.js + Claude</p>
+          <p className="font-display font-bold text-foreground/80">
+            Todo talento merece a <span className="text-accent-ink">vaga certa</span>.
+          </p>
         </div>
       </div>
     </footer>

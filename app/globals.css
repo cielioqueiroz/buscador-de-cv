@@ -147,8 +147,8 @@ body::before {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-.animate-marquee { animation: marquee 32s linear infinite; }
-.animate-marquee-rev { animation: marquee 38s linear infinite reverse; }
+.animate-marquee { animation: marquee 20s linear infinite; }
+.animate-marquee-rev { animation: marquee 26s linear infinite reverse; }
 .marquee-track:hover { animation-play-state: paused; }
 
 @keyframes spin-slow { to { transform: rotate(360deg); } }
@@ -161,6 +161,11 @@ body::before {
 }
 .animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }
 
+/* Respeita "reduzir movimento" do SO, mas mantém o carrossel rodando
+   (é conteúdo da marca, e o usuário pode pausar passando o mouse). */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *:not(.marquee-track), *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
