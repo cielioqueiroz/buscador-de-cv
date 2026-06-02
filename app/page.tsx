@@ -37,18 +37,18 @@ export default function Home() {
 
       <main className="flex-1">
         {/* HERO */}
-        <section className="relative mx-auto max-w-6xl px-5 pt-16 pb-12 sm:pt-24">
+        <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-12 sm:pt-24">
           <div
             aria-hidden
             className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent-bright/20 blur-3xl"
           />
-          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
             <div className="animate-rise">
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent-bright animate-pulse-ring" />
                 vagas reais · fontes legais
               </span>
-              <h1 className="mt-5 font-display text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
+              <h1 className="mt-5 font-display text-[2.6rem] font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                 Seu currículo
                 <br />
                 vira um <span className="text-accent-ink">radar</span>
@@ -59,11 +59,9 @@ export default function Home() {
                 Solte o CV, a IA entende quem você é e encontra as vagas que mais combinam — com
                 nota de compatibilidade e o porquê de cada uma.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-6">
+              <div className="mt-8 grid max-w-md grid-cols-3 gap-3 sm:gap-6">
                 <Stat value="3" label="fontes agregadas" />
-                <span className="h-8 w-px bg-border" />
                 <Stat value="0–100" label="score por vaga" />
-                <span className="h-8 w-px bg-border" />
                 <Stat value="100%" label="link oficial" />
               </div>
             </div>

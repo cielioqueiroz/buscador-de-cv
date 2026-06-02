@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Figtree, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   title: "Vaga Certa — encontre vagas pelo seu currículo",
   description:
     "Envie seu CV, a IA analisa seu perfil e busca vagas reais em fontes legais — com score de compatibilidade e link oficial de candidatura.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0b0b0c",
 };
 
 // Define o tema antes da pintura para evitar flash. Padrão: escuro.
