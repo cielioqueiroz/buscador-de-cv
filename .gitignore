@@ -4,18 +4,26 @@
 # Dependências
 node_modules/
 .pnp
-.pnp.js
+.pnp.*
+.yarn/*
 
 # Builds
 dist/
 build/
 .next/
 out/
+/coverage
+*.tsbuildinfo
+next-env.d.ts
 
 # Variáveis de ambiente (NUNCA commitar chaves de API)
 .env
 .env.local
 .env.*.local
+!.env.example
+
+# Deploy
+.vercel
 
 # Logs
 *.log
@@ -29,3 +37,4 @@ pnpm-debug.log*
 .vscode/
 .idea/
 Thumbs.db
+*.pem
