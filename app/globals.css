@@ -148,8 +148,8 @@ body::before {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-.animate-marquee { animation: marquee 20s linear infinite; }
-.animate-marquee-rev { animation: marquee 26s linear infinite reverse; }
+.animate-marquee { animation: marquee 60s linear infinite; }
+.animate-marquee-rev { animation: marquee 72s linear infinite reverse; }
 .marquee-track:hover { animation-play-state: paused; }
 
 @keyframes spin-slow { to { transform: rotate(360deg); } }
