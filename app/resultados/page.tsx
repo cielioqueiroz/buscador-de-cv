@@ -3,11 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { FiArrowLeft, FiSearch } from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { JobCard } from '@/components/JobCard';
 import { Filters, type FilterState } from '@/components/Filters';
+import { LoadingJourney } from '@/components/LoadingJourney';
 import { loadProfile, saveRanked, loadRanked } from '@/lib/store';
 import type { CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/matching';
@@ -79,7 +80,11 @@ export default function ResultadosPage() {
     });
   }, [ranked, filters]);
 
-  const loading = status === 'searching' || status === 'matching';
+  // Fallback: quem recarrega /resultados ou entra direto ainda faz a busca
+  // aqui — e merece a mesma jornada de quem veio pela home, não um esqueleto.
+  if (status === 'searching' || status === 'matching') {
+    return <LoadingJourney stage={status === 'searching' ? 'searching' : 'scoring'} />;
+  }
 
   return (
     <>
@@ -105,8 +110,6 @@ export default function ResultadosPage() {
           </div>
 
           <div className="space-y-4">
-            {loading && <LoadingState status={status} />}
-
             {status === 'done' && visible.length === 0 && (
               <EmptyState hasAny={ranked.length > 0} />
             )}
@@ -120,38 +123,12 @@ export default function ResultadosPage() {
               </div>
             )}
 
-            {!loading &&
-              visible.map((r, i) => <JobCard key={r.job.id} ranked={r} index={i} />)}
+            {visible.map((r, i) => <JobCard key={r.job.id} ranked={r} index={i} />)}
           </div>
         </div>
       </main>
       <SiteFooter />
     </>
-  );
-}
-
-function LoadingState({ status }: { status: string }) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4">
-        <FiSearch className="h-5 w-5 animate-pulse text-accent-ink" />
-        <p className="text-sm text-muted">
-          {status === 'searching' ? 'Buscando vagas nas fontes…' : 'A IA está pontuando cada vaga para o seu perfil…'}
-        </p>
-      </div>
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="animate-pulse rounded-2xl border border-border bg-surface p-6">
-          <div className="flex justify-between gap-4">
-            <div className="flex-1 space-y-3">
-              <div className="h-4 w-24 rounded bg-surface-2" />
-              <div className="h-5 w-2/3 rounded bg-surface-2" />
-              <div className="h-4 w-1/3 rounded bg-surface-2" />
-            </div>
-            <div className="h-16 w-16 rounded-full bg-surface-2" />
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 

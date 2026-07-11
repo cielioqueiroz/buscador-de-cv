@@ -162,6 +162,56 @@ body::before {
 }
 .animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }
 
+/* ---------- jornada de loading ----------
+   Um motivo só, repetido nos quatro personagens: um feixe limão que varre.
+   O currículo é varrido, o robô pensa, a lupa vasculha, o medidor enche. */
+
+@keyframes scan-beam {
+  0%   { transform: translateY(-2px); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(52px); opacity: 0; }
+}
+.animate-scan-beam { animation: scan-beam 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.animate-bob { animation: bob 2.4s ease-in-out infinite; }
+
+@keyframes think-bubble {
+  0%   { transform: translateY(0) scale(0.6); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(-22px) scale(1.15); opacity: 0; }
+}
+.animate-think { animation: think-bubble 2s ease-out infinite; }
+
+@keyframes sweep {
+  0%, 100% { transform: translate(0, 0) rotate(-8deg); }
+  50%      { transform: translate(26px, 6px) rotate(6deg); }
+}
+.animate-sweep { animation: sweep 2.6s ease-in-out infinite; }
+
+@keyframes card-pass {
+  from { transform: translateX(14px); opacity: 0; }
+  40%  { opacity: 1; }
+  to   { transform: translateX(-16px); opacity: 0; }
+}
+.animate-card-pass { animation: card-pass 2.2s linear infinite; }
+
+@keyframes gauge-fill {
+  from { stroke-dashoffset: 163; }
+  to   { stroke-dashoffset: 30; }
+}
+.animate-gauge { animation: gauge-fill 2.4s cubic-bezier(0.3, 0.8, 0.3, 1) infinite alternate; }
+
+@keyframes blink {
+  0%, 44%, 56%, 100% { transform: scaleY(1); }
+  50%                { transform: scaleY(0.1); }
+}
+.animate-blink { animation: blink 3.4s ease-in-out infinite; transform-origin: center; }
+
 /* Respeita "reduzir movimento" do SO, mas mantém o carrossel rodando
    (é conteúdo da marca, e o usuário pode pausar passando o mouse). */
 @media (prefers-reduced-motion: reduce) {
