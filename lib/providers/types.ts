@@ -3,13 +3,16 @@ import { z } from 'zod';
 /**
  * Dois tetos diferentes, de propósito:
  *
- * - MAX_JOBS_IN_REQUEST: quantas vagas o corpo aceita. A busca costuma voltar
- *   com dezenas, e o cliente manda todas — recusar aqui quebraria o fluxo real.
- *   Serve só para barrar um payload absurdo.
- * - MAX_JOBS_PER_MATCH: quantas vagas a IA pontua. É o teto de custo, porque
- *   cada uma é uma chamada ao Gemini. O excedente é descartado, não recusado.
+ * - MAX_JOBS_IN_REQUEST: quantas vagas o corpo aceita. Com as três fontes
+ *   ligadas, uma busca real volta com ~70 vagas (3 queries x 3 providers), e o
+ *   cliente manda todas. Este teto já foi 60 e rejeitava o fluxo normal com um
+ *   400 — serve para barrar payload absurdo, não para limitar o uso legítimo.
+ *   Uma busca de 70 vagas pesa ~85 KB; 200 caberiam em ~240 KB, bem abaixo do
+ *   limite de corpo da Vercel.
+ * - MAX_JOBS_PER_MATCH: quantas vagas a IA pontua. É o teto de custo. O
+ *   excedente é descartado, não recusado.
  */
-export const MAX_JOBS_IN_REQUEST = 60;
+export const MAX_JOBS_IN_REQUEST = 200;
 export const MAX_JOBS_PER_MATCH = 15;
 export const MAX_CV_CHARS = 12_000;
 export const MAX_JOB_DESC_CHARS = 6_000;

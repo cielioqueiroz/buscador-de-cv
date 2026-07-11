@@ -18,12 +18,26 @@ function normalize(s: string): string {
  * ranking se enche de vagas que não têm nada a ver com o perfil, e elas ainda
  * consomem o orçamento de vagas que a IA pontua.
  */
+/**
+ * Palavras que aparecem em quase todo título de vaga e não dizem nada sobre a
+ * área. Sem excluí-las, "engineer" sozinho fazia toda vaga de "Staff Software
+ * Engineer" casar com um perfil de front-end.
+ */
+const GENERICOS = new Set([
+  'engineer', 'engenheiro', 'engenheira', 'developer', 'desenvolvedor',
+  'desenvolvedora', 'dev', 'software', 'analista', 'analyst', 'programador',
+  'programadora', 'staff', 'senior', 'senior', 'junior', 'pleno', 'lead',
+  'vaga', 'vagas', 'remoto', 'remote', 'jobs', 'trabalhe',
+]);
+
 function matchesQuery(job: Job, query: string): boolean {
   const terms = normalize(query)
     .split(/[^a-z0-9+#.]+/)
-    .filter((t) => t.length > 2); // ignora "de", "e", "em"...
+    .filter((t) => t.length > 2 && !GENERICOS.has(t));
 
-  if (terms.length === 0) return true;
+  // Query só de palavras genéricas ("desenvolvedor pleno") não discrimina nada:
+  // melhor não contribuir do que despejar o catálogo inteiro.
+  if (terms.length === 0) return false;
 
   // Só o título. A descrição é longa e cita "React" de passagem em quase toda
   // vaga de software — usá-la deixava tudo passar.

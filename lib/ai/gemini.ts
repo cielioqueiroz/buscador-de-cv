@@ -106,7 +106,19 @@ export async function analyzeCV(rawText: string): Promise<CVProfile> {
   const profile = await generateJson(
     CVProfileAISchema,
     'Você analisa currículos e extrai o perfil profissional do candidato.',
-    `Analise este CV. Em "searchQueries", devolva de 3 a 5 termos de busca de vaga ideais para este perfil.
+    `Analise este CV.
+
+Em "searchQueries", devolva de 3 a 5 buscas para sites de emprego.
+
+REGRA IMPORTANTE: cada busca deve ter no MÁXIMO 3 palavras — como alguém
+digitaria num site de vagas. Os sites exigem que TODAS as palavras apareçam na
+vaga, então buscas longas não retornam nada.
+
+Bom:  "desenvolvedor front-end", "front-end react", "desenvolvedor react"
+Ruim: "Desenvolvedora Front-end Pleno React TypeScript" (longa demais, zero resultados)
+
+Não inclua senioridade ("pleno", "sênior") nem a palavra "vaga" nas buscas —
+isso só reduz os resultados. Prefira o português, que é o idioma das vagas no Brasil.
 
 CV:
 """${rawText.slice(0, MAX_CV_CHARS)}"""`,

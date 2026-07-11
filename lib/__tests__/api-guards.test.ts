@@ -39,15 +39,17 @@ describe('POST /api/jobs/match — guardas', () => {
     expect(rankJobs).not.toHaveBeenCalled();
   });
 
-  // Regressão real: a busca devolve dezenas de vagas e o cliente manda todas.
-  // Recusar isso com 400 quebrava a tela de resultados por completo.
-  it('aceita o payload real da busca (dezenas de vagas) e pontua só o teto', async () => {
-    const jobs = Array.from({ length: 40 }, (_, i) => job(`j${i}`));
+  // Regressão real, duas vezes: a busca devolve dezenas de vagas e o cliente
+  // manda todas. Recusar isso com 400 quebrava a tela de resultados por
+  // completo. Com as três fontes ligadas, uma busca real traz ~70 vagas — o
+  // teto antigo (60) rejeitava exatamente o fluxo normal do app.
+  it('aceita o volume real de uma busca com as 3 fontes (~70 vagas)', async () => {
+    const jobs = Array.from({ length: 70 }, (_, i) => job(`j${i}`));
     const res = await matchPOST(post({ profile: validProfile, jobs }, '2.2.2.2'));
 
     expect(res.status).toBe(200);
-    // O corte é de custo: 40 vagas entram, mas só MAX_JOBS_PER_MATCH viram
-    // chamada paga à IA.
+    // O corte é de custo: 70 vagas entram, mas só MAX_JOBS_PER_MATCH são
+    // pontuadas pela IA.
     const scored = rankJobs.mock.calls.at(-1)![1] as unknown[];
     expect(scored).toHaveLength(MAX_JOBS_PER_MATCH);
   });

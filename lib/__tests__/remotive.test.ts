@@ -74,4 +74,24 @@ describe('remotive.search', () => {
     const jobs = await remotive.search('react', {});
     expect(jobs).toEqual([]);
   });
+
+  // O segundo bug do filtro: "engineer" casava com todo "Staff Software
+  // Engineer" e deixava 23 vagas irrelevantes passarem para um perfil front-end.
+  it('não deixa uma palavra genérica ("engineer") fazer o match sozinha', async () => {
+    stub([{ ...frontend, title: 'Staff Software Engineer, Product' }]);
+    const jobs = await remotive.search('front-end engineer react', {});
+    expect(jobs).toEqual([]);
+  });
+
+  it('mas ainda casa pelo termo que discrimina', async () => {
+    stub([frontend]); // "Senior Frontend Engineer"
+    const jobs = await remotive.search('front-end engineer react', {});
+    expect(jobs).toHaveLength(1);
+  });
+
+  it('busca só de termos genéricos não contribui com nada', async () => {
+    stub([frontend, cook]);
+    const jobs = await remotive.search('desenvolvedor pleno', {});
+    expect(jobs).toEqual([]);
+  });
 });

@@ -13,7 +13,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-3.1_Flash--Lite-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/testes-41_passando-4d7c0f?style=flat-square)
+![Tests](https://img.shields.io/badge/testes-57_passando-4d7c0f?style=flat-square)
 ![License](https://img.shields.io/badge/licença-MIT-informational?style=flat-square)
 
 <br/>
@@ -129,6 +129,19 @@ Não há JSON parseado na mão. O schema zod vira JSON Schema (`z.toJSONSchema`)
 instruída a responder naquele formato (`responseJsonSchema`), e a resposta **ainda passa pelo
 zod** na volta. Se a IA fugir do contrato, estoura ali — não três camadas adiante.
 
+### 4. As buscas da IA precisam ser curtas
+
+Sites de emprego fazem busca **E**: todas as palavras precisam aparecer na vaga. A IA, sozinha,
+gerava buscas descritivas e longas — que não retornavam nada:
+
+| Busca gerada | Vagas encontradas |
+|---|---:|
+| `Desenvolvedora Front-end Pleno React TypeScript` | **1** |
+| `front-end react` | **70** |
+
+O prompt agora limita a 3 palavras e proíbe senioridade nas buscas. Parece um detalhe; é a
+diferença entre o app achar vagas e não achar.
+
 <br/>
 
 ## Arquitetura
@@ -179,12 +192,16 @@ npm run dev                  # http://localhost:3000
 | Variável | Para quê | Onde obter | Obrigatória |
 |---|---|---|:---:|
 | `GEMINI_API_KEY` | Análise do CV e matching | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | ✅ |
-| `ADZUNA_APP_ID` · `ADZUNA_APP_KEY` | Vagas no Brasil | [developer.adzuna.com](https://developer.adzuna.com) | — |
-| `RAPIDAPI_KEY` | Google for Jobs (via JSearch) | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | — |
+| `ADZUNA_APP_ID` · `ADZUNA_APP_KEY` | Vagas no Brasil | [developer.adzuna.com](https://developer.adzuna.com) | recomendada |
+| `RAPIDAPI_KEY` | Google for Jobs (via JSearch) | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | recomendada |
 
-Só a chave do Gemini é obrigatória: o **Remotive é público** e funciona sem chave, então o app
-já devolve vagas remotas de imediato. Cada provider degrada com elegância — faltando uma chave,
-ele retorna vazio e os outros seguem funcionando.
+Só a do Gemini é **obrigatória** — sem ela o app não analisa o CV. As outras duas são gratuitas
+e é delas que vêm as vagas brasileiras: o JSearch agrega **Indeed, Gupy, Catho, ProgramaThor,
+Talent.com** e outros. Sem elas, sobra só o Remotive (público, mas só vagas remotas
+internacionais).
+
+Cada provider degrada com elegância — faltando uma chave, ele retorna vazio e os outros seguem
+funcionando.
 
 > 🔒 As chaves ficam **só no servidor** (API Routes) — nunca chegam ao navegador.
 
