@@ -31,4 +31,18 @@ describe('jsearch.search', () => {
     const jobs = await jsearch.search('x', {});
     expect(jobs).toEqual([]);
   });
+
+  // Sem country=br o JSearch assume os EUA e devolve vagas americanas para
+  // quem está procurando emprego no Brasil.
+  it('busca no Brasil por padrão', async () => {
+    await jsearch.search('backend', {});
+    const url = new URL((fetch as unknown as { mock: { calls: string[][] } }).mock.calls[0][0]);
+    expect(url.searchParams.get('country')).toBe('br');
+  });
+
+  it('mas respeita o país quando informado', async () => {
+    await jsearch.search('backend', { country: 'pt' });
+    const url = new URL((fetch as unknown as { mock: { calls: string[][] } }).mock.calls[0][0]);
+    expect(url.searchParams.get('country')).toBe('pt');
+  });
 });

@@ -79,6 +79,7 @@ export const SearchRequestSchema = z.object({
   queries: z.array(z.string().min(1).max(200)).min(1).max(8),
   opts: z.object({
     location: z.string().max(120).optional(),
+    country: z.string().length(2).optional(),
     remoteOnly: z.boolean().optional(),
     page: z.number().int().min(1).max(10).optional(),
   }).default({}),
@@ -91,6 +92,8 @@ export const MatchRequestSchema = z.object({
 
 export interface SearchOpts {
   location?: string;
+  /** Código ISO de 2 letras. Default 'br' — sem ele o JSearch devolve vagas dos EUA. */
+  country?: string;
   remoteOnly?: boolean;
   page?: number;
 }

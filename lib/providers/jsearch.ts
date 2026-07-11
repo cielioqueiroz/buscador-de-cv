@@ -9,7 +9,14 @@ export const jsearch: JobProvider = {
     if (!key) return [];
 
     const q = opts.location ? `${query} in ${opts.location}` : query;
-    const params = new URLSearchParams({ query: q, page: String(opts.page ?? 1), num_pages: '1' });
+    const params = new URLSearchParams({
+      query: q,
+      page: String(opts.page ?? 1),
+      num_pages: '1',
+      // Sem isto o JSearch assume os EUA e devolve vagas americanas — o Adzuna
+      // já é escopado no Brasil pela própria URL (/jobs/br/).
+      country: opts.country ?? 'br',
+    });
     if (opts.remoteOnly) params.set('remote_jobs_only', 'true');
 
     try {
