@@ -32,4 +32,10 @@ describe('extractText', () => {
   it('lança erro para extensão não suportada', async () => {
     await expect(extractText(Buffer.from('x'), 'cv.xyz')).rejects.toThrow();
   });
+
+  // .doc é OLE binário: o mammoth não lê, e ler como UTF-8 mandaria lixo à IA.
+  it('recusa .doc e .rtf com uma mensagem acionável', async () => {
+    await expect(extractText(Buffer.from('x'), 'cv.doc')).rejects.toThrow(/PDF ou DOCX/);
+    await expect(extractText(Buffer.from('x'), 'cv.rtf')).rejects.toThrow(/PDF ou DOCX/);
+  });
 });

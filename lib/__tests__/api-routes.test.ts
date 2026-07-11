@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@/lib/cv/parser', () => ({ extractText: vi.fn(async () => 'texto cv') }));
-vi.mock('@/lib/ai/claude', () => ({
+vi.mock('@/lib/ai/gemini', () => ({
   analyzeCV: vi.fn(async () => ({ title: 'Dev', seniority: 'pleno', skills: [], areas: [], searchQueries: ['react'], rawText: 'texto cv' })),
 }));
 vi.mock('@/lib/providers', () => ({

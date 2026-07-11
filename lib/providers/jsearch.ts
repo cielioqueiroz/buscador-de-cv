@@ -33,7 +33,8 @@ export const jsearch: JobProvider = {
           publisher: j.job_publisher,
         };
       });
-    } catch {
+    } catch (err) {
+      console.error('[provider/jsearch]', err);
       return [];
     }
   },

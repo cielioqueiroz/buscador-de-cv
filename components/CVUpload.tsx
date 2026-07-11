@@ -6,7 +6,7 @@ import { FiUploadCloud, FiFileText } from 'react-icons/fi';
 import { saveProfile, clearProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
-const ACCEPT = '.pdf,.docx,.doc,.txt';
+const ACCEPT = '.pdf,.docx,.txt';
 const MAX_MB = 8;
 
 export function CVUpload() {
