@@ -6,7 +6,7 @@ import { FiUploadCloud, FiFileText } from 'react-icons/fi';
 import { saveProfile, clearProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
-const ACCEPT = '.pdf,.docx,.txt';
+const ACCEPT = '.pdf,.docx,.txt,.md,.rtf,.xlsx,.xls,.csv,.ods';
 const MAX_MB = 8;
 
 export function CVUpload() {
@@ -105,7 +105,7 @@ export function CVUpload() {
             {busy ? 'Lendo seu currículo…' : 'Solte seu currículo aqui'}
           </p>
           <p className="mt-1 text-sm text-muted">
-            {fileName ?? 'ou clique para escolher — PDF, DOCX ou TXT'}
+            {fileName ?? 'ou clique para escolher — PDF, DOCX, TXT, XLSX…'}
           </p>
         </div>
 
