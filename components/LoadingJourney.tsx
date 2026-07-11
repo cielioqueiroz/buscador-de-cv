@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { STAGES, type Stage } from '@/lib/journey';
 import { cn } from '@/lib/utils';
 
@@ -61,6 +62,9 @@ export function LoadingJourney({ stage }: { stage: Stage }) {
   const falas = useMemo(() => embaralhar(FALAS[stage]), [stage]);
   const [fala, setFala] = useState(0);
   const [segundos, setSegundos] = useState(0);
+  const [montado, setMontado] = useState(false);
+
+  useEffect(() => setMontado(true), []);
 
   useEffect(() => {
     setFala(0);
@@ -73,7 +77,13 @@ export function LoadingJourney({ stage }: { stage: Stage }) {
     return () => clearInterval(id);
   }, []);
 
-  return (
+  // Portal direto no <body>: quem monta este overlay pode estar dentro de um
+  // ancestral com transform (o hero usa animate-rise, cujo fill mantém o
+  // transform), e transform reancora position:fixed nele — o overlay sairia
+  // espremido no lugar da caixa de upload em vez de cobrir a tela.
+  if (!montado) return null;
+
+  return createPortal(
     <div
       role="status"
       aria-live="polite"
@@ -103,7 +113,8 @@ export function LoadingJourney({ stage }: { stage: Stage }) {
           etapa {atual + 1} de {STAGES.length} · {segundos}s
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
