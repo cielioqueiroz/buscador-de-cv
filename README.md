@@ -18,6 +18,12 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 
 <br/>
 
+### [🚀 Ver funcionando →](https://vaga-certa-sooty.vercel.app)
+
+<sub>Sem cadastro. Suba um currículo e veja o score.</sub>
+
+<br/>
+
 <img src="assets/screenshots/landing-dark.png" alt="Landing da Vaga Certa" width="100%"/>
 
 </div>
