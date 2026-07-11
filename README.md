@@ -232,6 +232,18 @@ e o matching em lote — com as APIs externas mockadas. **Nenhum teste gasta cha
 
 <br/>
 
+## Autor
+
+Feito por **Jacielio Queiroz**.
+
+Disponível para **projetos e freelas** — web, automação e soluções com IA.
+
+[![Portfólio](https://img.shields.io/badge/Portfólio-cielio--portfolio-bef264?style=for-the-badge&logoColor=black)](https://cielio-portfolio.vercel.app)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jacielio-queiroz/)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/cielioqueiroz)
+
+<br/>
+
 ## Licença
 
 [MIT](LICENSE) — use, modifique, publique.

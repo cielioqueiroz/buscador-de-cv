@@ -23,6 +23,30 @@ const STEPS = [
   },
 ];
 
+/**
+ * Precisa existir na página, visível: o schema FAQPage declara estas perguntas,
+ * e o Google trata FAQ marcado sem conteúdo correspondente como violação. Serve
+ * também para responder o que as pessoas de fato buscam no Google.
+ */
+const FAQ = [
+  {
+    q: 'Como encontrar vagas de emprego usando o currículo?',
+    a: 'Envie seu currículo em PDF, DOCX ou TXT. A IA lê o documento, extrai seu cargo, senioridade e habilidades, e gera as melhores buscas para o seu perfil. Depois busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme a compatibilidade com o que você sabe fazer.',
+  },
+  {
+    q: 'O Vaga Certa é gratuito?',
+    a: 'Sim, e sem cadastro. Seus dados ficam no seu próprio navegador. O currículo é lido no servidor apenas para gerar a análise — não guardamos o arquivo.',
+  },
+  {
+    q: 'De onde vêm as vagas?',
+    a: 'De agregadores legais: Adzuna (vagas no Brasil), Remotive (remotas) e Google for Jobs, que indexa LinkedIn, Indeed, Glassdoor, Gupy e Catho. Nada de scraping — o botão de candidatura sempre leva ao anúncio oficial.',
+  },
+  {
+    q: 'O que significa a nota de compatibilidade?',
+    a: 'É uma nota de 0 a 100 que a IA dá comparando o seu currículo com a descrição da vaga. Junto dela você vê os motivos a favor (o que combina) e as lacunas (o que a vaga pede e falta no seu CV).',
+  },
+];
+
 const FEATURES = [
   { icon: FiCpu, title: 'Análise com IA de verdade', desc: 'Nada de palavra-chave boba. O Gemini entende contexto, senioridade e o que você sabe fazer.' },
   { icon: FiShield, title: 'Só fontes legais', desc: 'Agregadores oficiais e Google for Jobs. Sem scraping, sem cair em site duvidoso.' },
@@ -109,6 +133,26 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* FAQ — conteúdo indexável e base do schema FAQPage */}
+        <section className="mx-auto max-w-3xl px-5 py-20">
+          <h2 className="font-display text-3xl font-extrabold sm:text-4xl">
+            Perguntas frequentes
+          </h2>
+          <div className="mt-10 divide-y divide-border border-y border-border">
+            {FAQ.map(({ q, a }) => (
+              <details key={q} className="group py-5">
+                <summary className="flex cursor-pointer items-center justify-between gap-4 font-display text-lg font-bold marker:content-['']">
+                  <h3 className="text-base font-bold sm:text-lg">{q}</h3>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-border text-muted transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{a}</p>
+              </details>
+            ))}
           </div>
         </section>
 

@@ -1,0 +1,31 @@
+# Vaga Certa
+
+> Ferramenta web gratuita e sem cadastro que analisa um currículo com IA, busca vagas de emprego reais no Brasil e pontua a compatibilidade de cada vaga com o perfil do candidato, de 0 a 100.
+
+## O que faz
+
+O usuário envia o currículo (PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS). A IA lê o documento e extrai cargo, senioridade, habilidades e áreas de atuação, e gera os termos de busca ideais para aquele perfil. O sistema então consulta agregadores de vagas e pontua cada vaga encontrada contra o currículo, explicando os motivos do match e as lacunas do perfil.
+
+## Diferenciais
+
+- **Score explicado**: cada vaga recebe uma nota de 0 a 100, acompanhada dos motivos a favor e do que falta no currículo — não é só uma lista de vagas.
+- **Fontes legais, sem scraping**: as vagas vêm de Adzuna (Brasil), Remotive (remotas) e Google for Jobs via JSearch, que indexa LinkedIn, Indeed, Glassdoor, Gupy e Catho.
+- **Link oficial sempre**: o botão de candidatura leva ao anúncio original, sem intermediário.
+- **Sem cadastro e gratuito**: os dados do usuário ficam no navegador (localStorage).
+
+## Perguntas frequentes
+
+- **Como encontrar vagas usando o currículo?** Enviando o CV no Vaga Certa: a IA extrai o perfil, gera as buscas e pontua as vagas encontradas.
+- **É gratuito?** Sim, e não exige cadastro.
+- **De onde vêm as vagas?** De agregadores legais (Adzuna, Remotive, Google for Jobs). Nada de scraping.
+- **O que é a nota de compatibilidade?** Uma nota de 0 a 100 dada pela IA ao comparar o currículo com a descrição da vaga.
+
+## Links
+
+- Aplicação: https://vaga-certa-sooty.vercel.app
+- Código-fonte (MIT): https://github.com/cielioqueiroz/buscador-de-cv
+- Autor: Jacielio Queiroz — https://cielio-portfolio.vercel.app
+
+## Stack
+
+Next.js 15 (App Router), TypeScript, Tailwind CSS v4, Google Gemini (gemini-3.1-flash-lite) com structured outputs validados por zod.
