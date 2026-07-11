@@ -13,7 +13,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-3.1_Flash--Lite-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/testes-57_passando-4d7c0f?style=flat-square)
+![Tests](https://img.shields.io/badge/testes-61_passando-4d7c0f?style=flat-square)
 ![License](https://img.shields.io/badge/licença-MIT-informational?style=flat-square)
 
 <br/>
@@ -160,7 +160,7 @@ lib/
     types.ts               schemas zod — o contrato de tudo
     adzuna · remotive · jsearch
   ai/gemini.ts             analyzeCV + matchJobs (structured outputs, retry)
-  cv/parser.ts             extração de texto (PDF · DOCX · TXT)
+  cv/parser.ts             extração de texto (PDF · DOCX · TXT · XLSX · RTF…)
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por IP nas API Routes
   store.ts                 persistência local (localStorage)
