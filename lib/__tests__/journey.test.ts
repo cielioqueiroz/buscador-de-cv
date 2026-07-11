@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { runJourney, type Stage } from '@/lib/journey';
+import { runJourney, searchAndRank, type Stage } from '@/lib/journey';
 import { loadProfile, loadRanked } from '@/lib/store';
+import type { CVProfile } from '@/lib/providers/types';
 
 const profile = {
   title: 'Analista de Dados',
@@ -94,5 +95,33 @@ describe('runJourney', () => {
     }));
 
     await expect(runJourney(file, () => {})).rejects.toThrow(msg);
+  });
+});
+
+describe('searchAndRank (re-busca regional)', () => {
+  /**
+   * A razão de existir separado: os filtros de lugar re-consultam as fontes.
+   * O que o formulário escolher (cidade, UF, país) precisa chegar na API.
+   */
+  it('manda os opts regionais para a busca e atualiza o cache', async () => {
+    const fetchMock = mockFetch({
+      '/api/jobs/search': { jobs: [job] },
+      '/api/jobs/match': { ranked },
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const stages: Stage[] = [];
+    const out = await searchAndRank(
+      profile as CVProfile,
+      { location: 'Goiânia, GO', country: 'br' },
+      (s) => stages.push(s),
+    );
+
+    const busca = fetchMock.mock.calls.find((c) => c[0] === '/api/jobs/search');
+    const corpo = JSON.parse((busca![1] as RequestInit).body as string);
+    expect(corpo.opts).toEqual({ location: 'Goiânia, GO', country: 'br' });
+    expect(stages).toEqual(['searching', 'scoring']);
+    expect(out).toHaveLength(1);
+    expect(loadRanked()).toHaveLength(1);
   });
 });

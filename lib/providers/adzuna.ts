@@ -9,6 +9,10 @@ export const adzuna: JobProvider = {
     const appKey = process.env.ADZUNA_APP_KEY;
     if (!appId || !appKey) return [];
 
+    // A URL é cravada em /jobs/br/: numa busca internacional este provider só
+    // devolveria vagas brasileiras poluindo o resultado — melhor nem consultar.
+    if (opts.country && opts.country !== 'br') return [];
+
     const params = new URLSearchParams({
       app_id: appId, app_key: appKey,
       what: query, results_per_page: '20',

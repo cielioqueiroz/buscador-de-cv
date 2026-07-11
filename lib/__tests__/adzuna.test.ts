@@ -37,4 +37,21 @@ describe('adzuna.search', () => {
     const jobs = await adzuna.search('react', {});
     expect(jobs).toEqual([]);
   });
+
+  /**
+   * A URL do provider é cravada em /jobs/br/: numa busca internacional ele só
+   * devolveria vagas brasileiras poluindo o resultado — melhor nem consultar.
+   */
+  it('se auto-exclui quando o país pedido não é o Brasil', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const jobs = await adzuna.search('react', { country: 'pt' });
+    expect(jobs).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('continua buscando quando o país é br ou não foi informado', async () => {
+    expect(await adzuna.search('react', { country: 'br' })).toHaveLength(1);
+    expect(await adzuna.search('react', {})).toHaveLength(1);
+  });
 });
