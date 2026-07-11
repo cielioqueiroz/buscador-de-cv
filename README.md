@@ -32,7 +32,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 
 ## O que ele faz
 
-Você solta o currículo. Em poucos segundos:
+Você solta o currículo — **PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS**. Em poucos segundos:
 
 1. **A IA lê o CV** e extrai cargo, senioridade, habilidades e as melhores buscas para o seu perfil.
 2. **Três fontes legais** são consultadas em paralelo — Adzuna, Remotive e Google for Jobs (via JSearch).
@@ -40,7 +40,7 @@ Você solta o currículo. Em poucos segundos:
 4. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
 
 > ⚖️ **Nada de scraping.** Só agregadores legais. O Google for Jobs indexa LinkedIn, Indeed,
-> Glassdoor e Gupy — e nós sempre levamos você ao anúncio original.
+> Glassdoor, Gupy e Catho — e nós sempre levamos você ao anúncio original.
 
 <br/>
 
@@ -141,6 +141,16 @@ gerava buscas descritivas e longas — que não retornavam nada:
 
 O prompt agora limita a 3 palavras e proíbe senioridade nas buscas. Parece um detalhe; é a
 diferença entre o app achar vagas e não achar.
+
+### 5. Página vazia não vai para o índice
+
+`/perfil` e `/resultados` só ganham conteúdo depois que você envia um CV — o estado vive no
+`localStorage`. Para um robô, elas são cascas de **8 e 98 palavras**. Estão em `noindex` e fora
+do sitemap: página vazia indexada não deixa de ranquear, ela **puxa o site inteiro para baixo**.
+
+O que o site expõe para máquinas: `robots.txt`, `sitemap.xml`, JSON-LD (`WebApplication` +
+`FAQPage`), Open Graph com banner próprio, e um `llms.txt` para ChatGPT/Perplexity entenderem
+e citarem o projeto.
 
 <br/>
 
