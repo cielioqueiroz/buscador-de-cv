@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   },
   description: DESCRICAO,
   applicationName: "Vaga Certa",
-  authors: [{ name: "Jacielio Queiroz", url: "https://cielio-portfolio.vercel.app" }],
-  creator: "Jacielio Queiroz",
+  authors: [{ name: "Ciélio Queiroz", url: "https://cielio-portfolio.vercel.app" }],
+  creator: "Ciélio Queiroz",
   keywords: [
     "vagas de emprego",
     "buscar vagas com currículo",

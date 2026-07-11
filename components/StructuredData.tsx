@@ -37,7 +37,7 @@ const schema = {
       ],
       author: {
         '@type': 'Person',
-        name: 'Jacielio Queiroz',
+        name: 'Ciélio Queiroz',
         url: 'https://cielio-portfolio.vercel.app',
       },
     },

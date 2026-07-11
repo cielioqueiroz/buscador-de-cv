@@ -244,7 +244,7 @@ e o matching em lote — com as APIs externas mockadas. **Nenhum teste gasta cha
 
 ## Autor
 
-Feito por **Jacielio Queiroz**.
+Feito por **Ciélio Queiroz**.
 
 Disponível para **projetos e freelas** — web, automação e soluções com IA.
 

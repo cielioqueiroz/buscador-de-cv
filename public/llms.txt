@@ -24,7 +24,7 @@ O usuário envia o currículo (PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS). A IA lê 
 
 - Aplicação: https://vaga-certa-sooty.vercel.app
 - Código-fonte (MIT): https://github.com/cielioqueiroz/buscador-de-cv
-- Autor: Jacielio Queiroz — https://cielio-portfolio.vercel.app
+- Autor: Ciélio Queiroz — https://cielio-portfolio.vercel.app
 
 ## Stack
 

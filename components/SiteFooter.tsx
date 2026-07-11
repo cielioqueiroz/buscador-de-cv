@@ -87,7 +87,7 @@ export function SiteFooter() {
               rel="noopener noreferrer"
               className="link-underline font-medium text-foreground/80 hover:text-foreground"
             >
-              Jacielio Queiroz
+              Ciélio Queiroz
             </a>
             . Sem scraping — sempre com o link oficial.
           </p>
