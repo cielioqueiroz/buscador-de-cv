@@ -28,7 +28,8 @@ export const remotive: JobProvider = {
           applyUrl: j.url,
         };
       });
-    } catch {
+    } catch (err) {
+      console.error('[provider/remotive]', err);
       return [];
     }
   },

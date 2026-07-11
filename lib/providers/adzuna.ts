@@ -37,7 +37,8 @@ export const adzuna: JobProvider = {
           applyUrl: r.redirect_url,
         };
       });
-    } catch {
+    } catch (err) {
+      console.error('[provider/adzuna]', err);
       return [];
     }
   },

@@ -14,7 +14,7 @@ const STEPS = [
   {
     n: '02',
     title: 'A IA lê o seu perfil',
-    desc: 'Claude extrai cargo, senioridade, habilidades e gera as melhores buscas para você.',
+    desc: 'O Gemini extrai cargo, senioridade, habilidades e gera as melhores buscas para você.',
   },
   {
     n: '03',
@@ -24,7 +24,7 @@ const STEPS = [
 ];
 
 const FEATURES = [
-  { icon: FiCpu, title: 'Análise com IA de verdade', desc: 'Nada de palavra-chave boba. O Claude entende contexto, senioridade e o que você sabe fazer.' },
+  { icon: FiCpu, title: 'Análise com IA de verdade', desc: 'Nada de palavra-chave boba. O Gemini entende contexto, senioridade e o que você sabe fazer.' },
   { icon: FiShield, title: 'Só fontes legais', desc: 'Agregadores oficiais e Google for Jobs. Sem scraping, sem cair em site duvidoso.' },
   { icon: FiTarget, title: 'Score explicado', desc: 'Cada vaga vem com a nota de match, os motivos a favor e o que falta no seu CV.' },
   { icon: FiZap, title: 'Sem cadastro', desc: 'Comece em segundos. Seus dados ficam no seu navegador, sob seu controle.' },
