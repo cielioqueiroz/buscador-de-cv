@@ -212,6 +212,95 @@ body::before {
 }
 .animate-blink { animation: blink 3.4s ease-in-out infinite; transform-origin: center; }
 
+/* ---------- reveal no scroll ----------
+   O `animate-rise` dispara na montagem: numa seção lá embaixo, a animação
+   acontece antes de alguém poder vê-la. O reveal espera o elemento entrar na
+   tela (IntersectionObserver, em Reveal.tsx) e só então solta. */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- carta sendo escrita ----------
+   Linhas que "digitam" da esquerda para a direita: a espera parece escrita
+   acontecendo, não uma barra parada fingindo progresso. */
+@keyframes type-line {
+  0%   { transform: scaleX(0); opacity: 0.25; }
+  55%  { transform: scaleX(1); opacity: 0.6; }
+  100% { transform: scaleX(1); opacity: 0.25; }
+}
+.animate-type-line {
+  transform-origin: left center;
+  animation: type-line 1.6s ease-in-out infinite;
+}
+
+/* ---------- botão magnético ----------
+   O CTA principal inclina-se de leve na direção do cursor. As variáveis são
+   escritas pelo MagneticButton; sem JS, o botão é um botão normal. */
+.magnetic {
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease;
+  transform: translate(var(--mx, 0px), var(--my, 0px));
+}
+
+/* ---------- confete do match alto ---------- */
+@keyframes confete-cai {
+  from { transform: translate3d(0, -12vh, 0) rotate(0deg); opacity: 1; }
+  to   { transform: translate3d(var(--dx, 0px), 104vh, 0) rotate(var(--spin, 540deg)); opacity: 0; }
+}
+.confete {
+  position: fixed;
+  top: 0;
+  z-index: 55;
+  pointer-events: none;
+  border-radius: 2px;
+  animation: confete-cai var(--dur, 2.6s) cubic-bezier(0.25, 0.55, 0.45, 1) forwards;
+}
+
+/* ---------- a folha que vira PDF ----------
+   Só existe na impressão. O navegador já sabe salvar como PDF; uma lib de PDF
+   custaria ~90 KB para fazer pior. */
+.print-sheet { display: none; }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+  body { background: #fff; }
+  body::before { display: none; }
+  body > *:not(.print-host) { display: none !important; }
+
+  .print-sheet {
+    display: block !important;
+    position: static;
+    color: #111;
+    background: #fff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 11.5pt;
+    line-height: 1.65;
+  }
+  .print-sheet h1 {
+    font-size: 15pt;
+    font-weight: 700;
+    margin-bottom: 2pt;
+  }
+  .print-sheet .print-meta {
+    font-size: 9.5pt;
+    color: #555;
+    margin-bottom: 22pt;
+    padding-bottom: 10pt;
+    border-bottom: 1px solid #ddd;
+  }
+  .print-sheet p { margin: 0 0 11pt; }
+}
+
 /* Respeita "reduzir movimento" do SO, mas mantém o carrossel rodando
    (é conteúdo da marca, e o usuário pode pausar passando o mouse). */
 @media (prefers-reduced-motion: reduce) {
@@ -219,4 +308,5 @@ body::before {
     animation: none !important;
     transition: none !important;
   }
+  .reveal { opacity: 1; transform: none; }
 }

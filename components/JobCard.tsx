@@ -1,19 +1,44 @@
 'use client';
 import { useState } from 'react';
-import { FiMapPin, FiExternalLink, FiHeart, FiCheck, FiAlertTriangle, FiHome } from 'react-icons/fi';
+import {
+  FiMapPin,
+  FiExternalLink,
+  FiHeart,
+  FiCheck,
+  FiAlertTriangle,
+  FiHome,
+  FiEdit3,
+} from 'react-icons/fi';
 import type { RankedJob } from '@/lib/matching';
 import { ScoreGauge } from './ScoreGauge';
 import { SourceBadge } from './SourceBadge';
-import { getFavorites, toggleFavorite } from '@/lib/store';
+import { CoverLetterPanel } from './CoverLetterPanel';
+import { getFavorites, loadLetter, toggleFavorite } from '@/lib/store';
+import type { CVProfile } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
 
-export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: number }) {
+interface JobCardProps {
+  ranked: RankedJob;
+  index?: number;
+  /** Necessário para escrever a carta. Sem perfil, o botão nem aparece. */
+  profile?: CVProfile | null;
+}
+
+export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   const { job, match } = ranked;
   const [fav, setFav] = useState(() => getFavorites().includes(job.id));
+  const [letterOpen, setLetterOpen] = useState(false);
+  // Só para o rótulo do botão: quem já tem carta lê "Ver carta", não "Gerar".
+  const [hasLetter, setHasLetter] = useState(() => loadLetter(job.id) !== null);
 
   function onFav(e: React.MouseEvent) {
     e.preventDefault();
     setFav(toggleFavorite(job.id).includes(job.id));
+  }
+
+  function fecharCarta() {
+    setLetterOpen(false);
+    setHasLetter(loadLetter(job.id) !== null);
   }
 
   return (
@@ -78,7 +103,9 @@ export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: numb
         </p>
       )}
 
-      <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+        {/* Candidatar-se continua sendo só um link: nenhum efeito colateral,
+            nenhuma carta escrita nas costas do usuário. */}
         <a
           href={job.applyUrl}
           target="_blank"
@@ -87,6 +114,22 @@ export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: numb
         >
           Candidatar-se <FiExternalLink className="h-4 w-4" />
         </a>
+
+        {profile && (
+          <button
+            onClick={() => setLetterOpen(true)}
+            className={cn(
+              'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold transition-colors sm:flex-none',
+              hasLetter
+                ? 'border-accent-ink bg-accent/10 text-accent-ink'
+                : 'border-border bg-surface-2 text-foreground hover:border-accent-ink',
+            )}
+          >
+            <FiEdit3 className="h-4 w-4" />
+            {hasLetter ? 'Ver carta' : 'Gerar carta'}
+          </button>
+        )}
+
         <button
           onClick={onFav}
           aria-label={fav ? 'Remover dos favoritos' : 'Salvar vaga'}
@@ -98,6 +141,10 @@ export function JobCard({ ranked, index = 0 }: { ranked: RankedJob; index?: numb
           <FiHeart className={cn('h-[18px] w-[18px]', fav && 'fill-current')} />
         </button>
       </div>
+
+      {letterOpen && profile && (
+        <CoverLetterPanel job={job} profile={profile} onClose={fecharCarta} />
+      )}
     </article>
   );
 }

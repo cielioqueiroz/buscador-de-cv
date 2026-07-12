@@ -13,7 +13,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-3.1_Flash--Lite-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/testes-61_passando-4d7c0f?style=flat-square)
+![Tests](https://img.shields.io/badge/testes-114_passando-4d7c0f?style=flat-square)
 ![License](https://img.shields.io/badge/licença-MIT-informational?style=flat-square)
 
 <br/>
@@ -37,7 +37,9 @@ Você solta o currículo — **PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS**. Em pouco
 1. **A IA lê o CV** e extrai cargo, senioridade, habilidades e as melhores buscas para o seu perfil.
 2. **Três fontes legais** são consultadas em paralelo — Adzuna, Remotive e Google for Jobs (via JSearch).
 3. **Cada vaga recebe uma nota de 0 a 100**, com os motivos a favor e as lacunas do seu CV.
-4. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
+4. **Se você quiser**, a IA escreve a **carta de apresentação** daquela vaga — no tom e no
+   tamanho que você escolher, mostrando quais palavras-chave da vaga entraram no texto.
+5. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
 
 > ⚖️ **Nada de scraping.** Só agregadores legais. O Google for Jobs indexa LinkedIn, Indeed,
 > Glassdoor, Gupy e Catho — e nós sempre levamos você ao anúncio original.
@@ -58,6 +60,8 @@ flowchart LR
     F1 & F2 & F3 --> G[Normaliza + dedup]
     G --> H{{"🧠 Gemini<br/>matchJobs<br/><i>lote único</i>"}}
     H --> I[["🎯 Vagas ranqueadas<br/>score · motivos · lacunas"]]
+    I -.-> J{{"✍️ Gemini<br/>generateCoverLetter<br/><i>só se você pedir</i>"}}
+    J -.-> K[["📄 Carta da vaga<br/>tom · tamanho · ATS"]]
 
     style C fill:#4285F4,stroke:#4285F4,color:#fff
     style H fill:#4285F4,stroke:#4285F4,color:#fff
@@ -94,7 +98,7 @@ flowchart LR
 
 ## Decisões de projeto
 
-Três escolhas que definem o app, todas tomadas com medição — não com palpite.
+Quatro escolhas que definem o app, todas tomadas com medição — não com palpite.
 
 ### 1. Uma chamada para o lote inteiro, não uma por vaga
 
@@ -123,7 +127,35 @@ A qualidade não mudou: os mesmos scores, o mesmo ranking.
 Mesmo ranking, mesma separação, **~10x mais rápido**. O modelo maior chegou a recusar
 requisições por excesso de demanda.
 
-### 3. O schema zod é a fonte única da verdade
+### 3. A carta nunca é escrita sem você pedir
+
+Havia um caminho fácil: gerar a carta junto com o score, ou no clique de "Candidatar-se".
+Ele foi recusado.
+
+Cada carta é uma chamada paga ao Gemini, e a maioria das vagas de uma lista **não** vira
+candidatura. Gerar 15 cartas para o usuário ler duas é queimar cota dele e do app para
+produzir texto que ninguém pediu. Então `Candidatar-se` continua sendo um link puro, sem
+efeito colateral, e a carta só nasce de um clique explícito em **Gerar carta**.
+
+O que se ganha com o clique:
+
+| | |
+|---|---|
+| **Tom** | formal · entusiasmado · direto ao ponto |
+| **Tamanho** | curta (~150 palavras) · média (~250) |
+| **ATS** | os termos da vaga que a carta de fato usou, visíveis em chips |
+| **Editável** | o texto na tela é o que vale — sua edição é o que é salva |
+| **Saída** | copiar · baixar `.txt` · salvar em PDF (impressão do navegador, 0 KB de JS) |
+
+O prompt gasta mais linhas **proibindo** do que pedindo, porque um modelo solto escreve
+exatamente a carta que recrutador descarta: proibidos o clichê ("sempre fui apaixonado
+por…"), o currículo reescrito em prosa, e — o pior — inventar experiência que não está no
+CV. Quando a vaga pede algo que falta, a carta reconhece com honestidade em vez de mentir.
+
+A carta é salva por vaga no `localStorage`: reabrir não gasta outra chamada. Trocar de
+currículo apaga as cartas — elas nasceram do CV antigo.
+
+### 4. O schema zod é a fonte única da verdade
 
 Não há JSON parseado na mão. O schema zod vira JSON Schema (`z.toJSONSchema`), a API é
 instruída a responder naquele formato (`responseJsonSchema`), e a resposta **ainda passa pelo
@@ -165,11 +197,13 @@ app/
     cv/analyze             extrai texto → Gemini devolve o CVProfile
     jobs/search            busca nos providers (paralelo) → normaliza → dedup
     jobs/match             Gemini pontua CV × vagas, em lote único
+    cover-letter           Gemini escreve a carta de UMA vaga — só sob clique
 lib/
   providers/               adapters isolados + agregador
     types.ts               schemas zod — o contrato de tudo
     adzuna · remotive · jsearch
-  ai/gemini.ts             analyzeCV + matchJobs (structured outputs, retry)
+  ai/gemini.ts             analyzeCV + matchJobs + generateCoverLetter
+  cover-letter.ts          schemas da carta + serialização (tom, tamanho, ATS)
   cv/parser.ts             extração de texto (PDF · DOCX · TXT · XLSX · RTF…)
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por IP nas API Routes
@@ -235,7 +269,8 @@ e o matching em lote — com as APIs externas mockadas. **Nenhum teste gasta cha
 ## Roadmap
 
 - [ ] Login e sincronização entre dispositivos (Supabase)
-- [ ] Gerar carta de apresentação e adaptar o CV por vaga
+- [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, .txt/PDF
+- [ ] Adaptar o CV por vaga
 - [ ] Tracker de candidaturas (kanban: Aplicado → Entrevista → Oferta)
 - [ ] Alertas por e-mail de vagas novas com bom score
 - [ ] Relatório "como melhorar seu CV"

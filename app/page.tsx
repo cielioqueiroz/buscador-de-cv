@@ -4,6 +4,9 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { CVUpload } from '@/components/CVUpload';
 import { LogoMarquee } from '@/components/LogoMarquee';
+import { HeroFieldLazy } from '@/components/HeroFieldLazy';
+import { Reveal } from '@/components/Reveal';
+import { Magnetic } from '@/components/Magnetic';
 
 const STEPS = [
   {
@@ -20,6 +23,11 @@ const STEPS = [
     n: '03',
     title: 'Vagas reais com score',
     desc: 'Buscamos em fontes legais e pontuamos cada vaga — com o link oficial de candidatura.',
+  },
+  {
+    n: '04',
+    title: 'Carta sob medida',
+    desc: 'Se você quiser, a IA escreve a carta de apresentação daquela vaga — no seu tom, com as palavras que a empresa pediu.',
   },
 ];
 
@@ -45,6 +53,10 @@ const FAQ = [
     q: 'O que significa a nota de compatibilidade?',
     a: 'É uma nota de 0 a 100 que a IA dá comparando o seu currículo com a descrição da vaga. Junto dela você vê os motivos a favor (o que combina) e as lacunas (o que a vaga pede e falta no seu CV).',
   },
+  {
+    q: 'Como funciona a carta de apresentação com IA?',
+    a: 'Em cada vaga há um botão "Gerar carta". Ele só faz algo se você clicar — candidatar-se não gera carta nenhuma. A IA lê o seu currículo e a descrição daquela vaga e escreve uma carta específica para ela, no tom que você escolher (formal, entusiasmado ou direto) e no tamanho que preferir. Você vê quais palavras-chave da vaga entraram no texto, pode editar tudo à mão, regenerar, copiar ou baixar em .txt e PDF.',
+  },
 ];
 
 const FEATURES = [
@@ -62,6 +74,8 @@ export default function Home() {
       <main className="flex-1">
         {/* HERO */}
         <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-12 sm:pt-24">
+          {/* O radar do slogan, em partículas. Chega depois do LCP (ssr: false). */}
+          <HeroFieldLazy />
           <div
             aria-hidden
             className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-accent-bright/20 blur-3xl"
@@ -104,14 +118,18 @@ export default function Home() {
 
         {/* COMO FUNCIONA */}
         <section className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="font-display text-3xl font-extrabold sm:text-4xl">Como funciona</h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {STEPS.map((s) => (
-              <div key={s.n} className="hover-lift rounded-2xl border border-border bg-surface p-6">
-                <span className="font-mono text-sm text-accent-ink">{s.n}</span>
-                <h3 className="mt-3 font-display text-xl font-bold">{s.title}</h3>
-                <p className="mt-2 text-sm text-muted">{s.desc}</p>
-              </div>
+          <Reveal>
+            <h2 className="font-display text-3xl font-extrabold sm:text-4xl">Como funciona</h2>
+          </Reveal>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((s, i) => (
+              <Reveal key={s.n} delay={i * 90}>
+                <div className="hover-lift h-full rounded-2xl border border-border bg-surface p-6">
+                  <span className="font-mono text-sm text-accent-ink">{s.n}</span>
+                  <h3 className="mt-3 font-display text-xl font-bold">{s.title}</h3>
+                  <p className="mt-2 text-sm text-muted">{s.desc}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </section>
@@ -119,18 +137,22 @@ export default function Home() {
         {/* DIFERENCIAIS */}
         <section className="border-y border-border bg-surface-2/40">
           <div className="mx-auto max-w-6xl px-5 py-20">
-            <h2 className="font-display text-3xl font-extrabold sm:text-4xl">
-              Por que a <span className="text-accent-ink">Vaga Certa</span>
-            </h2>
+            <Reveal>
+              <h2 className="font-display text-3xl font-extrabold sm:text-4xl">
+                Por que a <span className="text-accent-ink">Vaga Certa</span>
+              </h2>
+            </Reveal>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="hover-lift rounded-2xl border border-border bg-surface p-6">
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-accent-foreground">
-                    <f.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-4 font-display text-lg font-bold">{f.title}</h3>
-                  <p className="mt-2 text-sm text-muted">{f.desc}</p>
-                </div>
+              {FEATURES.map((f, i) => (
+                <Reveal key={f.title} delay={i * 80}>
+                  <div className="hover-lift h-full rounded-2xl border border-border bg-surface p-6">
+                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+                      <f.icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="mt-4 font-display text-lg font-bold">{f.title}</h3>
+                    <p className="mt-2 text-sm text-muted">{f.desc}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -169,12 +191,16 @@ export default function Home() {
             <p className="relative mx-auto mt-3 max-w-md text-muted">
               Leva menos de um minuto. Sem cadastro, sem enrolação.
             </p>
-            <Link
-              href="/"
-              className="hover-glow relative mt-7 inline-flex items-center rounded-full bg-accent px-7 py-3 font-display text-base font-bold text-accent-foreground"
-            >
-              Enviar meu currículo
-            </Link>
+            <div className="relative mt-7">
+              <Magnetic>
+                <Link
+                  href="/"
+                  className="hover-glow inline-flex items-center rounded-full bg-accent px-7 py-3 font-display text-base font-bold text-accent-foreground"
+                >
+                  Enviar meu currículo
+                </Link>
+              </Magnetic>
+            </div>
           </div>
         </section>
       </main>

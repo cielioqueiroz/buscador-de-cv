@@ -9,6 +9,7 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { JobCard } from '@/components/JobCard';
 import { Filters } from '@/components/Filters';
 import { LoadingJourney } from '@/components/LoadingJourney';
+import { Confetti } from '@/components/Confetti';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
 import { loadProfile, loadRanked } from '@/lib/store';
@@ -88,10 +89,15 @@ export default function ResultadosPage() {
     return <LoadingJourney stage={status === 'searching' ? 'searching' : 'scoring'} />;
   }
 
+  // Um match forte merece uma comemoração — uma vez por sessão, e o Confetti
+  // cuida de não repetir a cada filtro aplicado.
+  const temMatchForte = status === 'done' && ranked.some((r) => r.match.score >= 90);
+
   return (
     <>
       {/* por cima da página, que segue montada — o Filters não perde estado */}
       {regionStage && <LoadingJourney stage={regionStage} />}
+      <Confetti ativo={temMatchForte} />
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -136,7 +142,9 @@ export default function ResultadosPage() {
               </div>
             )}
 
-            {visible.map((r, i) => <JobCard key={r.job.id} ranked={r} index={i} />)}
+            {visible.map((r, i) => (
+              <JobCard key={r.job.id} ranked={r} index={i} profile={profile} />
+            ))}
           </div>
         </div>
       </main>
