@@ -52,7 +52,7 @@ export function coverLetterToText(letter: CoverLetter): string {
  * fontes e já apareceu como "Tech / Solutions Ltda." — uma barra no nome quebra
  * o download em alguns navegadores.
  */
-export function coverLetterFilename(company: string): string {
+export function coverLetterFilename(company: string, ext: 'pdf' | 'txt' = 'pdf'): string {
   const slug = company
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
@@ -62,5 +62,5 @@ export function coverLetterFilename(company: string): string {
     .slice(0, 40)
     .replace(/-+$/g, '');
 
-  return `carta-${slug || 'vaga'}.txt`;
+  return `carta-${slug || 'vaga'}.${ext}`;
 }

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   FiMapPin,
   FiExternalLink,
@@ -8,11 +9,13 @@ import {
   FiAlertTriangle,
   FiHome,
   FiEdit3,
+  FiShare2,
 } from 'react-icons/fi';
 import type { RankedJob } from '@/lib/matching';
 import { ScoreGauge } from './ScoreGauge';
 import { SourceBadge } from './SourceBadge';
 import { CoverLetterPanel } from './CoverLetterPanel';
+import { compartilhar } from '@/lib/share';
 import { getFavorites, loadLetter, toggleFavorite } from '@/lib/store';
 import type { CVProfile } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
@@ -39,6 +42,20 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   function fecharCarta() {
     setLetterOpen(false);
     setHasLetter(loadLetter(job.id) !== null);
+  }
+
+  /**
+   * Compartilha a VAGA, e o link é sempre o anúncio oficial — a mesma promessa
+   * do botão de candidatura. Quem recebe cai na empresa, não num intermediário.
+   */
+  async function compartilharVaga() {
+    const r = await compartilhar({
+      title: `${job.title} · ${job.company}`,
+      text: `${job.title} na ${job.company} — ${job.location}. Match de ${match.score}/100 com o meu perfil.`,
+      url: job.applyUrl,
+    });
+    if (r === 'copiado') toast.success('Link da vaga copiado.');
+    if (r === 'falhou') toast.error('Seu navegador bloqueou o compartilhamento.');
   }
 
   return (
@@ -129,6 +146,15 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
             {hasLetter ? 'Ver carta' : 'Gerar carta'}
           </button>
         )}
+
+        <button
+          onClick={compartilharVaga}
+          aria-label="Compartilhar esta vaga"
+          title="Compartilhar"
+          className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
+        >
+          <FiShare2 className="h-[18px] w-[18px]" />
+        </button>
 
         <button
           onClick={onFav}

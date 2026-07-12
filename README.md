@@ -13,7 +13,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-3.1_Flash--Lite-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/testes-114_passando-4d7c0f?style=flat-square)
+![Tests](https://img.shields.io/badge/testes-124_passando-4d7c0f?style=flat-square)
 ![License](https://img.shields.io/badge/licença-MIT-informational?style=flat-square)
 
 <br/>
@@ -39,6 +39,7 @@ Você solta o currículo — **PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS**. Em pouco
 3. **Cada vaga recebe uma nota de 0 a 100**, com os motivos a favor e as lacunas do seu CV.
 4. **Se você quiser**, a IA escreve a **carta de apresentação** daquela vaga — no tom e no
    tamanho que você escolher, mostrando quais palavras-chave da vaga entraram no texto.
+   Baixe em **PDF** ou **compartilhe** pelo menu do seu próprio celular.
 5. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
 
 > ⚖️ **Nada de scraping.** Só agregadores legais. O Google for Jobs indexa LinkedIn, Indeed,
@@ -62,6 +63,7 @@ flowchart LR
     H --> I[["🎯 Vagas ranqueadas<br/>score · motivos · lacunas"]]
     I -.-> J{{"✍️ Gemini<br/>generateCoverLetter<br/><i>só se você pedir</i>"}}
     J -.-> K[["📄 Carta da vaga<br/>tom · tamanho · ATS"]]
+    K -.-> L[/"PDF · .txt · copiar · compartilhar"/]
 
     style C fill:#4285F4,stroke:#4285F4,color:#fff
     style H fill:#4285F4,stroke:#4285F4,color:#fff
@@ -145,7 +147,7 @@ O que se ganha com o clique:
 | **Tamanho** | curta (~150 palavras) · média (~250) |
 | **ATS** | os termos da vaga que a carta de fato usou, visíveis em chips |
 | **Editável** | o texto na tela é o que vale — sua edição é o que é salva |
-| **Saída** | copiar · baixar `.txt` · salvar em PDF (impressão do navegador, 0 KB de JS) |
+| **Saída** | baixar **PDF** · baixar `.txt` · copiar · **compartilhar** pelo menu do sistema |
 
 O prompt gasta mais linhas **proibindo** do que pedindo, porque um modelo solto escreve
 exatamente a carta que recrutador descarta: proibidos o clichê ("sempre fui apaixonado
@@ -154,6 +156,19 @@ CV. Quando a vaga pede algo que falta, a carta reconhece com honestidade em vez 
 
 A carta é salva por vaga no `localStorage`: reabrir não gasta outra chamada. Trocar de
 currículo apaga as cartas — elas nasceram do CV antigo.
+
+**O PDF é um arquivo, não uma caixa de impressão.** A primeira versão usava `window.print()`
+e mandava o usuário achar "Salvar como PDF" no diálogo do navegador — no celular, quase
+ninguém acha. Agora o botão baixa o arquivo direto, e o jsPDF (~90 KB) entra por `import()`
+dentro da função: quem nunca gera carta nunca baixa a lib. Fonte Helvetica/WinAnsi, que
+cobre todo o acento do português — verificado extraindo o texto de volta do PDF gerado.
+
+**Compartilhar usa o menu do sistema, não uma fileira de botões de rede social.** A Web
+Share API abre a lista que a pessoa realmente tem instalada (WhatsApp, e-mail, Telegram) e
+manda o PDF como arquivo quando o aparelho aceita. Onde não houver Web Share — a maioria
+dos desktops —, o conteúdo é copiado para a área de transferência. Sempre sobra um caminho
+que funciona. Vale para a carta **e** para a vaga, e o link compartilhado é sempre o
+anúncio oficial.
 
 ### 4. O schema zod é a fonte única da verdade
 
@@ -204,6 +219,8 @@ lib/
     adzuna · remotive · jsearch
   ai/gemini.ts             analyzeCV + matchJobs + generateCoverLetter
   cover-letter.ts          schemas da carta + serialização (tom, tamanho, ATS)
+  cover-letter-pdf.ts      a carta vira PDF (jsPDF carregado só no clique)
+  share.ts                 Web Share API com queda para a área de transferência
   cv/parser.ts             extração de texto (PDF · DOCX · TXT · XLSX · RTF…)
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por IP nas API Routes
@@ -269,7 +286,7 @@ e o matching em lote — com as APIs externas mockadas. **Nenhum teste gasta cha
 ## Roadmap
 
 - [ ] Login e sincronização entre dispositivos (Supabase)
-- [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, .txt/PDF
+- [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
 - [ ] Adaptar o CV por vaga
 - [ ] Tracker de candidaturas (kanban: Aplicado → Entrevista → Oferta)
 - [ ] Alertas por e-mail de vagas novas com bom score

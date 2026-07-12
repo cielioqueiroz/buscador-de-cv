@@ -30,16 +30,16 @@ describe('coverLetterToText', () => {
 
 describe('coverLetterFilename', () => {
   it('tira acento e caractere que quebra download', () => {
-    expect(coverLetterFilename('Solução / Tech Ltda.')).toBe('carta-solucao-tech-ltda.txt');
+    expect(coverLetterFilename('Solução / Tech Ltda.')).toBe('carta-solucao-tech-ltda.pdf');
   });
 
   it('não deixa o nome terminar em hífen depois do corte', () => {
     const nome = coverLetterFilename('A'.repeat(60));
-    expect(nome.endsWith('-.txt')).toBe(false);
+    expect(nome.endsWith('-.pdf')).toBe(false);
   });
 
   it('empresa sem letra nenhuma ainda gera nome válido', () => {
-    expect(coverLetterFilename('***')).toBe('carta-vaga.txt');
+    expect(coverLetterFilename('***')).toBe('carta-vaga.pdf');
   });
 });
 

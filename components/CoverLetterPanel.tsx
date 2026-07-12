@@ -7,7 +7,8 @@ import {
   FiCopy,
   FiDownload,
   FiRefreshCw,
-  FiPrinter,
+  FiFileText,
+  FiShare2,
   FiKey,
   FiCheck,
 } from 'react-icons/fi';
@@ -20,6 +21,8 @@ import {
   type Length,
   type Tone,
 } from '@/lib/cover-letter';
+import { buildCoverLetterPdf } from '@/lib/cover-letter-pdf';
+import { compartilhar } from '@/lib/share';
 import { loadLetter, saveLetter } from '@/lib/store';
 import type { CVProfile, Job } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
@@ -59,6 +62,9 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
   const [text, setText] = useState(saved?.text ?? '');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  // Qual ação pesada está em curso: o PDF precisa buscar o jsPDF na rede na
+  // primeira vez, e um botão que não responde parece um botão quebrado.
+  const [busy, setBusy] = useState<'pdf' | 'share' | null>(null);
 
   // Esc fecha, e a rolagem do fundo trava enquanto o painel está aberto —
   // sem isso, rolar dentro do textarea acaba rolando a lista de vagas atrás.
@@ -112,22 +118,67 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
     }
   }
 
-  function baixarTxt() {
-    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  function baixar(blob: Blob, nome: string) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = coverLetterFilename(job.company);
+    a.download = nome;
     a.click();
     URL.revokeObjectURL(url);
   }
 
+  function baixarTxt() {
+    baixar(
+      new Blob([text], { type: 'text/plain;charset=utf-8' }),
+      coverLetterFilename(job.company, 'txt'),
+    );
+  }
+
+  /** O jsPDF só é baixado aqui dentro — ver `lib/cover-letter-pdf.ts`. */
+  async function baixarPdf() {
+    setBusy('pdf');
+    try {
+      const blob = await pdf();
+      baixar(blob, coverLetterFilename(job.company, 'pdf'));
+    } catch {
+      toast.error('Não deu para gerar o PDF. Tente baixar em .txt.');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function pdf(): Promise<Blob> {
+    return buildCoverLetterPdf({ texto: text, job, titulo: profile.title });
+  }
+
   /**
-   * PDF sem dependência: a folha `.print-sheet` só existe no `@media print`, e o
-   * navegador oferece "Salvar como PDF" na própria caixa de impressão. Uma lib
-   * de PDF custaria ~90 KB para fazer pior.
+   * Compartilha o PDF pelo menu do sistema. Onde não der para mandar arquivo,
+   * vai o texto; onde não houver Web Share (a maioria dos desktops), o texto é
+   * copiado — sempre sobra um caminho que funciona.
    */
-  function imprimir() {
-    window.print();
+  async function compartilharCarta() {
+    setBusy('share');
+    try {
+      let file: File | undefined;
+      try {
+        file = new File([await pdf()], coverLetterFilename(job.company, 'pdf'), {
+          type: 'application/pdf',
+        });
+      } catch {
+        // Sem PDF ainda dá para compartilhar o texto — não é motivo para desistir.
+      }
+
+      const r = await compartilhar({
+        title: `Carta de apresentação — ${job.title} · ${job.company}`,
+        text,
+        file,
+      });
+
+      if (r === 'copiado') toast.success('Carta copiada — é só colar onde quiser.');
+      if (r === 'falhou') toast.error('Seu navegador bloqueou o compartilhamento.');
+    } finally {
+      setBusy(null);
+    }
   }
 
   return createPortal(
@@ -247,35 +298,53 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
         {letter && (
           <footer className="flex flex-wrap items-center gap-2 border-t border-border bg-surface px-6 py-4">
             <button
-              onClick={gerar}
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-display text-sm font-bold transition-colors hover:border-accent-ink disabled:opacity-50"
+              onClick={baixarPdf}
+              disabled={busy !== null}
+              className="hover-glow inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground disabled:opacity-60 sm:flex-none"
             >
-              <FiRefreshCw className={cn('h-4 w-4', loading && 'animate-spin-slow')} />
-              Regenerar
+              <FiDownload className={cn('h-4 w-4', busy === 'pdf' && 'animate-bob')} />
+              {busy === 'pdf' ? 'Gerando…' : 'Baixar PDF'}
             </button>
+
+            <button
+              onClick={compartilharCarta}
+              disabled={busy !== null}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-display text-sm font-bold transition-colors hover:border-accent-ink disabled:opacity-60 sm:flex-none"
+            >
+              <FiShare2 className="h-4 w-4" />
+              Compartilhar
+            </button>
+
             <button
               onClick={copiar}
-              className="hover-glow inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground sm:flex-none"
+              aria-label="Copiar o texto da carta"
+              title="Copiar"
+              className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
             >
-              {copied ? <FiCheck className="h-4 w-4" /> : <FiCopy className="h-4 w-4" />}
-              {copied ? 'Copiado!' : 'Copiar'}
+              {copied ? (
+                <FiCheck className="h-[18px] w-[18px] text-accent-ink" />
+              ) : (
+                <FiCopy className="h-[18px] w-[18px]" />
+              )}
             </button>
+
             <button
               onClick={baixarTxt}
-              aria-label="Baixar como .txt"
+              aria-label="Baixar em .txt"
               title="Baixar .txt"
               className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
             >
-              <FiDownload className="h-[18px] w-[18px]" />
+              <FiFileText className="h-[18px] w-[18px]" />
             </button>
+
             <button
-              onClick={imprimir}
-              aria-label="Imprimir ou salvar como PDF"
-              title="Salvar como PDF"
-              className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
+              onClick={gerar}
+              disabled={loading}
+              aria-label="Regenerar a carta"
+              title="Regenerar"
+              className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground disabled:opacity-50"
             >
-              <FiPrinter className="h-[18px] w-[18px]" />
+              <FiRefreshCw className={cn('h-[18px] w-[18px]', loading && 'animate-spin-slow')} />
             </button>
           </footer>
         )}
