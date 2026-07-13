@@ -315,37 +315,41 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
               Compartilhar
             </button>
 
-            <button
-              onClick={copiar}
-              aria-label="Copiar o texto da carta"
-              title="Copiar"
-              className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
-            >
-              {copied ? (
-                <FiCheck className="h-[18px] w-[18px] text-accent-ink" />
-              ) : (
-                <FiCopy className="h-[18px] w-[18px]" />
-              )}
-            </button>
+            {/* Os três secundários andam juntos: soltos, o `flex-wrap` deixava um
+                deles órfão na linha de cima no celular. */}
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <button
+                onClick={copiar}
+                aria-label="Copiar o texto da carta"
+                title="Copiar"
+                className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
+              >
+                {copied ? (
+                  <FiCheck className="h-[18px] w-[18px] text-accent-ink" />
+                ) : (
+                  <FiCopy className="h-[18px] w-[18px]" />
+                )}
+              </button>
 
-            <button
-              onClick={baixarTxt}
-              aria-label="Baixar em .txt"
-              title="Baixar .txt"
-              className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
-            >
-              <FiFileText className="h-[18px] w-[18px]" />
-            </button>
+              <button
+                onClick={baixarTxt}
+                aria-label="Baixar em .txt"
+                title="Baixar .txt"
+                className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
+              >
+                <FiFileText className="h-[18px] w-[18px]" />
+              </button>
 
-            <button
-              onClick={gerar}
-              disabled={loading}
-              aria-label="Regenerar a carta"
-              title="Regenerar"
-              className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground disabled:opacity-50"
-            >
-              <FiRefreshCw className={cn('h-[18px] w-[18px]', loading && 'animate-spin-slow')} />
-            </button>
+              <button
+                onClick={gerar}
+                disabled={loading}
+                aria-label="Regenerar a carta"
+                title="Regenerar"
+                className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground disabled:opacity-50"
+              >
+                <FiRefreshCw className={cn('h-[18px] w-[18px]', loading && 'animate-spin-slow')} />
+              </button>
+            </div>
           </footer>
         )}
       </div>
