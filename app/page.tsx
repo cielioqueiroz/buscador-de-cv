@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { FiCpu, FiShield, FiZap, FiTarget } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
@@ -193,12 +192,12 @@ export default function Home() {
             </p>
             <div className="relative mt-7">
               <Magnetic>
-                <Link
+                <a
                   href="#cv-upload"
                   className="hover-glow inline-flex items-center rounded-full bg-accent px-7 py-3 font-display text-base font-bold text-accent-foreground"
                 >
                   Enviar meu currículo
-                </Link>
+                </a>
               </Magnetic>
             </div>
           </div>

@@ -34,7 +34,7 @@ export function SiteFooter() {
           <div>
             <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Navegar</h4>
             <ul className="mt-4 space-y-2.5 text-sm">
-              <li><Link href="/" className="link-underline text-foreground/80 hover:text-foreground">Enviar currículo</Link></li>
+              <li><Link href="/#cv-upload" className="link-underline text-foreground/80 hover:text-foreground">Enviar currículo</Link></li>
               <li><Link href="/resultados" className="link-underline text-foreground/80 hover:text-foreground">Ver vagas</Link></li>
               <li><Link href="/perfil" className="link-underline text-foreground/80 hover:text-foreground">Meu perfil</Link></li>
             </ul>

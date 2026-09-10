@@ -91,6 +91,17 @@ body {
   outline-offset: 3px;
 }
 
+/* A mãozinha deixa claro o que pode ser acionado, inclusive controles
+   construídos com semântica ARIA. Elementos desabilitados mantêm o cursor de
+   indisponível para não prometer uma ação que não pode acontecer. */
+:where(a, summary, [role="button"], label[for], input[type="file"], button:not(:disabled)) {
+  cursor: pointer;
+}
+
+:where(button:disabled, [aria-disabled="true"]) {
+  cursor: not-allowed;
+}
+
 /* textura de grão sutil sobre tudo */
 body::before {
   content: "";
