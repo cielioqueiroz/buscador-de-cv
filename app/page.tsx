@@ -194,7 +194,7 @@ export default function Home() {
             <div className="relative mt-7">
               <Magnetic>
                 <Link
-                  href="/"
+                  href="#cv-upload"
                   className="hover-glow inline-flex items-center rounded-full bg-accent px-7 py-3 font-display text-base font-bold text-accent-foreground"
                 >
                   Enviar meu currículo

@@ -41,6 +41,7 @@ export function CVUpload() {
 
   return (
     <div
+      id="cv-upload"
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={(e) => {
@@ -60,7 +61,7 @@ export function CVUpload() {
         }
       }}
       className={cn(
-        'group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-300 sm:p-14',
+        'group relative scroll-mt-24 cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-300 sm:p-14',
         dragging
           ? 'border-accent bg-accent-bright/10 scale-[1.02] shadow-[0_24px_60px_-24px_var(--shadow)]'
           : 'border-border bg-surface hover:-translate-y-1.5 hover:border-accent hover:bg-accent-bright/[0.04] hover:shadow-[0_24px_60px_-26px_var(--shadow)]',
