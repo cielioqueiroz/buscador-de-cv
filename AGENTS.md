@@ -18,6 +18,7 @@ O Vaga Certa recebe um currículo, extrai um perfil com IA, busca vagas reais, c
 ```text
 app/
   api/                  rotas HTTP e composição dos módulos de domínio
+  candidaturas/         tracker Kanban local de candidaturas
   perfil/               visualização do perfil salvo
   resultados/           ranking, filtros e ações das vagas
   page.tsx              landing page e ponto de entrada do upload
@@ -26,6 +27,8 @@ lib/
   ai/                   adapter do Gemini e contratos de resposta
   api/                  leitura limitada e validação de requisições
   cv/                   parsing seguro dos formatos aceitos
+  cv-features.ts        schemas de adaptação e relatório do CV
+  applications.ts       persistência validada do tracker local
   providers/            adapters de fontes de vagas + agregação
   __tests__/            testes de módulos e rotas
   journey.ts            fluxo do upload até o ranking

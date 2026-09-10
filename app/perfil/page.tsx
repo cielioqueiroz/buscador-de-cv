@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FiArrowLeft } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
+import { CVImprovementReportPanel } from '@/components/CVImprovementReportPanel';
 import { loadProfile } from '@/lib/store';
 import type { CVProfile } from '@/lib/providers/types';
 
@@ -91,6 +92,7 @@ export default function PerfilPage() {
             </ul>
           </Section>
         </div>
+        <CVImprovementReportPanel profile={profile} />
       </main>
       <SiteFooter />
     </>

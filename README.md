@@ -9,11 +9,11 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 
 <br/>
 
-![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-3.1_Flash--Lite-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/testes-124_passando-4d7c0f?style=flat-square)
+![Tests](https://img.shields.io/badge/testes-139_passando-4d7c0f?style=flat-square)
 ![License](https://img.shields.io/badge/licença-MIT-informational?style=flat-square)
 
 <br/>
@@ -41,6 +41,9 @@ Você solta o currículo — **PDF, Word (.doc/.docx), TXT, Markdown, RTF ou CSV
    tamanho que você escolher, mostrando quais palavras-chave da vaga entraram no texto.
    Baixe em **PDF** ou **compartilhe** pelo menu do seu próprio celular.
 5. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
+6. Em cada vaga, você pode **adaptar o CV** para destacar somente experiências reais relevantes.
+7. Adicione oportunidades ao **tracker Kanban** e acompanhe Aplicado → Entrevista → Oferta.
+8. No seu perfil, gere um relatório de **como melhorar o CV** com prioridades acionáveis.
 
 > ⚖️ **Nada de scraping.** Só agregadores legais — e nós sempre levamos você ao anúncio original.
 
@@ -63,11 +66,19 @@ flowchart LR
     I -.-> J{{"✍️ Gemini<br/>generateCoverLetter<br/><i>só se você pedir</i>"}}
     J -.-> K[["📄 Carta da vaga<br/>tom · tamanho · ATS"]]
     K -.-> L[/"PDF · .txt · copiar · compartilhar"/]
+    I -.-> M{{"🎯 Gemini<br/>adaptCV"}}
+    M -.-> N[["CV direcionado<br/>resumo · skills · destaques"]]
+    D -.-> O{{"🧠 Gemini<br/>generateCVImprovementReport"}}
+    O -.-> P[["Relatório<br/>forças · lacunas · ações"]]
+    I -.-> Q["📌 Tracker local<br/>Aplicado → Entrevista → Oferta"]
 
     style C fill:#4285F4,stroke:#4285F4,color:#fff
     style H fill:#4285F4,stroke:#4285F4,color:#fff
     style I fill:#bef264,stroke:#84cc16,color:#000
     style A fill:#bef264,stroke:#84cc16,color:#000
+    style M fill:#4285F4,stroke:#4285F4,color:#fff
+    style O fill:#4285F4,stroke:#4285F4,color:#fff
+    style Q fill:#bef264,stroke:#84cc16,color:#000
 ```
 
 <br/>
@@ -97,9 +108,41 @@ flowchart LR
 
 <br/>
 
+## Novas ferramentas
+
+### Adaptar o CV para uma vaga
+
+Na lista de resultados, **Adaptar CV** gera um rascunho específico para aquela
+posição: título, resumo, habilidades, realizações e palavras-chave. O prompt
+proíbe inventar experiência, números ou tecnologias; lacunas aparecem como
+cautelas para você revisar antes de enviar.
+
+### Tracker de candidaturas
+
+O botão **Acompanhar** salva a vaga no tracker, disponível em `/candidaturas`.
+O quadro tem três colunas e aceita arrastar os cards ou mudar a etapa pelo
+seletor. O estado fica no `localStorage`, sem cadastro e sem enviar dados para
+um servidor.
+
+### Relatório de melhoria do CV
+
+Em `/perfil`, o painel **Como melhorar seu CV** analisa o currículo atual e
+retorna pontos fortes, melhorias priorizadas e termos para investigar. A IA é
+instruída a diferenciar uma lacuna real de uma habilidade que não foi comprovada.
+
+### Alertas por e-mail
+
+Esta é a próxima integração. A interface ainda não coleta e-mail porque o app
+não possui persistência de assinaturas nem provedor de envio. Para ativar
+alertas recorrentes com segurança, a próxima etapa será adicionar um adapter de
+e-mail, uma tabela protegida por RLS e um job agendado para buscar vagas novas
+com score mínimo.
+
+<br/>
+
 ## Decisões de projeto
 
-Quatro escolhas que definem o app, todas tomadas com medição — não com palpite.
+Seis escolhas que definem o app, todas tomadas com medição — não com palpite.
 
 ### 1. Uma chamada para o lote inteiro, não uma por vaga
 
@@ -211,8 +254,11 @@ app/
   page.tsx                 landing + upload do CV
   resultados/page.tsx      vagas com score + filtros
   perfil/page.tsx          perfil extraído do CV
+  candidaturas/page.tsx    tracker Kanban local
   api/
     cv/analyze             extrai texto → Gemini devolve o CVProfile
+    cv/adapt               adapta o CV para uma vaga específica
+    cv/report              relatório de melhorias do CV
     jobs/search            busca nos providers (paralelo) → normaliza → dedup
     jobs/match             Gemini pontua CV × vagas, em lote único
     cover-letter           Gemini escreve a carta de UMA vaga — só sob clique
@@ -222,6 +268,8 @@ lib/
     adzuna · remotive · jsearch
   ai/gemini.ts             analyzeCV + matchJobs + generateCoverLetter
   cover-letter.ts          schemas da carta + serialização (tom, tamanho, ATS)
+  cv-features.ts           schemas de adaptação e relatório do CV
+  applications.ts          persistência validada do tracker local
   share.ts                 Web Share API com queda para a área de transferência
   cv/parser.ts             extração de texto (PDF · Word · TXT · Markdown · RTF · CSV)
   api/request.ts           limite de corpo, JSON e proteção de origem
@@ -283,8 +331,9 @@ npm test         # testes unitários e de integração (Vitest)
 npm run lint     # ESLint
 ```
 
-Os testes cobrem os adapters, o parser, o agregador, as guardas das rotas, o retry do Gemini
-e o matching em lote — com as APIs externas mockadas. **Nenhum teste gasta chamada de IA.**
+Os testes cobrem os adapters, o parser, o agregador, as guardas das rotas, o retry do Gemini,
+o matching em lote, os contratos de adaptação/relatório e o tracker — com as APIs externas
+mockadas. **Nenhum teste gasta chamada de IA.**
 
 <br/>
 
@@ -292,10 +341,10 @@ e o matching em lote — com as APIs externas mockadas. **Nenhum teste gasta cha
 
 - [ ] Login e sincronização entre dispositivos (Supabase)
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
-- [ ] Adaptar o CV por vaga
-- [ ] Tracker de candidaturas (kanban: Aplicado → Entrevista → Oferta)
+- [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência
+- [x] Tracker de candidaturas — Kanban local: Aplicado → Entrevista → Oferta
 - [ ] Alertas por e-mail de vagas novas com bom score
-- [ ] Relatório "como melhorar seu CV"
+- [x] Relatório "como melhorar seu CV" — forças, prioridades e termos para investigar
 
 <br/>
 

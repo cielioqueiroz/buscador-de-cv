@@ -20,6 +20,12 @@ export function SiteHeader() {
           >
             Meu perfil
           </Link>
+          <Link
+            href="/candidaturas"
+            className="rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-foreground sm:px-4"
+          >
+            Tracker
+          </Link>
           <ThemeToggle />
         </nav>
       </div>

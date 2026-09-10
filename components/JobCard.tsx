@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   FiMapPin,
@@ -10,6 +10,8 @@ import {
   FiHome,
   FiEdit3,
   FiShare2,
+  FiBookmark,
+  FiFileText,
 } from 'react-icons/fi';
 import type { RankedJob } from '@/lib/matching';
 import { ScoreGauge } from './ScoreGauge';
@@ -17,6 +19,8 @@ import { SourceBadge } from './SourceBadge';
 import { CoverLetterPanel } from './CoverLetterPanel';
 import { compartilhar } from '@/lib/share';
 import { getFavorites, loadLetter, toggleFavorite } from '@/lib/store';
+import { getApplication, saveApplication } from '@/lib/applications';
+import { AdaptedCVPanel } from './AdaptedCVPanel';
 import type { CVProfile } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +37,13 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   const [letterOpen, setLetterOpen] = useState(false);
   // Só para o rótulo do botão: quem já tem carta lê "Ver carta", não "Gerar".
   const [hasLetter, setHasLetter] = useState(() => loadLetter(job.id) !== null);
+  const [tracked, setTracked] = useState(false);
+  const [adaptOpen, setAdaptOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setTracked(getApplication(job.id) !== null), 0);
+    return () => window.clearTimeout(timer);
+  }, [job.id]);
 
   function onFav(e: React.MouseEvent) {
     e.preventDefault();
@@ -42,6 +53,12 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   function fecharCarta() {
     setLetterOpen(false);
     setHasLetter(loadLetter(job.id) !== null);
+  }
+
+  function acompanhar() {
+    saveApplication(ranked);
+    setTracked(true);
+    toast.success('Vaga adicionada ao tracker.');
   }
 
   /**
@@ -148,6 +165,27 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
           </button>
         )}
 
+        {profile && (
+          <button
+            type="button"
+            onClick={() => setAdaptOpen(true)}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-display text-sm font-bold text-foreground hover:border-accent-ink sm:flex-none"
+          >
+            <FiFileText className="h-4 w-4" /> Adaptar CV
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={acompanhar}
+          className={cn(
+            'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold sm:flex-none',
+            tracked ? 'border-accent-ink bg-accent/10 text-accent-ink' : 'border-border bg-surface-2 text-foreground hover:border-accent-ink',
+          )}
+        >
+          <FiBookmark className="h-4 w-4" /> {tracked ? 'Acompanhando' : 'Acompanhar'}
+        </button>
+
         <button
           type="button"
           onClick={compartilharVaga}
@@ -173,6 +211,9 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
 
       {letterOpen && profile && (
         <CoverLetterPanel job={job} profile={profile} onClose={fecharCarta} />
+      )}
+      {adaptOpen && profile && (
+        <AdaptedCVPanel job={job} profile={profile} onClose={() => setAdaptOpen(false)} />
       )}
     </article>
   );

@@ -12,6 +12,9 @@ O usuário envia o currículo (PDF, DOC, DOCX, TXT, Markdown, RTF ou CSV). A IA 
 - **Fontes legais, sem scraping**: as vagas vêm de Adzuna (Brasil), Remotive (remotas) e Google for Jobs via JSearch, que indexa LinkedIn, Indeed, Glassdoor, Gupy e Catho.
 - **Link oficial sempre**: o botão de candidatura leva ao anúncio original, sem intermediário.
 - **Sem cadastro e gratuito**: os dados do usuário ficam no navegador (localStorage).
+- **CV adaptado por vaga**: gera um rascunho direcionado sem inventar experiência.
+- **Tracker de candidaturas**: quadro local com as etapas Aplicado, Entrevista e Oferta.
+- **Relatório de melhoria**: aponta forças, lacunas e ações concretas para o currículo.
 
 ## Perguntas frequentes
 
@@ -30,7 +33,8 @@ O usuário envia o currículo (PDF, DOC, DOCX, TXT, Markdown, RTF ou CSV). A IA 
 
 - [Perfil](https://vaga-certa-sooty.vercel.app/perfil): o perfil extraído do currículo.
 - [Resultados](https://vaga-certa-sooty.vercel.app/resultados): as vagas ranqueadas para o perfil.
+- [Tracker](https://vaga-certa-sooty.vercel.app/candidaturas): organize candidaturas em um Kanban local.
 
 ## Stack
 
-Next.js 15 (App Router), TypeScript, Tailwind CSS v4, Google Gemini (gemini-3.1-flash-lite) com structured outputs validados por zod.
+Next.js 16 (App Router), TypeScript, Tailwind CSS v4, Google Gemini (gemini-3.1-flash-lite) com structured outputs validados por zod.
