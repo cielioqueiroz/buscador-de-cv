@@ -55,7 +55,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1 text-foreground/80 hover:text-foreground">
-                  Google for Jobs <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  JSearch <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               </li>
             </ul>

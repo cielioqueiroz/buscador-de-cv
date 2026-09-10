@@ -22,6 +22,7 @@ export function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label="Alternar tema"
+      aria-pressed={dark}
       className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-foreground transition-colors hover:border-accent"
     >
       {dark ? <FiSun className="h-[18px] w-[18px]" /> : <FiMoon className="h-[18px] w-[18px]" />}

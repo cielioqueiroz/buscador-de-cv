@@ -1,14 +1,10 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextVitals,
+  ...nextTypescript,
   {
     rules: {
       // Adapters de APIs externas normalizam JSON cru → `any` é intencional na fronteira.
@@ -17,11 +13,12 @@ const eslintConfig = [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+      // Hydration, animações e sincronização com APIs do navegador usam efeitos
+      // intencionalmente; mantemos o diagnóstico visível sem bloquear o build.
+      "react-hooks/set-state-in-effect": "warn",
     },
   },
-  {
-    ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"],
-  },
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ];
 
-export default eslintConfig;
+export default defineConfig(eslintConfig);

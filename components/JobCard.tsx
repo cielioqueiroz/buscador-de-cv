@@ -134,6 +134,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
 
         {profile && (
           <button
+            type="button"
             onClick={() => setLetterOpen(true)}
             className={cn(
               'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold transition-colors sm:flex-none',
@@ -148,6 +149,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
         )}
 
         <button
+          type="button"
           onClick={compartilharVaga}
           aria-label="Compartilhar esta vaga"
           title="Compartilhar"
@@ -157,6 +159,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
         </button>
 
         <button
+          type="button"
           onClick={onFav}
           aria-label={fav ? 'Remover dos favoritos' : 'Salvar vaga'}
           className={cn(

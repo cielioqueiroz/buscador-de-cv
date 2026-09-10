@@ -17,11 +17,11 @@ const job = {
   remote: false, description: 'd', source: 'adzuna', applyUrl: 'https://x/j1',
 };
 
-const ranked = [{ job, match: { score: 85, reasons: [], gaps: [] } }];
+const ranked = [{ job, match: { jobId: 'j1', score: 85, reasons: [], gaps: [] } }];
 
 /** Responde cada rota com o corpo dado; `null` = falha com a mensagem. */
 function mockFetch(routes: Record<string, unknown>) {
-  return vi.fn(async (url: string) => {
+  return vi.fn(async (url: string, _init?: RequestInit) => {
     const body = routes[url];
     if (body instanceof Error) {
       return { ok: false, json: async () => ({ error: body.message }) };

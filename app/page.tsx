@@ -12,7 +12,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Envie seu currículo',
-    desc: 'PDF, DOCX ou TXT. Ele é lido no servidor — suas chaves e dados não vão para o navegador.',
+    desc: 'PDF, TXT, Markdown, RTF ou CSV. O arquivo é lido no servidor — suas chaves nunca vão para o navegador.',
   },
   {
     n: '02',
@@ -39,7 +39,7 @@ const STEPS = [
 const FAQ = [
   {
     q: 'Como encontrar vagas de emprego usando o currículo?',
-    a: 'Envie seu currículo em PDF, DOCX ou TXT. A IA lê o documento, extrai seu cargo, senioridade e habilidades, e gera as melhores buscas para o seu perfil. Depois busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme a compatibilidade com o que você sabe fazer.',
+    a: 'Envie seu currículo em PDF, TXT, Markdown, RTF ou CSV. A IA lê o documento, extrai seu cargo, senioridade e habilidades, e gera as melhores buscas para o seu perfil. Depois busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme a compatibilidade com o que você sabe fazer.',
   },
   {
     q: 'O Vaga Certa é gratuito?',
@@ -47,7 +47,7 @@ const FAQ = [
   },
   {
     q: 'De onde vêm as vagas?',
-    a: 'De agregadores legais: Adzuna (vagas no Brasil), Remotive (remotas) e Google for Jobs, que indexa LinkedIn, Indeed, Glassdoor, Gupy e Catho. Nada de scraping — o botão de candidatura sempre leva ao anúncio oficial.',
+    a: 'De agregadores legais: Adzuna (vagas no Brasil), Remotive (remotas) e JSearch, que reúne anúncios de diferentes fontes. Nada de scraping — o botão de candidatura sempre leva ao anúncio oficial.',
   },
   {
     q: 'O que significa a nota de compatibilidade?',
@@ -61,7 +61,7 @@ const FAQ = [
 
 const FEATURES = [
   { icon: FiCpu, title: 'Análise com IA de verdade', desc: 'Nada de palavra-chave boba. O Gemini entende contexto, senioridade e o que você sabe fazer.' },
-  { icon: FiShield, title: 'Só fontes legais', desc: 'Agregadores oficiais e Google for Jobs. Sem scraping, sem cair em site duvidoso.' },
+  { icon: FiShield, title: 'Só fontes legais', desc: 'Agregadores oficiais e JSearch. Sem scraping, sem cair em site duvidoso.' },
   { icon: FiTarget, title: 'Score explicado', desc: 'Cada vaga vem com a nota de match, os motivos a favor e o que falta no seu CV.' },
   { icon: FiZap, title: 'Sem cadastro', desc: 'Comece em segundos. Seus dados ficam no seu navegador, sob seu controle.' },
 ];

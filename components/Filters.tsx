@@ -33,7 +33,7 @@ const PERIODOS: { value: FilterState['maxDays']; label: string }[] = [
 
 const SOURCES: { value: FilterState['source']; label: string }[] = [
   { value: 'all', label: 'Todas' },
-  { value: 'jsearch', label: 'Google for Jobs' },
+  { value: 'jsearch', label: 'JSearch' },
   { value: 'adzuna', label: 'Adzuna' },
   { value: 'remotive', label: 'Remotive' },
 ];
@@ -267,6 +267,7 @@ function Chips<T extends string | number | null>({
     <div className="flex flex-wrap gap-2">
       {itens.map((i) => (
         <button
+          type="button"
           key={String(i.value)}
           onClick={() => onPick(i.value)}
           title={i.title}

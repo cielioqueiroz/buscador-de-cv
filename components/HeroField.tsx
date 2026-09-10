@@ -152,14 +152,16 @@ export function HeroField() {
     const mo = new MutationObserver(() => aplicarTema(mat));
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    const relogio = new THREE.Clock();
+    // O THREE.Clock está deprecado (avisa no console em produção) e aqui ele
+    // seria só um wrapper: o tempo decorrido em segundos é uma subtração.
+    const inicio = performance.now();
     let raf = 0;
 
     function frame() {
       raf = requestAnimationFrame(frame);
       if (!visivel) return;
 
-      const t = relogio.getElapsedTime();
+      const t = (performance.now() - inicio) / 1000;
       mouse.lerp(alvo, 0.08);
 
       const arr = geo.attributes.position.array as Float32Array;

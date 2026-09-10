@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import type { Job } from '@/lib/providers/types';
 
 const SOURCE_LABEL: Record<Job['source'], string> = {
-  jsearch: 'Google for Jobs',
+  jsearch: 'JSearch',
   adzuna: 'Adzuna',
   remotive: 'Remotive',
 };

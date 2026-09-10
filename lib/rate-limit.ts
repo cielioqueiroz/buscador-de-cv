@@ -24,7 +24,13 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
   const bucket = buckets.get(key);
 
   if (!bucket || now > bucket.resetAt) {
-    if (buckets.size >= MAX_BUCKETS) prune(now);
+    if (buckets.size >= MAX_BUCKETS) {
+      prune(now);
+      // Nunca deixe uma rajada de IPs inéditos transformar o rate limiter em
+      // um vazamento de memória. O store compartilhado continua sendo o
+      // caminho recomendado para garantias fortes em serverless.
+      if (buckets.size >= MAX_BUCKETS) return false;
+    }
     buckets.set(key, { count: 1, resetAt: now + windowMs });
     return true;
   }
@@ -36,7 +42,17 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
 
 /** IP do chamador, atrás do proxy da Vercel. */
 export function clientIp(req: Request): string {
+  // Prefira headers que a plataforma de borda controla. `x-forwarded-for` é
+  // mantido como fallback para ambientes locais/proxies conhecidos, mas não
+  // deve ser tratado como uma prova de identidade sem um proxy confiável.
+  const trusted = [
+    req.headers.get('x-vercel-forwarded-for'),
+    req.headers.get('cf-connecting-ip'),
+    req.headers.get('x-real-ip'),
+  ].find((value) => value?.trim());
+  if (trusted) return trusted.trim();
+
   const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  return req.headers.get('x-real-ip') ?? 'unknown';
+  if (forwarded) return forwarded.split(',')[0].trim() || 'unknown';
+  return 'unknown';
 }

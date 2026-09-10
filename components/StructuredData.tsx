@@ -28,8 +28,8 @@ const schema = {
         priceCurrency: 'BRL',
       },
       featureList: [
-        'Análise de currículo com IA (PDF, DOCX, TXT, XLSX)',
-        'Busca de vagas reais em Adzuna, Remotive e Google for Jobs',
+        'Análise de currículo com IA (PDF, TXT, Markdown, RTF e CSV)',
+        'Busca de vagas reais em Adzuna, Remotive e JSearch',
         'Score de compatibilidade de 0 a 100 por vaga',
         'Motivos do match e lacunas do currículo',
         'Link oficial de candidatura, sem intermediário',
@@ -51,7 +51,7 @@ const schema = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              'Envie seu currículo em PDF, DOCX ou TXT no Vaga Certa. A IA lê o documento, ' +
+              'Envie seu currículo em PDF, TXT, Markdown, RTF ou CSV no Vaga Certa. A IA lê o documento, ' +
               'extrai seu cargo, senioridade e habilidades, e gera as buscas ideais para o seu perfil. ' +
               'Em seguida, busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme ' +
               'a compatibilidade com o que você sabe fazer.',
@@ -74,7 +74,7 @@ const schema = {
             '@type': 'Answer',
             text:
               'De agregadores legais: Adzuna (vagas no Brasil), Remotive (vagas remotas) e ' +
-              'Google for Jobs, que indexa LinkedIn, Indeed, Glassdoor, Gupy, Catho e outros. ' +
+              'JSearch, que reúne anúncios de diferentes fontes. ' +
               'Não fazemos scraping, e o botão de candidatura sempre leva ao anúncio oficial.',
           },
         },
@@ -87,6 +87,17 @@ const schema = {
               'É uma nota de 0 a 100 que a IA atribui comparando o seu currículo com a descrição ' +
               'da vaga. Junto com a nota, o Vaga Certa mostra os motivos a favor (o que do seu perfil ' +
               'combina) e as lacunas (o que a vaga pede e não está no seu currículo).',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Como funciona a carta de apresentação com IA?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text:
+              'Em cada vaga há um botão Gerar carta. A IA lê o currículo e a descrição da vaga, ' +
+              'escreve uma carta específica no tom escolhido e permite editar, copiar, compartilhar ' +
+              'ou salvar como PDF pela impressão nativa do navegador.',
           },
         },
       ],

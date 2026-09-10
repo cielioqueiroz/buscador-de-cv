@@ -32,18 +32,17 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 
 ## O que ele faz
 
-Você solta o currículo — **PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS**. Em poucos segundos:
+Você solta o currículo — **PDF, TXT, Markdown, RTF ou CSV**. Em poucos segundos:
 
 1. **A IA lê o CV** e extrai cargo, senioridade, habilidades e as melhores buscas para o seu perfil.
-2. **Três fontes legais** são consultadas em paralelo — Adzuna, Remotive e Google for Jobs (via JSearch).
+2. **Três fontes legais** são consultadas em paralelo — Adzuna, Remotive e JSearch.
 3. **Cada vaga recebe uma nota de 0 a 100**, com os motivos a favor e as lacunas do seu CV.
 4. **Se você quiser**, a IA escreve a **carta de apresentação** daquela vaga — no tom e no
    tamanho que você escolher, mostrando quais palavras-chave da vaga entraram no texto.
    Baixe em **PDF** ou **compartilhe** pelo menu do seu próprio celular.
 5. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
 
-> ⚖️ **Nada de scraping.** Só agregadores legais. O Google for Jobs indexa LinkedIn, Indeed,
-> Glassdoor, Gupy e Catho — e nós sempre levamos você ao anúncio original.
+> ⚖️ **Nada de scraping.** Só agregadores legais — e nós sempre levamos você ao anúncio original.
 
 <br/>
 
@@ -51,13 +50,13 @@ Você solta o currículo — **PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS**. Em pouco
 
 ```mermaid
 flowchart LR
-    A[📄 CV<br/>PDF · DOCX · TXT] --> B[Extração de texto<br/><i>no servidor</i>]
+    A[📄 CV<br/>PDF · TXT · RTF · CSV] --> B[Extração de texto<br/><i>no servidor</i>]
     B --> C{{"🧠 Gemini<br/>analyzeCV"}}
     C --> D[["Perfil<br/>cargo · senioridade<br/>skills · buscas"]]
     D --> E[/"🔎 Busca em paralelo"/]
     E --> F1[Adzuna]
     E --> F2[Remotive]
-    E --> F3[Google for Jobs]
+    E --> F3[JSearch]
     F1 & F2 & F3 --> G[Normaliza + dedup]
     G --> H{{"🧠 Gemini<br/>matchJobs<br/><i>lote único</i>"}}
     H --> I[["🎯 Vagas ranqueadas<br/>score · motivos · lacunas"]]
@@ -147,7 +146,7 @@ O que se ganha com o clique:
 | **Tamanho** | curta (~150 palavras) · média (~250) |
 | **ATS** | os termos da vaga que a carta de fato usou, visíveis em chips |
 | **Editável** | o texto na tela é o que vale — sua edição é o que é salva |
-| **Saída** | baixar **PDF** · baixar `.txt` · copiar · **compartilhar** pelo menu do sistema |
+| **Saída** | salvar como **PDF** · baixar `.txt` · copiar · **compartilhar** pelo menu do sistema |
 
 O prompt gasta mais linhas **proibindo** do que pedindo, porque um modelo solto escreve
 exatamente a carta que recrutador descarta: proibidos o clichê ("sempre fui apaixonado
@@ -157,18 +156,20 @@ CV. Quando a vaga pede algo que falta, a carta reconhece com honestidade em vez 
 A carta é salva por vaga no `localStorage`: reabrir não gasta outra chamada. Trocar de
 currículo apaga as cartas — elas nasceram do CV antigo.
 
-**O PDF é um arquivo, não uma caixa de impressão.** A primeira versão usava `window.print()`
-e mandava o usuário achar "Salvar como PDF" no diálogo do navegador — no celular, quase
-ninguém acha. Agora o botão baixa o arquivo direto, e o jsPDF (~90 KB) entra por `import()`
-dentro da função: quem nunca gera carta nunca baixa a lib. Fonte Helvetica/WinAnsi, que
-cobre todo o acento do português — verificado extraindo o texto de volta do PDF gerado.
+**O PDF usa a impressão nativa do navegador.** A carta tem uma folha A4 própria, e o botão
+abre o diálogo para a pessoa escolher "Salvar como PDF". Assim o app não precisa manter uma
+biblioteca adicional de geração de PDF no bundle ou no servidor.
+
+**DOCX e XLSX estão temporariamente desativados no upload.** A leitura desses formatos no
+servidor exigia parsers com uma superfície de dependências e vulnerabilidades incompatível
+com o objetivo do app. PDF, TXT, Markdown, RTF e CSV continuam disponíveis, com limite de
+tamanho, validação de assinatura quando aplicável e limite de texto extraído.
 
 **Compartilhar usa o menu do sistema, não uma fileira de botões de rede social.** A Web
-Share API abre a lista que a pessoa realmente tem instalada (WhatsApp, e-mail, Telegram) e
-manda o PDF como arquivo quando o aparelho aceita. Onde não houver Web Share — a maioria
-dos desktops —, o conteúdo é copiado para a área de transferência. Sempre sobra um caminho
-que funciona. Vale para a carta **e** para a vaga, e o link compartilhado é sempre o
-anúncio oficial.
+Share API abre a lista que a pessoa realmente tem instalada (WhatsApp, e-mail, Telegram).
+Onde não houver Web Share — a maioria dos desktops —, o conteúdo é copiado para a área de
+transferência. Sempre sobra um caminho que funciona. Vale para a carta **e** para a vaga, e o
+link compartilhado é sempre o anúncio oficial.
 
 ### 4. O schema zod é a fonte única da verdade
 
@@ -219,9 +220,8 @@ lib/
     adzuna · remotive · jsearch
   ai/gemini.ts             analyzeCV + matchJobs + generateCoverLetter
   cover-letter.ts          schemas da carta + serialização (tom, tamanho, ATS)
-  cover-letter-pdf.ts      a carta vira PDF (jsPDF carregado só no clique)
   share.ts                 Web Share API com queda para a área de transferência
-  cv/parser.ts             extração de texto (PDF · DOCX · TXT · XLSX · RTF…)
+  cv/parser.ts             extração de texto (PDF · TXT · RTF · CSV)
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por IP nas API Routes
   store.ts                 persistência local (localStorage)
@@ -254,7 +254,7 @@ npm run dev                  # http://localhost:3000
 |---|---|---|:---:|
 | `GEMINI_API_KEY` | Análise do CV e matching | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | ✅ |
 | `ADZUNA_APP_ID` · `ADZUNA_APP_KEY` | Vagas no Brasil | [developer.adzuna.com](https://developer.adzuna.com) | recomendada |
-| `RAPIDAPI_KEY` | Google for Jobs (via JSearch) | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | recomendada |
+| `RAPIDAPI_KEY` | JSearch | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | recomendada |
 
 Só a do Gemini é **obrigatória** — sem ela o app não analisa o CV. As outras duas são gratuitas
 e é delas que vêm as vagas brasileiras: o JSearch agrega **Indeed, Gupy, Catho, ProgramaThor,

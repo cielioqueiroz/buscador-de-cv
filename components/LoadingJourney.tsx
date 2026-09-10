@@ -35,7 +35,7 @@ const FALAS: Record<Stage, string[]> = {
   ],
   searching: [
     'Vasculhando as fontes de vagas…',
-    'Adzuna, Remotive, Google for Jobs…',
+    'Adzuna, Remotive e JSearch…',
     'Nada de scraping: só link oficial.',
     'Peneirando o que não combina com você.',
   ],

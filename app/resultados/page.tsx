@@ -36,7 +36,7 @@ export default function ResultadosPage() {
     setProfile(p);
 
     const cached = loadRanked();
-    if (cached && cached.length) {
+    if (cached !== null) {
       setRanked(cached);
       setStatus('done');
       return;

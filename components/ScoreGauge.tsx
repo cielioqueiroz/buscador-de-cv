@@ -50,7 +50,7 @@ export function ScoreGauge({ score, size = 72, className }: ScoreGaugeProps) {
   }, [clamped]);
 
   const tone =
-    clamped >= 75 ? 'var(--accent-bright)' : clamped >= 50 ? '#eab308' : 'var(--warn)';
+    clamped >= 75 ? 'var(--accent-bright)' : clamped >= 50 ? 'var(--caution)' : 'var(--warn)';
 
   return (
     <div

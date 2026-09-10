@@ -1,4 +1,5 @@
-import { Job, JobProvider, SearchOpts, jobId } from './types';
+import { asRecord, asString, Job, JobProvider, jobId, parseProviderJobs, SearchOpts } from './types';
+import { fetchJson } from './http';
 
 const BASE = 'https://remotive.com/api/remote-jobs';
 
@@ -53,25 +54,24 @@ export const remotive: JobProvider = {
   async search(query: string, _opts: SearchOpts): Promise<Job[]> {
     try {
       const params = new URLSearchParams({ search: query, limit: '20' });
-      const res = await fetch(`${BASE}?${params.toString()}`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      const jobs: Job[] = (data.jobs ?? []).map((j: any): Job => {
-        const company = j.company_name ?? 'Empresa';
-        const location = j.candidate_required_location || 'Remoto';
-        const title = j.title ?? 'Vaga';
+      const data = asRecord(await fetchJson(`${BASE}?${params.toString()}`));
+      const jobs: Job[] = (Array.isArray(data.jobs) ? data.jobs : []).map((value): Job => {
+        const j = asRecord(value);
+        const company = asString(j.company_name, 'Empresa');
+        const location = asString(j.candidate_required_location, 'Remoto');
+        const title = asString(j.title, 'Vaga');
         return {
           id: jobId(title, company, location),
           title, company, location,
           remote: true,
-          description: stripHtml(j.description ?? ''),
-          postedAt: j.publication_date,
+          description: stripHtml(asString(j.description, '')),
+          postedAt: typeof j.publication_date === 'string' ? j.publication_date : undefined,
           source: 'remotive',
-          applyUrl: j.url,
+          applyUrl: asString(j.url, ''),
         };
       });
 
-      return jobs.filter((job) => matchesQuery(job, query));
+      return parseProviderJobs(jobs).filter((job) => matchesQuery(job, query));
     } catch (err) {
       console.error('[provider/remotive]', err);
       return [];

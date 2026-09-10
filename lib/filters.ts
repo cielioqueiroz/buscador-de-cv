@@ -53,7 +53,10 @@ function postedTime(job: Job): number | null {
 export function withinDays(job: Job, days: number, now: Date = new Date()): boolean {
   const t = postedTime(job);
   if (t === null) return false;
-  return now.getTime() - t <= days * 86_400_000;
+  const age = now.getTime() - t;
+  // Datas futuras de provider estão erradas; não devem aparecer como "últimas
+  // 24h" só porque a diferença ficou negativa.
+  return age >= 0 && age <= days * 86_400_000;
 }
 
 export function sortRanked(ranked: RankedJob[], order: FilterState['order']): RankedJob[] {

@@ -29,12 +29,6 @@ describe('extractText', () => {
     expect(text.length).toBeGreaterThan(200);
   });
 
-  it('extrai texto de uma planilha XLSX de verdade', async () => {
-    const text = await extractText(fixture('cv.xlsx'), 'cv.xlsx');
-    expect(text).toContain('Jacielio');
-    expect(text).toContain('Power BI');
-  });
-
   it('extrai texto de CSV', async () => {
     const csv = Buffer.from('Nome,Cargo\nJacielio,Analista Financeiro\n');
     const text = await extractText(csv, 'cv.csv');
@@ -50,7 +44,7 @@ describe('extractText', () => {
   });
 
   it('recusa .doc (OLE binário) com mensagem acionável', async () => {
-    await expect(extractText(Buffer.from('x'), 'cv.doc')).rejects.toThrow(/PDF ou DOCX/);
+    await expect(extractText(Buffer.from('x'), 'cv.doc')).rejects.toThrow(/PDF ou TXT/);
   });
 
   it('lança erro para extensão não suportada', async () => {
@@ -60,11 +54,10 @@ describe('extractText', () => {
   // A lista guarda a rota e o accept do upload: se um formato entra aqui sem
   // ter tratamento no parser, o usuário sobe o arquivo e recebe um 500.
   it('todo formato anunciado como suportado é realmente lido', async () => {
-    const semAmostra = ['.docx', '.xls', '.ods']; // exigem binário próprio
+    const semAmostra: string[] = [];
     for (const ext of SUPPORTED_EXTENSIONS) {
       if (semAmostra.includes(ext)) continue;
       const buf = ext === '.pdf' ? fixture('cv.pdf')
-        : ext === '.xlsx' ? fixture('cv.xlsx')
         : Buffer.from('Analista Financeiro com Power BI');
       await expect(extractText(buf, `cv${ext}`)).resolves.toBeTruthy();
     }

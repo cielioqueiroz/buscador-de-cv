@@ -21,7 +21,6 @@ import {
   type Length,
   type Tone,
 } from '@/lib/cover-letter';
-import { buildCoverLetterPdf } from '@/lib/cover-letter-pdf';
 import { compartilhar } from '@/lib/share';
 import { loadLetter, saveLetter } from '@/lib/store';
 import type { CVProfile, Job } from '@/lib/providers/types';
@@ -54,7 +53,9 @@ interface Props {
  *    editou, é a edição dela que sobrevive ao fechar o painel.
  */
 export function CoverLetterPanel({ job, profile, onClose }: Props) {
-  const saved = useRef(loadLetter(job.id)).current;
+  const [saved] = useState(() => loadLetter(job.id));
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
 
   const [tone, setTone] = useState<Tone>(saved?.tone ?? 'entusiasmado');
   const [length, setLength] = useState<Length>(saved?.length ?? 'media');
@@ -62,20 +63,43 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
   const [text, setText] = useState(saved?.text ?? '');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  // Qual ação pesada está em curso: o PDF precisa buscar o jsPDF na rede na
-  // primeira vez, e um botão que não responde parece um botão quebrado.
+  // Qual ação pesada está em curso: impressão/compartilhamento precisam de
+  // feedback para não parecerem botões quebrados.
   const [busy, setBusy] = useState<'pdf' | 'share' | null>(null);
 
   // Esc fecha, e a rolagem do fundo trava enquanto o painel está aberto —
   // sem isso, rolar dentro do textarea acaba rolando a lista de vagas atrás.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialogRef.current?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), textarea, input, select, a[href]',
+      )];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     document.addEventListener('keydown', onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
+      previousFocus.current?.focus();
     };
   }, [onClose]);
 
@@ -134,44 +158,30 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
     );
   }
 
-  /** O jsPDF só é baixado aqui dentro — ver `lib/cover-letter-pdf.ts`. */
+  /** Abre a folha formatada no diálogo de impressão do navegador. */
   async function baixarPdf() {
     setBusy('pdf');
     try {
-      const blob = await pdf();
-      baixar(blob, coverLetterFilename(job.company, 'pdf'));
+      // O navegador já conhece o fluxo A4, fontes e destino PDF. Isso evita
+      // manter uma biblioteca de geração de PDF com dependências vulneráveis.
+      window.print();
     } catch {
-      toast.error('Não deu para gerar o PDF. Tente baixar em .txt.');
+      toast.error('Não deu para abrir a impressão. Tente baixar em .txt.');
     } finally {
       setBusy(null);
     }
   }
 
-  function pdf(): Promise<Blob> {
-    return buildCoverLetterPdf({ texto: text, job, titulo: profile.title });
-  }
-
   /**
-   * Compartilha o PDF pelo menu do sistema. Onde não der para mandar arquivo,
-   * vai o texto; onde não houver Web Share (a maioria dos desktops), o texto é
-   * copiado — sempre sobra um caminho que funciona.
+   * Compartilha o texto pelo menu do sistema. O PDF continua disponível pelo
+   * fluxo de impressão, enquanto o texto funciona em qualquer aparelho.
    */
   async function compartilharCarta() {
     setBusy('share');
     try {
-      let file: File | undefined;
-      try {
-        file = new File([await pdf()], coverLetterFilename(job.company, 'pdf'), {
-          type: 'application/pdf',
-        });
-      } catch {
-        // Sem PDF ainda dá para compartilhar o texto — não é motivo para desistir.
-      }
-
       const r = await compartilhar({
         title: `Carta de apresentação — ${job.title} · ${job.company}`,
         text,
-        file,
       });
 
       if (r === 'copiado') toast.success('Carta copiada — é só colar onde quiser.');
@@ -196,9 +206,11 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
       />
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`Carta de apresentação para ${job.title}`}
+        aria-labelledby="cover-letter-title"
+        tabIndex={-1}
         className="animate-rise relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:max-h-[88vh] sm:rounded-3xl"
       >
         <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
@@ -206,7 +218,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
             <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
               Carta de apresentação
             </p>
-            <h2 className="mt-1 truncate font-display text-xl font-bold">{job.title}</h2>
+            <h2 id="cover-letter-title" className="mt-1 truncate font-display text-xl font-bold">{job.title}</h2>
             <p className="truncate text-sm text-muted">{job.company}</p>
           </div>
           <button
@@ -261,6 +273,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
               <textarea
                 value={text}
                 onChange={(e) => editar(e.target.value)}
+                maxLength={12_000}
                 spellCheck
                 aria-label="Texto da carta"
                 className="mt-5 min-h-[300px] w-full resize-y rounded-2xl border border-border bg-surface-2/40 p-5 text-[15px] leading-relaxed text-foreground outline-none transition-colors focus:border-accent-ink"
@@ -303,7 +316,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
               className="hover-glow inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground disabled:opacity-60 sm:flex-none"
             >
               <FiDownload className={cn('h-4 w-4', busy === 'pdf' && 'animate-bob')} />
-              {busy === 'pdf' ? 'Gerando…' : 'Baixar PDF'}
+              {busy === 'pdf' ? 'Abrindo…' : 'Salvar como PDF'}
             </button>
 
             <button

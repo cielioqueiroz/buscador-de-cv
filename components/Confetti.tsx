@@ -27,7 +27,7 @@ interface Peca {
   cor: string;
 }
 
-const CORES = ['var(--accent-bright)', '#4d7c0f', '#eab308', 'var(--foreground)'];
+const CORES = ['var(--accent-bright)', 'var(--accent-ink)', 'var(--caution)', 'var(--foreground)'];
 
 export function Confetti({ ativo }: { ativo: boolean }) {
   const [pecas, setPecas] = useState<Peca[] | null>(null);

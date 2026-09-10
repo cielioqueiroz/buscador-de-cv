@@ -1,10 +1,16 @@
 import { matchJobs } from '@/lib/ai/gemini';
-import { CVProfile, Job, MatchResult } from '@/lib/providers/types';
+import { CVProfile, Job, JobSchema, MatchResult, MatchResultSchema } from '@/lib/providers/types';
+import { z } from 'zod';
 
 export interface RankedJob {
   job: Job;
   match: MatchResult;
 }
+
+export const RankedJobSchema = z.object({
+  job: JobSchema,
+  match: MatchResultSchema,
+});
 
 /**
  * Pontua as vagas contra o CV e devolve ordenado por score desc.

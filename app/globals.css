@@ -20,6 +20,8 @@
   --accent-ink: #4d7c0f;       /* verde legível p/ TEXTO no fundo claro */
   --accent-bright: #c8f31d;    /* brilhos/pontos */
   --warn: #c2410c;
+  --caution: #a16207;
+  --focus: #4d7c0f;
   --border: rgba(20, 20, 12, 0.12);
   --ring: rgba(101, 163, 13, 0.45);
   --shadow: rgba(20, 20, 12, 0.16);
@@ -36,6 +38,8 @@
   --accent-ink: #c8f31d;       /* limão legível na tinta */
   --accent-bright: #c8f31d;
   --warn: #fb923c;
+  --caution: #facc15;
+  --focus: #c8f31d;
   --border: rgba(245, 244, 239, 0.11);
   --ring: rgba(200, 243, 29, 0.5);
   --shadow: rgba(0, 0, 0, 0.55);
@@ -52,6 +56,8 @@
   --color-accent-ink: var(--accent-ink);
   --color-accent-bright: var(--accent-bright);
   --color-warn: var(--warn);
+  --color-caution: var(--caution);
+  --color-focus: var(--focus);
   --color-border: var(--border);
   --color-ring: var(--ring);
 
@@ -75,6 +81,14 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  color-scheme: dark;
+}
+
+:root:not(.dark) body { color-scheme: light; }
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 
 /* textura de grão sutil sobre tudo */
@@ -264,8 +278,7 @@ body::before {
 }
 
 /* ---------- a folha que vira PDF ----------
-   Só existe na impressão. O navegador já sabe salvar como PDF; uma lib de PDF
-   custaria ~90 KB para fazer pior. */
+   Só existe na impressão; o navegador já sabe salvar como PDF. */
 .print-sheet { display: none; }
 
 @media print {
@@ -304,7 +317,7 @@ body::before {
 /* Respeita "reduzir movimento" do SO, mas mantém o carrossel rodando
    (é conteúdo da marca, e o usuário pode pausar passando o mouse). */
 @media (prefers-reduced-motion: reduce) {
-  *:not(.marquee-track), *::before, *::after {
+  *, *::before, *::after {
     animation: none !important;
     transition: none !important;
   }

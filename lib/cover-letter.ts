@@ -16,11 +16,11 @@ export type Length = z.infer<typeof LengthEnum>;
  * modelo inventa quando escreve prosa livre: aqui, um item é um parágrafo.
  */
 export const CoverLetterSchema = z.object({
-  greeting: z.string().min(1),
-  paragraphs: z.array(z.string().min(1)).min(2).max(5),
-  closing: z.string().min(1),
+  greeting: z.string().trim().min(1).max(240),
+  paragraphs: z.array(z.string().trim().min(1).max(2_000)).min(2).max(5),
+  closing: z.string().trim().min(1).max(240),
   /** Termos tirados da vaga que o texto de fato incorpora. */
-  keywords: z.array(z.string()),
+  keywords: z.array(z.string().trim().min(1).max(100)).max(6),
 });
 export type CoverLetter = z.infer<typeof CoverLetterSchema>;
 

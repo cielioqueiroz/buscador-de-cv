@@ -7,7 +7,7 @@ import { runJourney, type Stage } from '@/lib/journey';
 import { LoadingJourney } from '@/components/LoadingJourney';
 import { cn } from '@/lib/utils';
 
-const ACCEPT = '.pdf,.docx,.txt,.md,.rtf,.xlsx,.xls,.csv,.ods';
+const ACCEPT = '.pdf,.txt,.md,.rtf,.csv';
 const MAX_MB = 8;
 
 export function CVUpload() {
@@ -18,6 +18,8 @@ export function CVUpload() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   async function handleFile(file: File) {
+    // Permite escolher o mesmo arquivo novamente depois de uma falha.
+    if (inputRef.current) inputRef.current.value = '';
     if (file.size > MAX_MB * 1024 * 1024) {
       toast.error(`Arquivo muito grande (máx. ${MAX_MB}MB).`);
       return;
@@ -50,7 +52,13 @@ export function CVUpload() {
       onClick={() => inputRef.current?.click()}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
+      aria-label="Enviar currículo"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
       className={cn(
         'group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-300 sm:p-14',
         dragging
@@ -91,7 +99,7 @@ export function CVUpload() {
         <div>
           <p className="font-display text-xl font-bold">Solte seu currículo aqui</p>
           <p className="mt-1 text-sm text-muted">
-            {fileName ?? 'ou clique para escolher — PDF, DOCX, TXT, XLSX…'}
+            {fileName ?? 'ou clique para escolher — PDF, TXT, Markdown, RTF ou CSV'}
           </p>
         </div>
 

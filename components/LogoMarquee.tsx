@@ -1,4 +1,4 @@
-const ROW_A = ['LinkedIn', 'Indeed', 'Glassdoor', 'Gupy', 'Google for Jobs', 'Adzuna', 'Remotive'];
+const ROW_A = ['LinkedIn', 'Indeed', 'Glassdoor', 'Gupy', 'JSearch', 'Adzuna', 'Remotive'];
 const ROW_B = ['Vagas.com', 'InfoJobs', 'Catho', 'Remotar', 'We Work Remotely', 'Trampos', 'Programathor'];
 
 // Quantas vezes repetir a lista em CADA metade da faixa. Precisa ser largo o
@@ -30,7 +30,7 @@ function Row({ items, reverse }: { items: string[]; reverse?: boolean }) {
 /** Carrossel infinito das fontes/empresas de vagas (duas faixas opostas). */
 export function LogoMarquee() {
   return (
-    <section className="overflow-hidden border-y border-border bg-surface-2/40 py-8 sm:py-10">
+    <section aria-label="Fontes de vagas" className="overflow-hidden border-y border-border bg-surface-2/40 py-8 sm:py-10">
       <p className="mb-5 px-5 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted sm:mb-6 sm:text-[11px] sm:tracking-[0.25em]">
         vagas reunidas de fontes como
       </p>

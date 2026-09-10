@@ -1,4 +1,13 @@
-import { Job, JobProvider, SearchOpts, jobId } from './types';
+import {
+  asRecord,
+  asString,
+  Job,
+  JobProvider,
+  jobId,
+  parseProviderJobs,
+  SearchOpts,
+} from './types';
+import { fetchJson } from './http';
 
 const HOST = 'jsearch.p.rapidapi.com';
 
@@ -26,40 +35,38 @@ export const jsearch: JobProvider = {
     if (opts.location) params.set('query', `${query} in ${opts.location}`);
 
     try {
-      const res = await fetch(`https://${HOST}/${ENDPOINT}?${params.toString()}`, {
+      const data = asRecord(await fetchJson(`https://${HOST}/${ENDPOINT}?${params.toString()}`, {
         headers: { 'X-RapidAPI-Key': key, 'X-RapidAPI-Host': HOST },
-      });
-      if (!res.ok) {
-        console.error(`[provider/jsearch] HTTP ${res.status}`);
-        return [];
-      }
+      }));
+      const jobs = Array.isArray(asRecord(data.data).jobs) ? asRecord(data.data).jobs as unknown[] : [];
 
-      const data = await res.json();
-      const jobs = data?.data?.jobs ?? [];
-
-      return jobs.map((j: any): Job => {
-        const company = j.employer_name ?? 'Empresa';
+      const normalized = jobs.map((value): Job => {
+        const j = asRecord(value);
+        const company = asString(j.employer_name, 'Empresa');
         // job_city/job_state costumam vir null na v5; job_location traz o texto
         // pronto ("Brasil", "São Paulo, SP").
-        const location = j.job_location
-          || [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', ')
-          || 'Não informado';
-        const title = j.job_title ?? 'Vaga';
+        const location = asString(j.job_location, [j.job_city, j.job_state, j.job_country]
+          .filter((part): part is string => typeof part === 'string' && Boolean(part.trim()))
+          .join(', ') || 'Não informado');
+        const title = asString(j.job_title, 'Vaga');
 
         return {
           id: jobId(title, company, location),
           title, company, location,
           remote: Boolean(j.job_is_remote),
-          description: j.job_description ?? '',
+          description: asString(j.job_description, ''),
           // A v5 devolve `null` aqui, e `null` não é `undefined`: o JobSchema
           // declara postedAt como string opcional, então um null reprovaria na
           // validação da rota /jobs/match e derrubaria a busca inteira.
-          postedAt: j.job_posted_at_datetime_utc ?? undefined,
+          postedAt: typeof j.job_posted_at_datetime_utc === 'string'
+            ? j.job_posted_at_datetime_utc
+            : undefined,
           source: 'jsearch',
-          applyUrl: j.job_apply_link,
-          publisher: j.job_publisher,
+          applyUrl: asString(j.job_apply_link, ''),
+          publisher: typeof j.job_publisher === 'string' ? j.job_publisher : undefined,
         };
-      }).filter((job: Job) => Boolean(job.applyUrl)); // sem link, a vaga é inútil
+      });
+      return parseProviderJobs(normalized).filter((job) => !opts.remoteOnly || job.remote);
     } catch (err) {
       console.error('[provider/jsearch]', err);
       return [];
