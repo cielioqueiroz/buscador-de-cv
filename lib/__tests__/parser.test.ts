@@ -1,9 +1,25 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { extractText, SUPPORTED_EXTENSIONS } from '@/lib/cv/parser';
+
+const { extractWord } = vi.hoisted(() => ({
+  extractWord: vi.fn(),
+}));
+
+vi.mock('word-extractor', () => ({
+  default: class WordExtractorMock {
+    extract = extractWord;
+  },
+}));
+
+import { extractText, hasValidSignature, SUPPORTED_EXTENSIONS } from '@/lib/cv/parser';
 
 const fixture = (f: string) => readFileSync(join(__dirname, 'fixtures', f));
+
+beforeEach(() => {
+  extractWord.mockReset();
+  extractWord.mockResolvedValue({ getBody: () => 'Analista Financeiro com experiência em React' });
+});
 
 describe('extractText', () => {
   it('extrai texto de TXT', async () => {
@@ -43,8 +59,22 @@ describe('extractText', () => {
     expect(text).not.toContain('fonttbl');
   });
 
-  it('recusa .doc (OLE binário) com mensagem acionável', async () => {
-    await expect(extractText(Buffer.from('x'), 'cv.doc')).rejects.toThrow(/PDF ou TXT/);
+  it('extrai texto de Word .doc e .docx', async () => {
+    for (const ext of ['.doc', '.docx']) {
+      const text = await extractText(Buffer.from('arquivo Word'), `cv${ext}`);
+      expect(text).toContain('Analista Financeiro');
+    }
+    expect(extractWord).toHaveBeenCalledTimes(2);
+  });
+
+  it('valida as assinaturas binárias dos formatos Word', () => {
+    const ole = Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+    const zip = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+
+    expect(hasValidSignature(ole, 'cv.doc')).toBe(true);
+    expect(hasValidSignature(zip, 'cv.docx')).toBe(true);
+    expect(hasValidSignature(Buffer.from('x'), 'cv.doc')).toBe(false);
+    expect(hasValidSignature(Buffer.from('x'), 'cv.docx')).toBe(false);
   });
 
   it('lança erro para extensão não suportada', async () => {
@@ -58,7 +88,12 @@ describe('extractText', () => {
     for (const ext of SUPPORTED_EXTENSIONS) {
       if (semAmostra.includes(ext)) continue;
       const buf = ext === '.pdf' ? fixture('cv.pdf')
+        : ext === '.doc' ? Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])
+        : ext === '.docx' ? Buffer.from([0x50, 0x4b, 0x03, 0x04])
         : Buffer.from('Analista Financeiro com Power BI');
+      if (ext === '.doc' || ext === '.docx') {
+        extractWord.mockResolvedValueOnce({ getBody: () => 'Analista Financeiro com experiência em React' });
+      }
       await expect(extractText(buf, `cv${ext}`)).resolves.toBeTruthy();
     }
   });

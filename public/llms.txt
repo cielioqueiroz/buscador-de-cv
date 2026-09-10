@@ -4,7 +4,7 @@
 
 ## O que faz
 
-O usuário envia o currículo (PDF, DOCX, TXT, RTF, XLSX, CSV ou ODS). A IA lê o documento e extrai cargo, senioridade, habilidades e áreas de atuação, e gera os termos de busca ideais para aquele perfil. O sistema então consulta agregadores de vagas e pontua cada vaga encontrada contra o currículo, explicando os motivos do match e as lacunas do perfil.
+O usuário envia o currículo (PDF, DOC, DOCX, TXT, Markdown, RTF ou CSV). A IA lê o documento e extrai cargo, senioridade, habilidades e áreas de atuação, e gera os termos de busca ideais para aquele perfil. O sistema então consulta agregadores de vagas e pontua cada vaga encontrada contra o currículo, explicando os motivos do match e as lacunas do perfil.
 
 ## Diferenciais
 

@@ -22,6 +22,7 @@
     "tailwind-merge": "^3.6.0",
     "three": "^0.185.1",
     "unpdf": "^1.6.2",
+    "word-extractor": "^1.0.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {

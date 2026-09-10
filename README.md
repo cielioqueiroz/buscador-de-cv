@@ -32,7 +32,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 
 ## O que ele faz
 
-Você solta o currículo — **PDF, TXT, Markdown, RTF ou CSV**. Em poucos segundos:
+Você solta o currículo — **PDF, Word (.doc/.docx), TXT, Markdown, RTF ou CSV**. Em poucos segundos:
 
 1. **A IA lê o CV** e extrai cargo, senioridade, habilidades e as melhores buscas para o seu perfil.
 2. **Três fontes legais** são consultadas em paralelo — Adzuna, Remotive e JSearch.
@@ -50,7 +50,7 @@ Você solta o currículo — **PDF, TXT, Markdown, RTF ou CSV**. Em poucos segun
 
 ```mermaid
 flowchart LR
-    A[📄 CV<br/>PDF · TXT · RTF · CSV] --> B[Extração de texto<br/><i>no servidor</i>]
+    A[📄 CV<br/>PDF · Word · TXT · RTF · CSV] --> B[Extração de texto<br/><i>no servidor</i>]
     B --> C{{"🧠 Gemini<br/>analyzeCV"}}
     C --> D[["Perfil<br/>cargo · senioridade<br/>skills · buscas"]]
     D --> E[/"🔎 Busca em paralelo"/]
@@ -160,10 +160,9 @@ currículo apaga as cartas — elas nasceram do CV antigo.
 abre o diálogo para a pessoa escolher "Salvar como PDF". Assim o app não precisa manter uma
 biblioteca adicional de geração de PDF no bundle ou no servidor.
 
-**DOCX e XLSX estão temporariamente desativados no upload.** A leitura desses formatos no
-servidor exigia parsers com uma superfície de dependências e vulnerabilidades incompatível
-com o objetivo do app. PDF, TXT, Markdown, RTF e CSV continuam disponíveis, com limite de
-tamanho, validação de assinatura quando aplicável e limite de texto extraído.
+**Word é aceito nos formatos `.doc` e `.docx`.** A leitura acontece no servidor diretamente
+do Buffer, sem executar Word, LibreOffice ou binários externos. Todos os formatos têm limite
+de tamanho; os formatos binários passam por validação de assinatura antes da extração.
 
 **Compartilhar usa o menu do sistema, não uma fileira de botões de rede social.** A Web
 Share API abre a lista que a pessoa realmente tem instalada (WhatsApp, e-mail, Telegram).
@@ -177,7 +176,7 @@ Não há JSON parseado na mão. O schema zod vira JSON Schema (`z.toJSONSchema`)
 instruída a responder naquele formato (`responseJsonSchema`), e a resposta **ainda passa pelo
 zod** na volta. Se a IA fugir do contrato, estoura ali — não três camadas adiante.
 
-### 4. As buscas da IA precisam ser curtas
+### 5. As buscas da IA precisam ser curtas
 
 Sites de emprego fazem busca **E**: todas as palavras precisam aparecer na vaga. A IA, sozinha,
 gerava buscas descritivas e longas — que não retornavam nada:
@@ -190,7 +189,7 @@ gerava buscas descritivas e longas — que não retornavam nada:
 O prompt agora limita a 3 palavras e proíbe senioridade nas buscas. Parece um detalhe; é a
 diferença entre o app achar vagas e não achar.
 
-### 5. Página vazia não vai para o índice
+### 6. Página vazia não vai para o índice
 
 `/perfil` e `/resultados` só ganham conteúdo depois que você envia um CV — o estado vive no
 `localStorage`. Para um robô, elas são cascas de **8 e 98 palavras**. Estão em `noindex` e fora
@@ -221,7 +220,10 @@ lib/
   ai/gemini.ts             analyzeCV + matchJobs + generateCoverLetter
   cover-letter.ts          schemas da carta + serialização (tom, tamanho, ATS)
   share.ts                 Web Share API com queda para a área de transferência
-  cv/parser.ts             extração de texto (PDF · TXT · RTF · CSV)
+  cv/parser.ts             extração de texto (PDF · Word · TXT · Markdown · RTF · CSV)
+  api/request.ts           limite de corpo, JSON e proteção de origem
+  providers/http.ts        fetch externo com timeout
+  deploy-recovery.ts       recuperação de chunks antigos após deploy
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por IP nas API Routes
   store.ts                 persistência local (localStorage)
@@ -274,7 +276,7 @@ funcionando.
 npm run dev      # desenvolvimento
 npm run build    # build de produção
 npm start        # serve o build
-npm test         # 41 testes (Vitest)
+npm test         # testes unitários e de integração (Vitest)
 npm run lint     # ESLint
 ```
 

@@ -7,7 +7,7 @@ import { runJourney, type Stage } from '@/lib/journey';
 import { LoadingJourney } from '@/components/LoadingJourney';
 import { cn } from '@/lib/utils';
 
-const ACCEPT = '.pdf,.txt,.md,.rtf,.csv';
+const ACCEPT = '.pdf,.doc,.docx,.txt,.md,.rtf,.csv';
 const MAX_MB = 8;
 
 export function CVUpload() {
@@ -100,7 +100,7 @@ export function CVUpload() {
         <div>
           <p className="font-display text-xl font-bold">Solte seu currículo aqui</p>
           <p className="mt-1 text-sm text-muted">
-            {fileName ?? 'ou clique para escolher — PDF, TXT, Markdown, RTF ou CSV'}
+            {fileName ?? 'ou clique para escolher — PDF, Word, TXT, Markdown, RTF ou CSV'}
           </p>
         </div>
 

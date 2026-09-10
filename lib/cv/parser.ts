@@ -4,8 +4,11 @@ const MAX_PDF_PAGES = 20;
 
 /** Formatos que sabemos ler de verdade. Usado no accept do upload e na rota. */
 export const SUPPORTED_EXTENSIONS = [
-  '.pdf', '.txt', '.md', '.rtf', '.csv',
+  '.pdf', '.doc', '.docx', '.txt', '.md', '.rtf', '.csv',
 ] as const;
+
+const DOC_OLE_SIGNATURE = Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+const ZIP_SIGNATURE = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 
 /** Evita processar um binário arbitrário só porque ele recebeu outra extensão. */
 export function hasValidSignature(buffer: Buffer, fileName: string): boolean {
@@ -14,6 +17,8 @@ export function hasValidSignature(buffer: Buffer, fileName: string): boolean {
 
   if (ext === '.pdf') return buffer.subarray(0, 5).toString('ascii') === '%PDF-';
   if (ext === '.rtf') return buffer.subarray(0, 5).toString('ascii') === '{\\rtf';
+  if (ext === '.doc') return buffer.subarray(0, DOC_OLE_SIGNATURE.length).equals(DOC_OLE_SIGNATURE);
+  if (ext === '.docx') return buffer.subarray(0, ZIP_SIGNATURE.length).equals(ZIP_SIGNATURE);
   return false;
 }
 
@@ -43,6 +48,14 @@ async function pdfToText(buffer: Buffer): Promise<string> {
   return text.trim().slice(0, MAX_CV_CHARS);
 }
 
+async function wordToText(buffer: Buffer): Promise<string> {
+  // O word-extractor lê tanto o Word legado OLE (.doc) quanto o OOXML (.docx)
+  // diretamente do Buffer, sem executar Word, LibreOffice ou binários externos.
+  const WordExtractor = (await import('word-extractor')).default;
+  const document = await new WordExtractor().extract(buffer);
+  return document.getBody().trim().slice(0, MAX_CV_CHARS);
+}
+
 /** Extrai texto cru de um CV. `buffer` é o conteúdo do arquivo; `fileName` define o formato. */
 export async function extractText(buffer: Buffer, fileName: string): Promise<string> {
   const lower = fileName.toLowerCase();
@@ -59,16 +72,12 @@ export async function extractText(buffer: Buffer, fileName: string): Promise<str
     case '.pdf':
       return pdfToText(buffer);
 
+    case '.doc':
+    case '.docx':
+      return wordToText(buffer);
+
     case '.csv':
       return buffer.toString('utf-8').replace(/,+/g, ' ').replace(/[ \t]+/g, ' ').trim().slice(0, MAX_CV_CHARS);
-
-    case '.docx':
-    case '.xlsx':
-      throw new Error('DOCX e XLSX estão temporariamente desativados por segurança. Use PDF ou TXT.');
-
-    // .doc é OLE binário (formato Word 97) e fica fora do parser seguro.
-    case '.doc':
-      throw new Error('Formato antigo não suportado. Salve o currículo como PDF ou TXT.');
 
     default:
       throw new Error(`Formato não suportado: ${fileName}`);

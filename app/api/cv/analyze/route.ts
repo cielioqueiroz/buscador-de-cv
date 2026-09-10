@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const name = file.name.toLowerCase();
     if (!SUPPORTED_EXTENSIONS.some((ext) => name.endsWith(ext))) {
       return NextResponse.json(
-        { error: 'Formato não suportado. Envie PDF, TXT, Markdown, RTF ou CSV.' },
+        { error: 'Formato não suportado. Envie PDF, Word (.doc/.docx), TXT, Markdown, RTF ou CSV.' },
         { status: 415 },
       );
     }

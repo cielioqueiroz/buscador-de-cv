@@ -39,7 +39,6 @@ pnpm-debug.log*
 Thumbs.db
 *.pem
 
-# Planejamento / instruções de agentes (não fazem parte do app)
+# Planejamento e especificações históricas não fazem parte do app
 /docs/
-/AGENTS.md
 /CLAUDE.md

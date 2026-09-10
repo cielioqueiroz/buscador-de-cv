@@ -12,7 +12,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Envie seu currículo',
-    desc: 'PDF, TXT, Markdown, RTF ou CSV. O arquivo é lido no servidor — suas chaves nunca vão para o navegador.',
+    desc: 'PDF, Word, TXT, Markdown, RTF ou CSV. O arquivo é lido no servidor — suas chaves nunca vão para o navegador.',
   },
   {
     n: '02',
@@ -39,7 +39,7 @@ const STEPS = [
 const FAQ = [
   {
     q: 'Como encontrar vagas de emprego usando o currículo?',
-    a: 'Envie seu currículo em PDF, TXT, Markdown, RTF ou CSV. A IA lê o documento, extrai seu cargo, senioridade e habilidades, e gera as melhores buscas para o seu perfil. Depois busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme a compatibilidade com o que você sabe fazer.',
+    a: 'Envie seu currículo em PDF, Word, TXT, Markdown, RTF ou CSV. A IA lê o documento, extrai seu cargo, senioridade e habilidades, e gera as melhores buscas para o seu perfil. Depois busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme a compatibilidade com o que você sabe fazer.',
   },
   {
     q: 'O Vaga Certa é gratuito?',

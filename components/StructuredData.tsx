@@ -28,7 +28,7 @@ const schema = {
         priceCurrency: 'BRL',
       },
       featureList: [
-        'Análise de currículo com IA (PDF, TXT, Markdown, RTF e CSV)',
+        'Análise de currículo com IA (PDF, Word, TXT, Markdown, RTF e CSV)',
         'Busca de vagas reais em Adzuna, Remotive e JSearch',
         'Score de compatibilidade de 0 a 100 por vaga',
         'Motivos do match e lacunas do currículo',
@@ -51,7 +51,7 @@ const schema = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              'Envie seu currículo em PDF, TXT, Markdown, RTF ou CSV no Vaga Certa. A IA lê o documento, ' +
+              'Envie seu currículo em PDF, Word, TXT, Markdown, RTF ou CSV no Vaga Certa. A IA lê o documento, ' +
               'extrai seu cargo, senioridade e habilidades, e gera as buscas ideais para o seu perfil. ' +
               'Em seguida, busca vagas reais em agregadores legais e pontua cada uma de 0 a 100 conforme ' +
               'a compatibilidade com o que você sabe fazer.',
