@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   if (!rateLimit(`letter:${clientIp(req)}`, 10, 60_000)) {
     return NextResponse.json(
       { error: 'Muitas cartas seguidas. Aguarde um minuto.' },
-      { status: 429 },
+      { status: 429, headers: { 'Retry-After': '60' } },
     );
   }
 

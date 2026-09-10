@@ -203,6 +203,9 @@ e citarem o projeto.
 
 ## Arquitetura
 
+Para a matriz de controles, limites conhecidos e itens que não se aplicam ao app sem banco/auth,
+consulte [`SECURITY.md`](SECURITY.md).
+
 ```text
 app/
   page.tsx                 landing + upload do CV

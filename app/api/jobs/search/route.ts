@@ -15,7 +15,10 @@ export async function POST(req: Request) {
   }
 
   if (!rateLimit(`search:${clientIp(req)}`, 20, 60_000)) {
-    return NextResponse.json({ error: 'Muitas buscas seguidas. Aguarde um minuto.' }, { status: 429 });
+    return NextResponse.json(
+      { error: 'Muitas buscas seguidas. Aguarde um minuto.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
   }
 
   try {

@@ -17,7 +17,10 @@ export async function POST(req: Request) {
   }
 
   if (!rateLimit(`analyze:${clientIp(req)}`, 5, 60_000)) {
-    return NextResponse.json({ error: 'Muitas análises seguidas. Aguarde um minuto.' }, { status: 429 });
+    return NextResponse.json(
+      { error: 'Muitas análises seguidas. Aguarde um minuto.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
   }
 
   try {

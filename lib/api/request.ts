@@ -17,6 +17,10 @@ export class ApiRequestError extends Error {
  * usuário.
  */
 export function assertSameOrigin(req: Request): void {
+  if (req.headers.get('sec-fetch-site') === 'cross-site') {
+    throw new ApiRequestError('Origem da requisição não permitida.');
+  }
+
   const origin = req.headers.get('origin');
   const host = req.headers.get('host');
   if (!origin || !host) return;
@@ -30,9 +34,6 @@ export function assertSameOrigin(req: Request): void {
     throw new ApiRequestError('Origem da requisição inválida.');
   }
 
-  if (req.headers.get('sec-fetch-site') === 'cross-site') {
-    throw new ApiRequestError('Origem da requisição não permitida.');
-  }
 }
 
 /** Lê JSON com limite antes de entregar o corpo ao Zod. */

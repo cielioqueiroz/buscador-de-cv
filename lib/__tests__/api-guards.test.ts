@@ -7,6 +7,7 @@ const { rankJobs } = vi.hoisted(() => ({
 vi.mock('@/lib/matching', () => ({ rankJobs }));
 
 import { POST as matchPOST } from '@/app/api/jobs/match/route';
+import { assertSameOrigin } from '@/lib/api/request';
 import { rateLimit } from '@/lib/rate-limit';
 import { MAX_JOBS_PER_MATCH, MAX_JOBS_IN_REQUEST } from '@/lib/providers/types';
 
@@ -83,5 +84,21 @@ describe('rateLimit', () => {
     expect(rateLimit('k', 2, 60_000)).toBe(true);
     expect(rateLimit('k', 2, 60_000)).toBe(true);
     expect(rateLimit('k', 2, 60_000)).toBe(false);
+  });
+});
+
+describe('assertSameOrigin', () => {
+  it('bloqueia navegação cross-site mesmo sem o header Origin', () => {
+    const request = new Request('https://vaga-certa.example/api/jobs/match', {
+      headers: { 'sec-fetch-site': 'cross-site' },
+    });
+    expect(() => assertSameOrigin(request)).toThrow(/Origem/);
+  });
+
+  it('aceita Origin no mesmo host', () => {
+    const request = new Request('https://vaga-certa.example/api/jobs/match', {
+      headers: { host: 'vaga-certa.example', origin: 'https://vaga-certa.example' },
+    });
+    expect(() => assertSameOrigin(request)).not.toThrow();
   });
 });

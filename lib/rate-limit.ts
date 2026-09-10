@@ -18,6 +18,11 @@ function prune(now: number) {
   }
 }
 
+function boundedIp(value: string | null): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.slice(0, 100) : null;
+}
+
 /** Consome uma unidade da cota. Devolve `false` quando estourou. */
 export function rateLimit(key: string, limit: number, windowMs: number): boolean {
   const now = Date.now();
@@ -46,13 +51,13 @@ export function clientIp(req: Request): string {
   // mantido como fallback para ambientes locais/proxies conhecidos, mas não
   // deve ser tratado como uma prova de identidade sem um proxy confiável.
   const trusted = [
-    req.headers.get('x-vercel-forwarded-for'),
-    req.headers.get('cf-connecting-ip'),
-    req.headers.get('x-real-ip'),
-  ].find((value) => value?.trim());
-  if (trusted) return trusted.trim();
+    boundedIp(req.headers.get('x-vercel-forwarded-for')),
+    boundedIp(req.headers.get('cf-connecting-ip')),
+    boundedIp(req.headers.get('x-real-ip')),
+  ].find((value): value is string => Boolean(value));
+  if (trusted) return trusted;
 
   const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0].trim() || 'unknown';
+  if (forwarded) return boundedIp(forwarded.split(',')[0]) ?? 'unknown';
   return 'unknown';
 }

@@ -19,7 +19,10 @@ export async function POST(req: Request) {
   // Cada request aqui dispara uma chamada de lote ao Gemini — é a rota mais
   // cara do app e a que mais precisa de freio.
   if (!rateLimit(`match:${clientIp(req)}`, 5, 60_000)) {
-    return NextResponse.json({ error: 'Muitas buscas seguidas. Aguarde um minuto.' }, { status: 429 });
+    return NextResponse.json(
+      { error: 'Muitas buscas seguidas. Aguarde um minuto.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
   }
 
   try {

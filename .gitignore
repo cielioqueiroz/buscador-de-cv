@@ -19,6 +19,7 @@ next-env.d.ts
 # Variáveis de ambiente (NUNCA commitar chaves de API)
 .env
 .env.local
+.env.*
 .env.*.local
 !.env.example
 
