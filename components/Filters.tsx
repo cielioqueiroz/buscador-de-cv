@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiSearch, FiHeart } from 'react-icons/fi';
 import type { FilterState } from '@/lib/filters';
 import type { SearchOpts } from '@/lib/journey';
+import { loadRegion, saveRegion } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 export type { FilterState };
@@ -60,6 +61,12 @@ const PAISES: { value: string; label: string }[] = [
 
 type Escopo = 'br' | 'intl' | 'any';
 
+/** Identidade da região escolhida — define quando a re-busca vale a pena. */
+function chaveDe(escopo: Escopo, uf: string, cidade: string, pais: string): string {
+  const meio = escopo === 'br' ? uf : escopo === 'intl' ? pais : '';
+  return `${escopo}|${meio}|${cidade.trim().toLowerCase()}`;
+}
+
 export function Filters({
   value,
   onChange,
@@ -84,7 +91,22 @@ export function Filters({
   // A primeira busca (do upload) equivale a escopo "qualquer lugar".
   const [ultimaBusca, setUltimaBusca] = useState('any||');
 
-  const chave = `${escopo}|${escopo === 'br' ? uf : escopo === 'intl' ? pais : ''}|${cidade.trim().toLowerCase()}`;
+  // Restaura a última região escolhida. Fica num efeito (não na inicialização
+  // do useState) porque ler o localStorage na primeira renderização causaria
+  // mismatch de hidratação — o servidor não tem acesso a ele.
+  useEffect(() => {
+    const r = loadRegion();
+    if (!r) return;
+    setEscopo(r.escopo);
+    setUf(r.uf);
+    setCidade(r.cidade);
+    setPais(r.pais);
+    // Aquele ranking já está em cache, então o botão nasce desabilitado até
+    // o usuário mudar algo de novo.
+    setUltimaBusca(chaveDe(r.escopo, r.uf, r.cidade, r.pais));
+  }, []);
+
+  const chave = chaveDe(escopo, uf, cidade, pais);
   const mudou = chave !== ultimaBusca;
 
   function buscarRegiao() {
@@ -100,6 +122,7 @@ export function Filters({
           ? { country: pais, location: cidadeLimpa || undefined }
           : {};
     setUltimaBusca(chave);
+    saveRegion({ escopo, uf, cidade, pais });
     onRegionSearch(opts);
   }
 

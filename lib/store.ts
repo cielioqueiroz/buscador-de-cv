@@ -10,6 +10,7 @@ const CV_KEY = 'jf_cv_profile';
 const FAV_KEY = 'jf_favorites';
 const RANKED_KEY = 'jf_ranked';
 const LETTERS_KEY = 'jf_letters';
+const REGION_KEY = 'jf_region';
 
 export function saveProfile(p: CVProfile) {
   safeSet(CV_KEY, JSON.stringify(p));
@@ -111,6 +112,34 @@ export function toggleFavorite(jobId: string): string[] {
     window.dispatchEvent(new CustomEvent(FAVORITES_EVENT, { detail: arr }));
   }
   return arr;
+}
+
+/**
+ * Última região escolhida nos filtros. Sem isto, voltar para /resultados (ou
+ * recarregar) esquecia o estado/cidade e reabria em "qualquer lugar" — mesmo
+ * com o ranking daquela região ainda em cache.
+ */
+export interface SavedRegion {
+  escopo: 'br' | 'intl' | 'any';
+  uf: string;
+  cidade: string;
+  pais: string;
+}
+
+const RegionSchema = z.object({
+  escopo: z.enum(['br', 'intl', 'any']),
+  uf: z.string().max(4),
+  cidade: z.string().max(120),
+  pais: z.string().max(4),
+});
+
+export function loadRegion(): SavedRegion | null {
+  if (typeof window === 'undefined') return null;
+  return readValidated(REGION_KEY, RegionSchema);
+}
+
+export function saveRegion(region: SavedRegion) {
+  safeSet(REGION_KEY, JSON.stringify(region));
 }
 
 function readValidated<T>(key: string, schema: z.ZodType<T>): T | null {

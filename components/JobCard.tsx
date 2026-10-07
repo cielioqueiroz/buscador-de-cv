@@ -144,7 +144,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
           href={job.applyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="hover-glow inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground sm:flex-none"
+          className="hover-glow inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground sm:w-auto sm:flex-none"
         >
           Candidatar-se <FiExternalLink className="h-4 w-4" />
         </a>
