@@ -45,7 +45,7 @@ export default function PerfilPage() {
           <FiArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" /> voltar para as vagas
         </Link>
 
-        <div className="rounded-3xl border border-border bg-surface p-7 sm:p-9">
+        <div className="rounded-panel border border-border bg-surface p-7 sm:p-9">
           <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
             Perfil extraído do seu CV
           </p>

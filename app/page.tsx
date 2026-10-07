@@ -123,7 +123,7 @@ export default function Home() {
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
               <Reveal key={s.n} delay={i * 90}>
-                <div className="hover-lift h-full rounded-2xl border border-border bg-surface p-6">
+                <div className="hover-lift h-full rounded-card border border-border bg-surface p-6">
                   <span className="font-mono text-sm text-accent-ink">{s.n}</span>
                   <h3 className="mt-3 font-display text-xl font-bold">{s.title}</h3>
                   <p className="mt-2 text-sm text-muted">{s.desc}</p>
@@ -144,7 +144,7 @@ export default function Home() {
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {FEATURES.map((f, i) => (
                 <Reveal key={f.title} delay={i * 80}>
-                  <div className="hover-lift h-full rounded-2xl border border-border bg-surface p-6">
+                  <div className="hover-lift h-full rounded-card border border-border bg-surface p-6">
                     <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-accent-foreground">
                       <f.icon className="h-5 w-5" />
                     </span>
@@ -179,7 +179,7 @@ export default function Home() {
 
         {/* CTA final */}
         <section className="mx-auto max-w-6xl px-5 py-20">
-          <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center sm:p-16">
+          <div className="relative overflow-hidden rounded-panel border border-border bg-surface p-10 text-center sm:p-16">
             <div
               aria-hidden
               className="pointer-events-none absolute -bottom-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-accent-bright/20 blur-3xl"

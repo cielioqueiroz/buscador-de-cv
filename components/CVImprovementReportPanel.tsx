@@ -29,7 +29,7 @@ export function CVImprovementReportPanel({ profile }: { profile: CVProfile }) {
   }
 
   return (
-    <section className="mt-6 rounded-3xl border border-border bg-surface p-7 sm:p-9">
+    <section className="mt-6 rounded-panel border border-border bg-surface p-7 sm:p-9">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-widest text-muted">Próximo passo</p>
@@ -52,7 +52,7 @@ export function CVImprovementReportPanel({ profile }: { profile: CVProfile }) {
             </div>
             <div>
               <h3 className="flex items-center gap-2 font-display text-lg font-bold"><FiAlertCircle className="text-warn" /> O que melhorar</h3>
-              <div className="mt-3 space-y-3">{report.improvements.map((item) => <div key={`${item.area}-${item.action}`} className="rounded-2xl border border-border bg-surface-2 p-4"><div className="flex items-center justify-between gap-3"><p className="font-display font-bold">{item.area}</p><span className="font-mono text-[10px] uppercase tracking-widest text-muted">{item.priority}</span></div><p className="mt-2 text-sm text-muted">{item.problem}</p><p className="mt-2 text-sm leading-relaxed">{item.action}</p></div>)}</div>
+              <div className="mt-3 space-y-3">{report.improvements.map((item) => <div key={`${item.area}-${item.action}`} className="rounded-card border border-border bg-surface-2 p-4"><div className="flex items-center justify-between gap-3"><p className="font-display font-bold">{item.area}</p><span className="font-mono text-[10px] uppercase tracking-widest text-muted">{item.priority}</span></div><p className="mt-2 text-sm text-muted">{item.problem}</p><p className="mt-2 text-sm leading-relaxed">{item.action}</p></div>)}</div>
             </div>
           </div>
           {report.missingKeywords.length > 0 && <div><h3 className="font-display text-lg font-bold">Termos para investigar</h3><p className="mt-1 text-xs text-muted">Eles aparecem como oportunidades no diagnóstico; só adicione ao CV se forem verdadeiros para você.</p><div className="mt-3 flex flex-wrap gap-2">{report.missingKeywords.map((keyword) => <span key={keyword} className="rounded-lg border border-border px-3 py-1.5 font-mono text-xs text-muted">{keyword}</span>)}</div></div>}

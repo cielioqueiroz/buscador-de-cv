@@ -46,8 +46,8 @@ export default function Error({
 
   return (
     <main className="grid flex-1 place-items-center px-5 py-24">
-      <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-8 text-center sm:p-10">
-        <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-warn/10 text-warn">
+      <div className="w-full max-w-md rounded-panel border border-border bg-surface p-8 text-center sm:p-10">
+        <span className="mx-auto grid h-12 w-12 place-items-center rounded-card bg-warn/10 text-warn">
           <FiAlertTriangle className="h-6 w-6" />
         </span>
 

@@ -37,7 +37,7 @@ export function ApplicationTracker() {
             key={stage}
             onDragOver={(event) => event.preventDefault()}
             onDrop={() => { if (draggedId) move(draggedId, stage); }}
-            className="min-h-64 rounded-3xl border border-border bg-surface-2/40 p-4"
+            className="min-h-64 rounded-panel border border-border bg-surface-2/40 p-4"
           >
             <div className="flex items-center justify-between gap-3 px-2 pb-3">
               <h2 className="font-display text-lg font-bold">{STAGE_LABELS[stage]}</h2>
@@ -50,7 +50,7 @@ export function ApplicationTracker() {
                   draggable
                   onDragStart={() => setDraggedId(application.id)}
                   onDragEnd={() => setDraggedId(null)}
-                  className="cursor-grab rounded-2xl border border-border bg-surface p-4 shadow-sm active:cursor-grabbing"
+                  className="cursor-grab rounded-card border border-border bg-surface p-4 shadow-sm active:cursor-grabbing"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -74,12 +74,12 @@ export function ApplicationTracker() {
                   </div>
                 </article>
               ))}
-              {column.length === 0 && <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-border p-4 text-center text-sm text-muted">Arraste candidaturas para cá</div>}
+              {column.length === 0 && <div className="grid min-h-32 place-items-center rounded-card border border-dashed border-border p-4 text-center text-sm text-muted">Arraste candidaturas para cá</div>}
             </div>
           </section>
         );
       })}
-      {applications.length === 0 && <div className="lg:col-span-3 rounded-3xl border border-dashed border-border bg-surface p-10 text-center"><FiBriefcase className="mx-auto h-8 w-8 text-muted" /><p className="mt-3 font-display text-xl font-bold">Seu tracker está vazio</p><p className="mt-2 text-sm text-muted">Nas vagas, clique em “Acompanhar” para começar a organizar suas candidaturas.</p></div>}
+      {applications.length === 0 && <div className="lg:col-span-3 rounded-panel border border-dashed border-border bg-surface p-10 text-center"><FiBriefcase className="mx-auto h-8 w-8 text-muted" /><p className="mt-3 font-display text-xl font-bold">Seu tracker está vazio</p><p className="mt-2 text-sm text-muted">Nas vagas, clique em “Acompanhar” para começar a organizar suas candidaturas.</p></div>}
     </div>
   );
 }

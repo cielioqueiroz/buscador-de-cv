@@ -211,7 +211,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
         aria-modal="true"
         aria-labelledby="cover-letter-title"
         tabIndex={-1}
-        className="animate-rise relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:max-h-[88vh] sm:rounded-3xl"
+        className="animate-rise relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:max-h-[88vh] sm:rounded-panel"
       >
         <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div className="min-w-0">
@@ -250,7 +250,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
           </div>
 
           {!letter && !loading && (
-            <div className="mt-6 rounded-2xl border border-dashed border-border bg-surface-2/50 p-8 text-center">
+            <div className="mt-6 rounded-card border border-dashed border-border bg-surface-2/50 p-8 text-center">
               <p className="font-display text-lg font-bold">Nenhuma carta ainda</p>
               <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
                 Escolha o tom e o tamanho. A IA lê o seu currículo e a descrição desta vaga, e
@@ -276,11 +276,11 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
                 maxLength={12_000}
                 spellCheck
                 aria-label="Texto da carta"
-                className="mt-5 min-h-[300px] w-full resize-y rounded-2xl border border-border bg-surface-2/40 p-5 text-[15px] leading-relaxed text-foreground outline-none transition-colors focus:border-accent-ink"
+                className="mt-5 min-h-[300px] w-full resize-y rounded-card border border-border bg-surface-2/40 p-5 text-[15px] leading-relaxed text-foreground outline-none transition-colors focus:border-accent-ink"
               />
 
               {letter.keywords.length > 0 && (
-                <div className="mt-4 rounded-2xl border border-border bg-surface-2/40 p-4">
+                <div className="mt-4 rounded-card border border-border bg-surface-2/40 p-4">
                   <p className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-muted">
                     <FiKey className="h-3.5 w-3.5" /> puxado da vaga
                   </p>
@@ -428,7 +428,7 @@ function Pilula({
 /** A espera tem que parecer escrita acontecendo, não uma barra parada. */
 function Escrevendo() {
   return (
-    <div className="mt-6 space-y-3 rounded-2xl border border-border bg-surface-2/40 p-6">
+    <div className="mt-6 space-y-3 rounded-card border border-border bg-surface-2/40 p-6">
       <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-accent-ink">
         <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-accent-bright" />
         escrevendo sua carta

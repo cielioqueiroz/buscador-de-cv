@@ -77,7 +77,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
 
   return (
     <article
-      className="animate-rise hover-lift group relative rounded-2xl border border-border bg-surface p-5 sm:p-6"
+      className="animate-rise hover-lift group relative rounded-card border border-border bg-surface p-5 sm:p-6"
       style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}
     >
       <div className="flex items-start justify-between gap-4">

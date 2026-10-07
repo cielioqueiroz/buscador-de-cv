@@ -57,7 +57,7 @@ export function AdaptedCVPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-5" role="dialog" aria-modal="true" aria-labelledby="adapted-cv-title">
-      <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:rounded-3xl">
+      <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:rounded-panel">
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-widest text-muted">CV direcionado para</p>
@@ -71,13 +71,13 @@ export function AdaptedCVPanel({
 
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {!result && !error && (
-            <div className="rounded-2xl border border-border bg-surface-2 p-8 text-center">
+            <div className="rounded-card border border-border bg-surface-2 p-8 text-center">
               <p className="font-display text-lg font-bold">Adaptando seu CV...</p>
               <p className="mt-2 text-sm text-muted">A IA está destacando o que importa para esta vaga.</p>
             </div>
           )}
           {error && (
-            <div className="rounded-2xl border border-warn/40 bg-warn/10 p-6 text-center">
+            <div className="rounded-card border border-warn/40 bg-warn/10 p-6 text-center">
               <p className="font-display font-bold">Não foi possível adaptar agora.</p>
               <p className="mt-2 text-sm text-muted">{error}</p>
             </div>
@@ -105,7 +105,7 @@ export function AdaptedCVPanel({
                 </ul>
               </section>
               {result.cautions.length > 0 && (
-                <section className="rounded-2xl border border-caution/30 bg-caution/10 p-4">
+                <section className="rounded-card border border-caution/30 bg-caution/10 p-4">
                   <p className="font-display font-bold">Antes de enviar</p>
                   <ul className="mt-2 space-y-1 text-sm text-muted">{result.cautions.map((caution) => <li key={caution}>• {caution}</li>)}</ul>
                 </section>

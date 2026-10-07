@@ -64,7 +64,31 @@
   --font-display: var(--font-display), "Bricolage Grotesque", sans-serif;
   --font-sans: var(--font-sans), system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* Raios semânticos: nomeiam a intenção, não o número. Trocar a suavidade de
+     todos os cartões vira um ajuste de uma linha. (Tailwind v4 gera
+     rounded-card / rounded-panel / rounded-pill a partir destes.) */
+  --radius-card: 1rem;     /* cartões e painéis padrão (era rounded-card) */
+  --radius-panel: 1.5rem;  /* blocos de destaque — CTA, tracker (era rounded-panel) */
+  --radius-pill: 9999px;   /* chips e botões-pílula */
+
+  /* Sombras semânticas: uma fonte única da verdade. Antes havia variantes
+     quase idênticas espalhadas (-24/-26px, -8/-10px, 60/70%) — drift puro.
+     Geram shadow-accent / shadow-float / shadow-ring-accent. */
+  --shadow-accent: 0 10px 24px -10px color-mix(in srgb, var(--accent) 65%, transparent);
+  --shadow-float: 0 24px 60px -24px var(--shadow);
+  --shadow-ring-accent: 0 0 16px -2px color-mix(in srgb, var(--accent) 80%, transparent);
 }
+
+/* ----------------------------------------------------------------------------
+   Escala de z-index (documentada para evitar colisão futura):
+     conteúdo ...... 0–40
+     grão ........... 50   (body::before, pointer-events:none)
+     confete ........ 55
+     toaster ........ sonner (gerencia o seu próprio, acima de tudo)
+   Painéis/overlays usam a pilha local do componente; nada deve passar de 55
+   sem passar por aqui.
+---------------------------------------------------------------------------- */
 
 * {
   border-color: var(--border);

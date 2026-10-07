@@ -61,17 +61,17 @@ export function CVUpload() {
         }
       }}
       className={cn(
-        'group relative scroll-mt-24 cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-300 sm:p-14',
+        'group relative scroll-mt-24 cursor-pointer overflow-hidden rounded-panel border-2 border-dashed p-10 text-center transition-all duration-300 sm:p-14',
         dragging
-          ? 'border-accent bg-accent-bright/10 scale-[1.02] shadow-[0_24px_60px_-24px_var(--shadow)]'
-          : 'border-border bg-surface hover:-translate-y-1.5 hover:border-accent hover:bg-accent-bright/[0.04] hover:shadow-[0_24px_60px_-26px_var(--shadow)]',
+          ? 'border-accent bg-accent-bright/10 scale-[1.02] shadow-float'
+          : 'border-border bg-surface hover:-translate-y-1.5 hover:border-accent hover:bg-accent-bright/[0.04] hover:shadow-float',
       )}
     >
       {/* brilho que acende no hover/drag */}
       <span
         aria-hidden
         className={cn(
-          'pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-300',
+          'pointer-events-none absolute -inset-px rounded-panel opacity-0 transition-opacity duration-300',
           'bg-[radial-gradient(circle_at_50%_0%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_70%)]',
           dragging ? 'opacity-100' : 'group-hover:opacity-100',
         )}
@@ -88,8 +88,8 @@ export function CVUpload() {
       <div className="pointer-events-none relative flex flex-col items-center gap-4">
         <div
           className={cn(
-            'grid h-16 w-16 place-items-center rounded-2xl transition-all duration-300',
-            'group-hover:-translate-y-1 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-[0_10px_24px_-8px_color-mix(in_srgb,var(--accent)_60%,transparent)]',
+            'grid h-16 w-16 place-items-center rounded-card transition-all duration-300',
+            'group-hover:-translate-y-1 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-accent',
             dragging && 'scale-110 -rotate-6',
             'bg-accent text-accent-foreground',
           )}
@@ -104,7 +104,7 @@ export function CVUpload() {
           </p>
         </div>
 
-        <span className="mt-1 rounded-full bg-accent px-5 py-2 font-display text-sm font-bold text-accent-foreground transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_10px_24px_-10px_color-mix(in_srgb,var(--accent)_70%,transparent)]">
+        <span className="mt-1 rounded-full bg-accent px-5 py-2 font-display text-sm font-bold text-accent-foreground transition-all duration-300 group-hover:scale-105 group-hover:shadow-accent">
           Escolher arquivo
         </span>
       </div>

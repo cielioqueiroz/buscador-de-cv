@@ -131,7 +131,7 @@ function Trilha({ atual }: { atual: number }) {
               // Sem essa diferença a trilha não diz onde você está.
               i < atual && 'bg-accent/35',
               i === atual &&
-                'bg-accent shadow-[0_0_16px_-2px_color-mix(in_srgb,var(--accent)_80%,transparent)]',
+                'bg-accent shadow-ring-accent',
               i > atual && 'bg-surface-2',
             )}
           />
