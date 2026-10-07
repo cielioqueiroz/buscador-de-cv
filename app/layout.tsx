@@ -36,6 +36,13 @@ export const metadata: Metadata = {
   },
   description: DESCRICAO,
   applicationName: "Vaga Certa",
+  // iOS não lê o manifest para o modo standalone; estes metadados é que fazem
+  // o "adicionar à tela inicial" abrir como app, com título e barra próprios.
+  appleWebApp: {
+    capable: true,
+    title: "Vaga Certa",
+    statusBarStyle: "black-translucent",
+  },
   authors: [{ name: "Ciélio Queiroz", url: "https://cielio-portfolio.vercel.app" }],
   creator: "Ciélio Queiroz",
   keywords: [
