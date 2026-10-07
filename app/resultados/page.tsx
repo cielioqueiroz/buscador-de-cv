@@ -12,7 +12,7 @@ import { LoadingJourney } from '@/components/LoadingJourney';
 import { Confetti } from '@/components/Confetti';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
-import { loadProfile, loadRanked } from '@/lib/store';
+import { loadProfile, loadRanked, getFavorites, FAVORITES_EVENT } from '@/lib/store';
 import type { CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/matching';
 
@@ -26,6 +26,20 @@ export default function ResultadosPage() {
   // para a página continuar montada por baixo: trocar a árvore inteira pelo
   // overlay desmontava o Filters e o formulário de região esquecia a escolha.
   const [regionStage, setRegionStage] = useState<'searching' | 'scoring' | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Mantém os favoritos em sincronia: na montagem, quando o coração é clicado
+  // num card (evento) e quando outra aba mexe no localStorage (storage).
+  useEffect(() => {
+    setFavorites(getFavorites());
+    const atualizar = () => setFavorites(getFavorites());
+    window.addEventListener(FAVORITES_EVENT, atualizar);
+    window.addEventListener('storage', atualizar);
+    return () => {
+      window.removeEventListener(FAVORITES_EVENT, atualizar);
+      window.removeEventListener('storage', atualizar);
+    };
+  }, []);
 
   useEffect(() => {
     const p = loadProfile();
@@ -77,7 +91,11 @@ export default function ResultadosPage() {
     }
   }
 
-  const visible = useMemo(() => applyFilters(ranked, filters), [ranked, filters]);
+  const favSet = useMemo(() => new Set(favorites), [favorites]);
+  const visible = useMemo(
+    () => applyFilters(ranked, filters, undefined, favSet),
+    [ranked, filters, favSet],
+  );
   const filtrosAtivos = useMemo(
     () => JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS),
     [filters],
@@ -120,6 +138,7 @@ export default function ResultadosPage() {
               value={filters}
               onChange={setFilters}
               count={visible.length}
+              favCount={favSet.size}
               onRegionSearch={buscarRegiao}
               searching={regionStage !== null}
             />
@@ -134,7 +153,7 @@ export default function ResultadosPage() {
             )}
 
             {status === 'error' && (
-              <div className="rounded-2xl border border-warn/40 bg-warn/10 p-8 text-center">
+              <div className="rounded-card border border-warn/40 bg-warn/10 p-8 text-center">
                 <p className="font-display text-lg font-bold">Algo deu errado na busca.</p>
                 <p className="mt-1 text-sm text-muted">
                   Confira se as chaves de API estão no <code className="font-mono">.env.local</code>.
@@ -155,7 +174,7 @@ export default function ResultadosPage() {
 
 function EmptyState({ hasAny, onClear }: { hasAny: boolean; onClear?: () => void }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
+    <div className="rounded-card border border-dashed border-border bg-surface p-10 text-center">
       <p className="font-display text-xl font-bold">
         {hasAny ? 'Nenhuma vaga com esses filtros' : 'Não encontramos vagas agora'}
       </p>

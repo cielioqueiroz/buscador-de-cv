@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiHeart } from 'react-icons/fi';
 import type { FilterState } from '@/lib/filters';
 import type { SearchOpts } from '@/lib/journey';
 import { cn } from '@/lib/utils';
@@ -64,12 +64,15 @@ export function Filters({
   value,
   onChange,
   count,
+  favCount = 0,
   onRegionSearch,
   searching = false,
 }: {
   value: FilterState;
   onChange: (v: FilterState) => void;
   count: number;
+  /** Quantas vagas o usuário favoritou — rotula o toggle de favoritas. */
+  favCount?: number;
   /** Dispara a re-busca nas fontes (custa uma chamada à IA — fica atrás de botão). */
   onRegionSearch?: (opts: SearchOpts) => void;
   searching?: boolean;
@@ -101,11 +104,29 @@ export function Filters({
   }
 
   return (
-    <aside className="space-y-6 rounded-2xl border border-border bg-surface p-5">
+    <aside className="space-y-6 rounded-card border border-border bg-surface p-5">
       <div>
         <p className="font-mono text-[11px] uppercase tracking-widest text-muted">Resultados</p>
         <p className="font-display text-3xl font-extrabold">{count}</p>
       </div>
+
+      <Grupo titulo="Favoritas">
+        <button
+          type="button"
+          onClick={() => onChange({ ...value, favorite: !value.favorite })}
+          aria-pressed={value.favorite}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+            value.favorite
+              ? 'border-accent bg-accent text-accent-foreground'
+              : 'border-border bg-surface-2 text-muted hover:border-accent-ink hover:text-foreground',
+          )}
+        >
+          <FiHeart className={cn('h-3.5 w-3.5', value.favorite && 'fill-current')} />
+          Só favoritas
+          <span className="font-mono opacity-70">{favCount}</span>
+        </button>
+      </Grupo>
 
       <Grupo titulo="Ordenar">
         <Chips
@@ -227,7 +248,7 @@ export function Filters({
             className={cn(
               'mt-3 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 font-display text-sm font-bold transition-all',
               mudou && !searching
-                ? 'bg-accent text-accent-foreground hover:scale-[1.02] hover:shadow-[0_10px_24px_-10px_color-mix(in_srgb,var(--accent)_70%,transparent)]'
+                ? 'bg-accent text-accent-foreground hover:scale-[1.02] hover:shadow-accent'
                 : 'cursor-not-allowed border border-border bg-surface-2 text-muted',
             )}
           >

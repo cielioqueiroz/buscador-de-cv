@@ -18,6 +18,8 @@ export interface FilterState {
   order: 'score' | 'recent';
   minScore: number;
   source: 'all' | 'jsearch' | 'adzuna' | 'remotive';
+  /** Mostra só as vagas que o usuário favoritou (♥). */
+  favorite: boolean;
 }
 
 export const DEFAULT_FILTERS: FilterState = {
@@ -26,6 +28,7 @@ export const DEFAULT_FILTERS: FilterState = {
   order: 'score',
   minScore: 0,
   source: 'all',
+  favorite: false,
 };
 
 /**
@@ -70,8 +73,12 @@ export function applyFilters(
   ranked: RankedJob[],
   f: FilterState,
   now: Date = new Date(),
+  // Os ids favoritados vêm do localStorage (runtime), não do FilterState, por
+  // isso entram à parte. Sem o set, o filtro de favoritas não deixa nada passar.
+  favorites?: ReadonlySet<string>,
 ): RankedJob[] {
   const kept = ranked.filter((r) => {
+    if (f.favorite && !favorites?.has(r.job.id)) return false;
     if (f.modality !== 'all' && jobModality(r.job) !== f.modality) return false;
     if (f.maxDays !== null && !withinDays(r.job, f.maxDays, now)) return false;
     if (f.source !== 'all' && r.job.source !== f.source) return false;

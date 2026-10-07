@@ -90,6 +90,13 @@ export function loadRanked(): RankedJob[] | null {
   return readValidated(RANKED_KEY, z.array(RankedJobSchema).max(200));
 }
 
+/**
+ * Disparado quando a lista de favoritos muda. A tela de resultados ouve este
+ * evento para que o filtro "só favoritas" reaja no mesmo instante em que o
+ * coração é clicado num card — o localStorage sozinho não avisa o React.
+ */
+export const FAVORITES_EVENT = 'jf:favorites';
+
 export function getFavorites(): string[] {
   if (typeof window === 'undefined') return [];
   return readValidated(FAV_KEY, z.array(z.string().min(1).max(500)).max(500)) ?? [];
@@ -100,6 +107,9 @@ export function toggleFavorite(jobId: string): string[] {
   else favs.add(jobId);
   const arr = [...favs];
   safeSet(FAV_KEY, JSON.stringify(arr));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(FAVORITES_EVENT, { detail: arr }));
+  }
   return arr;
 }
 

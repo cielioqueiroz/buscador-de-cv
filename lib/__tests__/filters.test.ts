@@ -117,4 +117,22 @@ describe('applyFilters', () => {
     const f = { ...DEFAULT_FILTERS, order: 'recent' as const };
     expect(applyFilters(lista, f, AGORA).map((r) => r.job.id)).toEqual(['rem', 'hib', 'pres']);
   });
+
+  it('só favoritas: mantém apenas os ids favoritados', () => {
+    const f = { ...DEFAULT_FILTERS, favorite: true };
+    const favs = new Set(['rem', 'pres']);
+    expect(applyFilters(lista, f, AGORA, favs).map((r) => r.job.id)).toEqual(['rem', 'pres']);
+  });
+
+  it('só favoritas sem nenhum favorito marcado não deixa nada passar', () => {
+    const f = { ...DEFAULT_FILTERS, favorite: true };
+    expect(applyFilters(lista, f, AGORA, new Set())).toHaveLength(0);
+    // E sem passar o set também: o filtro liga, mas não há como saber o que é favorito.
+    expect(applyFilters(lista, f, AGORA)).toHaveLength(0);
+  });
+
+  it('favorite:false ignora o conjunto de favoritos', () => {
+    const favs = new Set(['rem']);
+    expect(applyFilters(lista, DEFAULT_FILTERS, AGORA, favs)).toHaveLength(3);
+  });
 });
