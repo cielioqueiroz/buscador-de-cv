@@ -39,6 +39,9 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   const [hasLetter, setHasLetter] = useState(() => loadLetter(job.id) !== null);
   const [tracked, setTracked] = useState(false);
   const [adaptOpen, setAdaptOpen] = useState(false);
+  // Compartilhar é async e passa pela Web Share API — sem este estado, o
+  // usuário clicava e não via nada enquanto o menu do sistema abria.
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setTracked(getApplication(job.id) !== null), 0);
@@ -66,13 +69,18 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
    * do botão de candidatura. Quem recebe cai na empresa, não num intermediário.
    */
   async function compartilharVaga() {
-    const r = await compartilhar({
-      title: `${job.title} · ${job.company}`,
-      text: `${job.title} na ${job.company} — ${job.location}. Match de ${match.score}/100 com o meu perfil.`,
-      url: job.applyUrl,
-    });
-    if (r === 'copiado') toast.success('Link da vaga copiado.');
-    if (r === 'falhou') toast.error('Seu navegador bloqueou o compartilhamento.');
+    setSharing(true);
+    try {
+      const r = await compartilhar({
+        title: `${job.title} · ${job.company}`,
+        text: `${job.title} na ${job.company} — ${job.location}. Match de ${match.score}/100 com o meu perfil.`,
+        url: job.applyUrl,
+      });
+      if (r === 'copiado') toast.success('Link da vaga copiado.');
+      if (r === 'falhou') toast.error('Seu navegador bloqueou o compartilhamento.');
+    } finally {
+      setSharing(false);
+    }
   }
 
   return (
@@ -153,11 +161,17 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
           <button
             type="button"
             onClick={() => setLetterOpen(true)}
+            aria-expanded={letterOpen}
+            // aria-expanded + visual pressed enquanto o painel está aberto dão
+            // a confirmação imediata de que o clique foi recebido — importante
+            // porque o painel renderiza por portal fora da hierarquia do card.
             className={cn(
               'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold transition-colors sm:flex-none',
-              hasLetter
-                ? 'border-accent-ink bg-accent/10 text-accent-ink'
-                : 'border-border bg-surface-2 text-foreground hover:border-accent-ink',
+              letterOpen
+                ? 'border-accent bg-accent/20 text-accent-ink'
+                : hasLetter
+                  ? 'border-accent-ink bg-accent/10 text-accent-ink'
+                  : 'border-border bg-surface-2 text-foreground hover:border-accent-ink',
             )}
           >
             <FiEdit3 className="h-4 w-4" />
@@ -169,7 +183,13 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
           <button
             type="button"
             onClick={() => setAdaptOpen(true)}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-display text-sm font-bold text-foreground hover:border-accent-ink sm:flex-none"
+            aria-expanded={adaptOpen}
+            className={cn(
+              'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold transition-colors sm:flex-none',
+              adaptOpen
+                ? 'border-accent bg-accent/20 text-accent-ink'
+                : 'border-border bg-surface-2 text-foreground hover:border-accent-ink',
+            )}
           >
             <FiFileText className="h-4 w-4" /> Adaptar CV
           </button>
@@ -189,11 +209,13 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
         <button
           type="button"
           onClick={compartilharVaga}
+          disabled={sharing}
           aria-label="Compartilhar esta vaga"
+          aria-busy={sharing}
           title="Compartilhar"
-          className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground"
+          className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-surface-2 text-muted transition-colors hover:text-foreground disabled:opacity-60"
         >
-          <FiShare2 className="h-[18px] w-[18px]" />
+          <FiShare2 className={cn('h-[18px] w-[18px]', sharing && 'animate-spin-slow')} />
         </button>
 
         <button
