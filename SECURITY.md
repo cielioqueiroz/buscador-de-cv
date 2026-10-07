@@ -39,6 +39,23 @@ O perfil e o ranking ficam no `localStorage` para permitir uso sem cadastro. Iss
 
 O rate limit tem duas formas. Sem Redis configurado, usa um contador em memória por instância — barreira contra abuso casual, mas em serverless com múltiplas instâncias o teto real é `limite × nº de instâncias`. Com `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` definidos, o teto por IP passa a ser compartilhado (janela deslizante no Upstash), valendo para o app inteiro — recomendado em produção, já que num app aberto este é o principal freio da cota paga do Gemini. Se o Redis ficar indisponível, o app degrada para o limiter em memória em vez de falhar. Bot protection interativo (CAPTCHA) só deve ser introduzido se o tráfego real justificar o atrito.
 
+## CSP: por que `script-src` ainda aceita `'unsafe-inline'`
+
+A política bloqueia os vetores principais: `object-src 'none'`, `base-uri 'self'`,
+`frame-ancestors 'none'`, `connect-src 'self'` e nenhum script externo. Resta o
+`'unsafe-inline'` em `script-src`, exigido pelos scripts inline do próprio Next
+(hidratação) e pelo pequeno script anti-FOUC de tema.
+
+Removê-lo com segurança no Next exige **nonce por requisição via proxy**, o que
+força renderização dinâmica de todas as páginas — perdendo a otimização estática
+e o cache de HTML na borda. O ganho seria marginal neste app: **não há sink de
+HTML injetável**. O conteúdo não confiável (texto do CV, descrições de vaga) é
+renderizado como texto pelo React; `dangerouslySetInnerHTML` com entrada de
+usuário é proibido por convenção. Por isso o `'unsafe-inline'` em `script-src` é
+um risco aceito e limitado, não um controle esquecido. Se um dia o app passar a
+renderizar HTML dinâmico de terceiros, a CSP estrita com nonce passa a valer o
+custo.
+
 ## Verificação local
 
 ```bash
