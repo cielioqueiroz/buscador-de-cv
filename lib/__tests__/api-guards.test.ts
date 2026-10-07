@@ -8,7 +8,7 @@ vi.mock('@/lib/matching', () => ({ rankJobs }));
 
 import { POST as matchPOST } from '@/app/api/jobs/match/route';
 import { assertSameOrigin } from '@/lib/api/request';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { MAX_JOBS_PER_MATCH, MAX_JOBS_IN_REQUEST } from '@/lib/providers/types';
 
 const validProfile = {
@@ -84,6 +84,16 @@ describe('rateLimit', () => {
     expect(rateLimit('k', 2, 60_000)).toBe(true);
     expect(rateLimit('k', 2, 60_000)).toBe(true);
     expect(rateLimit('k', 2, 60_000)).toBe(false);
+  });
+});
+
+describe('checkRateLimit (fallback em memória, sem Upstash)', () => {
+  // Sem UPSTASH_REDIS_REST_URL/TOKEN no ambiente de teste, a porta única cai no
+  // limiter em memória — mesma semântica do rateLimit síncrono.
+  it('libera dentro da cota e bloqueia depois', async () => {
+    expect(await checkRateLimit('async-k', 2, 60_000)).toBe(true);
+    expect(await checkRateLimit('async-k', 2, 60_000)).toBe(true);
+    expect(await checkRateLimit('async-k', 2, 60_000)).toBe(false);
   });
 });
 

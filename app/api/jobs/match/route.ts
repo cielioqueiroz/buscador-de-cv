@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { rankJobs } from '@/lib/matching';
 import { MatchRequestSchema, MAX_JOBS_PER_MATCH } from '@/lib/providers/types';
-import { rateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 
 export const runtime = 'nodejs';
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
   // Cada request aqui dispara uma chamada de lote ao Gemini — é a rota mais
   // cara do app e a que mais precisa de freio.
-  if (!rateLimit(`match:${clientIp(req)}`, 5, 60_000)) {
+  if (!(await checkRateLimit(`match:${clientIp(req)}`, 5, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas buscas seguidas. Aguarde um minuto.' },
       { status: 429, headers: { 'Retry-After': '60' } },

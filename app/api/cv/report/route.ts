@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { generateCVImprovementReport } from '@/lib/ai/gemini';
 import { CVImprovementRequestSchema } from '@/lib/cv-features';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 const MAX_BODY_BYTES = 128 * 1024;
@@ -10,7 +10,7 @@ const MAX_BODY_BYTES = 128 * 1024;
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
-    if (!rateLimit(`report:${clientIp(req)}`, 5, 60_000)) {
+    if (!(await checkRateLimit(`report:${clientIp(req)}`, 5, 60_000))) {
       return NextResponse.json(
         { error: 'Muitos relatórios seguidos. Aguarde um minuto.' },
         { status: 429, headers: { 'Retry-After': '60' } },

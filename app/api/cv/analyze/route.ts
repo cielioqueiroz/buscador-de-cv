@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { extractText, hasValidSignature, SUPPORTED_EXTENSIONS } from '@/lib/cv/parser';
 import { analyzeCV } from '@/lib/ai/gemini';
-import { rateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
 
-  if (!rateLimit(`analyze:${clientIp(req)}`, 5, 60_000)) {
+  if (!(await checkRateLimit(`analyze:${clientIp(req)}`, 5, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas análises seguidas. Aguarde um minuto.' },
       { status: 429, headers: { 'Retry-After': '60' } },

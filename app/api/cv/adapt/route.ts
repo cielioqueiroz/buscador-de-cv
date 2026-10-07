@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { adaptCV } from '@/lib/ai/gemini';
 import { AdaptCVRequestSchema } from '@/lib/cv-features';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 const MAX_BODY_BYTES = 256 * 1024;
@@ -10,7 +10,7 @@ const MAX_BODY_BYTES = 256 * 1024;
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
-    if (!rateLimit(`adapt:${clientIp(req)}`, 8, 60_000)) {
+    if (!(await checkRateLimit(`adapt:${clientIp(req)}`, 8, 60_000))) {
       return NextResponse.json(
         { error: 'Muitas adaptações seguidas. Aguarde um minuto.' },
         { status: 429, headers: { 'Retry-After': '60' } },
