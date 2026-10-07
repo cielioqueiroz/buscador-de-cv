@@ -11,7 +11,7 @@
 | Auth server-side / acessos | N/A + proteção ativa | O app é anônimo; origem, payload, formatos e custo das rotas são restringidos. |
 | Mass assignment | Ativo | Schemas Zod aceitam somente contratos conhecidos e removem campos extras antes do uso. |
 | Cookies / senhas | N/A | O app não cria sessão, cookie de autenticação ou senha. |
-| Rate limit / bots | Ativo com limite operacional | Rate limit por IP, `Retry-After` e guarda same-origin; proteção distribuída/CAPTCHA fica na borda quando o tráfego exigir. |
+| Rate limit / bots | Ativo com limite operacional | Rate limit por IP, `Retry-After` e guarda same-origin. Distribuído via Upstash Redis quando as variáveis existem; sem elas, cai para o limiter em memória. CAPTCHA fica na borda quando o tráfego exigir. |
 | Queries parametrizadas | N/A | Não há SQL; parâmetros de APIs externas usam `URLSearchParams`. |
 | Vazamento de conteúdo | Ativo | Erros públicos são genéricos; CV, prompts e chaves não são devolvidos nos logs/respostas. |
 | Uploads | Ativo | Allowlist, limite de 8 MB, assinatura binária e limite de texto/páginas. |
@@ -21,7 +21,7 @@
 
 ## Controles ativos
 
-- Chaves de Gemini, RapidAPI e Adzuna são lidas apenas no servidor e ficam fora do Git por `.gitignore`.
+- Chaves de Gemini, RapidAPI, Adzuna e o token REST do Upstash são lidas apenas no servidor e ficam fora do Git por `.gitignore`.
 - Rotas rejeitam chamadas cross-site, limitam o corpo, validam JSON com Zod e retornam respostas sem cache.
 - Uploads aceitam somente PDF, Word (`.doc`/`.docx`), TXT, Markdown, RTF e CSV; há limite de 8 MB, validação de assinatura binária e limite de texto/PDF.
 - Dados dos providers e da IA são normalizados contra schemas antes de alcançar a interface ou outra chamada.
@@ -37,7 +37,7 @@ O perfil e o ranking ficam no `localStorage` para permitir uso sem cadastro. Iss
 
 ## Limitações operacionais
 
-O rate limit local é uma barreira contra abuso casual. Em serverless com múltiplas instâncias, a proteção forte deve ser complementada por firewall/rate limit distribuído da plataforma (por exemplo, Vercel Firewall ou Upstash). Bot protection interativo só deve ser introduzido se o tráfego real justificar o atrito de CAPTCHA.
+O rate limit tem duas formas. Sem Redis configurado, usa um contador em memória por instância — barreira contra abuso casual, mas em serverless com múltiplas instâncias o teto real é `limite × nº de instâncias`. Com `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` definidos, o teto por IP passa a ser compartilhado (janela deslizante no Upstash), valendo para o app inteiro — recomendado em produção, já que num app aberto este é o principal freio da cota paga do Gemini. Se o Redis ficar indisponível, o app degrada para o limiter em memória em vez de falhar. Bot protection interativo (CAPTCHA) só deve ser introduzido se o tráfego real justificar o atrito.
 
 ## Verificação local
 

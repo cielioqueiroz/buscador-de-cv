@@ -308,6 +308,7 @@ npm run dev                  # http://localhost:3000
 | `GEMINI_API_KEY` | Análise do CV e matching | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | ✅ |
 | `ADZUNA_APP_ID` · `ADZUNA_APP_KEY` | Vagas no Brasil | [developer.adzuna.com](https://developer.adzuna.com) | recomendada |
 | `RAPIDAPI_KEY` | JSearch | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | recomendada |
+| `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` | Rate limit distribuído por IP | [upstash.com](https://upstash.com) (Redis grátis) | produção |
 
 Só a do Gemini é **obrigatória** — sem ela o app não analisa o CV. As outras duas são gratuitas
 e é delas que vêm as vagas brasileiras: o JSearch agrega **Indeed, Gupy, Catho, ProgramaThor,
@@ -315,7 +316,9 @@ Talent.com** e outros. Sem elas, sobra só o Remotive (público, mas só vagas r
 internacionais).
 
 Cada provider degrada com elegância — faltando uma chave, ele retorna vazio e os outros seguem
-funcionando.
+funcionando. O Upstash é opcional: sem ele, o rate limit usa um contador em memória por
+instância; com ele, o teto por IP vale para o app inteiro (recomendado em produção, pois é o
+principal freio da cota paga do Gemini num app aberto).
 
 > 🔒 As chaves ficam **só no servidor** (API Routes) — nunca chegam ao navegador.
 
@@ -339,7 +342,6 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 
 ## Roadmap
 
-- [ ] Login e sincronização entre dispositivos (Supabase)
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
 - [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência
 - [x] Tracker de candidaturas — Kanban local: Aplicado → Entrevista → Oferta
