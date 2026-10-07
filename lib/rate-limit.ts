@@ -67,13 +67,14 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
 // `redis` é null e tudo passa pelo limiter em memória acima.
 // ---------------------------------------------------------------------------
 
-const redis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
-    : null;
+// A integração Upstash da Vercel injeta KV_REST_API_URL / KV_REST_API_TOKEN;
+// uma configuração manual do Upstash usa UPSTASH_REDIS_REST_URL / _TOKEN.
+// Aceitamos os dois padrões. KV_URL e REDIS_URL são ignorados de propósito: são
+// conexões TCP (rediss://), não a API REST que este SDK usa.
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+
+const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Um Ratelimit por combinação (limite, janela) — cada rota tem a sua, fixa, então
 // no total são pouquíssimas instâncias. A janela deslizante do Upstash evita a
