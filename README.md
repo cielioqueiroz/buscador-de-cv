@@ -342,6 +342,7 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 
 ## Roadmap
 
+- [ ] Perfil com login (e-mail/senha + Google) e dados persistidos no servidor — PRD arquivado no planejamento local. Backend: Neon Postgres + NextAuth v5. Modo convidado continua funcionando.
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
 - [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência
 - [x] Tracker de candidaturas — Kanban local: Aplicado → Entrevista → Oferta
