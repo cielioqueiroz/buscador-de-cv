@@ -3,6 +3,8 @@ import { extractText, hasValidSignature, SUPPORTED_EXTENSIONS } from '@/lib/cv/p
 import { analyzeCV } from '@/lib/ai/gemini';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
+import { auth } from '@/auth';
+import { upsertProfile } from '@/lib/auth/profile';
 
 export const runtime = 'nodejs';
 
@@ -58,6 +60,19 @@ export async function POST(req: Request) {
     }
 
     const profile = await analyzeCV(text);
+
+    // Quando o usuário está logado, o servidor é a fonte de verdade do perfil:
+    // persistimos sem perguntar e devolvemos o mesmo payload que o convidado
+    // receberia, para o cliente continuar o fluxo normal.
+    const session = await auth();
+    if (session?.user?.id) {
+      try {
+        await upsertProfile(session.user.id, profile);
+      } catch (err) {
+        console.error('[api/cv/analyze] falha ao persistir perfil:', err);
+      }
+    }
+
     return NextResponse.json({ profile });
   } catch (err) {
     if (err instanceof ApiRequestError) {
