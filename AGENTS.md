@@ -23,12 +23,15 @@ app/
   resultados/           ranking, filtros e ações das vagas
   page.tsx              landing page e ponto de entrada do upload
 components/             interface visual e interações do navegador
+db/
+  migrations/           SQL fonte de verdade (aplicado em Neon via MCP)
 lib/
   ai/                   adapter do Gemini e contratos de resposta
   api/                  leitura limitada e validação de requisições
   cv/                   parsing seguro dos formatos aceitos
   cv-features.ts        schemas de adaptação e relatório do CV
   applications.ts       persistência validada do tracker local
+  db/                   cliente Postgres (Neon serverless / pg)
   providers/            adapters de fontes de vagas + agregação
   __tests__/            testes de módulos e rotas
   journey.ts            fluxo do upload até o ranking
