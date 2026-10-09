@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
@@ -66,7 +67,15 @@ export function LoginForm() {
         />
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-muted">Senha</span>
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-muted">Senha</span>
+          <Link
+            href="/esqueci-senha"
+            className="text-xs text-accent-ink underline-offset-2 hover:underline"
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
         <input
           type="password"
           autoComplete="current-password"
