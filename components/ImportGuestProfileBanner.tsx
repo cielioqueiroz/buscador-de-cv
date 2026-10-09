@@ -3,31 +3,84 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { FiUploadCloud, FiX, FiLoader } from 'react-icons/fi';
-import { clearProfile, loadProfile } from '@/lib/store';
+import {
+  clearProfile,
+  getFavorites,
+  loadAllLetters,
+  loadProfile,
+} from '@/lib/store';
+import { listApplications } from '@/lib/applications';
 import type { CVProfile } from '@/lib/providers/types';
+import type { Application } from '@/lib/application-schema';
+import type { SavedLetter } from '@/lib/letter-schema';
 
 type Status = 'idle' | 'sending' | 'conflict';
 
+type GuestBundle = {
+  profile: CVProfile | null;
+  applications: Application[];
+  favorites: string[];
+  letters: Record<string, SavedLetter>;
+};
+
+const APPLICATIONS_KEY = 'jf_applications';
+const FAV_KEY = 'jf_favorites';
+const LETTERS_KEY = 'jf_letters';
+
+function hasAnythingToImport(bundle: GuestBundle): boolean {
+  return Boolean(
+    bundle.profile ||
+      bundle.applications.length ||
+      bundle.favorites.length ||
+      Object.keys(bundle.letters).length,
+  );
+}
+
+function describeBundle(bundle: GuestBundle): string {
+  const parts: string[] = [];
+  if (bundle.profile) parts.push('perfil');
+  if (bundle.applications.length) {
+    parts.push(`${bundle.applications.length} candidatura${bundle.applications.length === 1 ? '' : 's'}`);
+  }
+  if (bundle.favorites.length) {
+    parts.push(`${bundle.favorites.length} favorita${bundle.favorites.length === 1 ? '' : 's'}`);
+  }
+  const letters = Object.keys(bundle.letters).length;
+  if (letters) parts.push(`${letters} carta${letters === 1 ? '' : 's'}`);
+  return parts.join(' · ');
+}
+
 export function ImportGuestProfileBanner() {
   const router = useRouter();
-  const [guest, setGuest] = useState<CVProfile | null>(null);
+  const [bundle, setBundle] = useState<GuestBundle | null>(null);
   const [status, setStatus] = useState<Status>('idle');
 
   useEffect(() => {
-    setGuest(loadProfile());
+    setBundle({
+      profile: loadProfile(),
+      applications: listApplications(),
+      favorites: getFavorites(),
+      letters: loadAllLetters(),
+    });
   }, []);
 
-  if (!guest) return null;
+  if (!bundle || !hasAnythingToImport(bundle)) return null;
 
   async function send(force: boolean) {
-    if (!guest) return;
+    if (!bundle) return;
     setStatus('sending');
     try {
-      const url = `/api/perfil/import${force ? '?force=true' : ''}`;
+      const url = `/api/sync/import${force ? '?force=true' : ''}`;
+      const payload = {
+        profile: bundle.profile ?? undefined,
+        applications: bundle.applications.length ? bundle.applications : undefined,
+        favorites: bundle.favorites.length ? bundle.favorites : undefined,
+        letters: Object.keys(bundle.letters).length ? bundle.letters : undefined,
+      };
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ profile: guest }),
+        body: JSON.stringify(payload),
       });
       if (res.status === 409) {
         setStatus('conflict');
@@ -40,8 +93,13 @@ export function ImportGuestProfileBanner() {
         return;
       }
       clearProfile();
-      setGuest(null);
-      toast.success('Perfil importado para a sua conta.');
+      try {
+        localStorage.removeItem(APPLICATIONS_KEY);
+        localStorage.removeItem(FAV_KEY);
+        localStorage.removeItem(LETTERS_KEY);
+      } catch { /* storage indisponível */ }
+      setBundle(null);
+      toast.success('Dados importados para a sua conta.');
       router.refresh();
     } catch {
       toast.error('Falha de rede. Tente de novo.');
@@ -50,7 +108,7 @@ export function ImportGuestProfileBanner() {
   }
 
   function dismiss() {
-    setGuest(null);
+    setBundle(null);
   }
 
   if (status === 'conflict') {
@@ -71,7 +129,7 @@ export function ImportGuestProfileBanner() {
             type="button"
             onClick={() => {
               clearProfile();
-              setGuest(null);
+              setBundle(null);
               toast.message('Mantivemos o perfil da sua conta.');
             }}
             className="rounded-pill border border-border px-3 py-1.5 text-sm text-foreground hover:bg-background"
@@ -89,9 +147,11 @@ export function ImportGuestProfileBanner() {
         <FiUploadCloud aria-hidden className="h-5 w-5 text-accent-ink" />
         <div>
           <p className="font-medium text-foreground">
-            Você tem um perfil neste navegador.
+            Você tem dados neste navegador.
           </p>
-          <p className="text-muted">Importar para sua conta?</p>
+          <p className="text-muted">
+            {describeBundle(bundle)}. Importar para sua conta?
+          </p>
         </div>
       </div>
       <div className="flex gap-2">

@@ -2,21 +2,20 @@
 
 import { z } from 'zod';
 import type { RankedJob } from '@/lib/matching';
-import { JobSchema, MatchResultSchema } from '@/lib/providers/types';
+import {
+  APPLICATION_STAGES,
+  ApplicationSchema,
+  ApplicationStageSchema,
+  type Application,
+  type ApplicationStage,
+} from '@/lib/application-schema';
 
-export const APPLICATION_STAGES = ['aplicado', 'entrevista', 'oferta'] as const;
-export type ApplicationStage = (typeof APPLICATION_STAGES)[number];
-
-export const ApplicationStageSchema = z.enum(APPLICATION_STAGES);
-export const ApplicationSchema = z.object({
-  id: z.string().trim().min(1).max(500),
-  job: JobSchema,
-  match: MatchResultSchema,
-  stage: ApplicationStageSchema,
-  createdAt: z.number().finite(),
-  updatedAt: z.number().finite(),
-});
-export type Application = z.infer<typeof ApplicationSchema>;
+export {
+  APPLICATION_STAGES,
+  ApplicationSchema,
+  ApplicationStageSchema,
+};
+export type { Application, ApplicationStage };
 
 const APPLICATIONS_KEY = 'jf_applications';
 

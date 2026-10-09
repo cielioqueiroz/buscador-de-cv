@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { CVProfile } from '@/lib/providers/types';
 import { CVProfileSchema } from '@/lib/providers/types';
 import { RankedJobSchema, type RankedJob } from '@/lib/matching';
-import type { CoverLetter, Length, Tone } from '@/lib/cover-letter';
-import { CoverLetterSchema, LengthEnum, ToneEnum } from '@/lib/cover-letter';
+import { LetterMapSchema, type SavedLetter } from '@/lib/letter-schema';
+export type { SavedLetter } from '@/lib/letter-schema';
 
 const CV_KEY = 'jf_cv_profile';
 const FAV_KEY = 'jf_favorites';
@@ -27,33 +27,7 @@ export function clearProfile() {
   safeRemove(LETTERS_KEY);
 }
 
-/**
- * Cartas escritas, indexadas por vaga.
- *
- * Guardar é o que permite fechar o painel e voltar sem pagar outra chamada à
- * IA — e é também o que preserva a edição do usuário: o texto salvo é o que
- * está na tela, não o que o modelo devolveu.
- */
-export interface SavedLetter {
-  letter: CoverLetter;
-  /** O texto como o usuário deixou (pode ter sido editado à mão). */
-  text: string;
-  tone: Tone;
-  length: Length;
-  savedAt: number;
-}
-
 type LetterMap = Record<string, SavedLetter>;
-
-const SavedLetterSchema = z.object({
-  letter: CoverLetterSchema,
-  text: z.string().max(12_000),
-  tone: ToneEnum,
-  length: LengthEnum,
-  savedAt: z.number().finite(),
-});
-
-const LetterMapSchema = z.record(z.string().max(500), SavedLetterSchema);
 
 function readLetters(): LetterMap {
   if (typeof window === 'undefined') return {};
@@ -62,6 +36,10 @@ function readLetters(): LetterMap {
 
 export function loadLetter(jobId: string): SavedLetter | null {
   return readLetters()[jobId] ?? null;
+}
+
+export function loadAllLetters(): Record<string, SavedLetter> {
+  return readLetters();
 }
 
 export function saveLetter(jobId: string, saved: SavedLetter) {

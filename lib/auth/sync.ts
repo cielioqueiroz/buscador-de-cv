@@ -1,0 +1,255 @@
+import { pool } from "@/lib/db/client";
+import {
+  ApplicationSchema,
+  type Application,
+} from "@/lib/application-schema";
+import { SavedLetterSchema, type SavedLetter } from "@/lib/letter-schema";
+import { AdaptedCVSchema, type AdaptedCV } from "@/lib/cv-features";
+
+type ApplicationRow = {
+  job_id: string;
+  job_payload: unknown;
+  score: number | null;
+  stage: string;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
+function rowToApplication(row: ApplicationRow): Application {
+  const parsed = ApplicationSchema.safeParse({
+    id: row.job_id,
+    job: (row.job_payload as { job?: unknown })?.job ?? row.job_payload,
+    match: (row.job_payload as { match?: unknown })?.match,
+    stage: row.stage,
+    createdAt: row.created_at.getTime(),
+    updatedAt: row.updated_at.getTime(),
+  });
+  if (!parsed.success) {
+    throw new Error(
+      `Linha de application inválida: ${parsed.error.issues
+        .map((i) => i.message)
+        .join(", ")}`,
+    );
+  }
+  return parsed.data;
+}
+
+export async function listApplications(userId: string): Promise<Application[]> {
+  const result = await pool.query<ApplicationRow>(
+    `select job_id, job_payload, score, stage, notes, created_at, updated_at
+       from applications
+      where user_id = $1
+      order by updated_at desc
+      limit 200`,
+    [userId],
+  );
+  return result.rows.map(rowToApplication);
+}
+
+export async function upsertApplication(
+  userId: string,
+  application: Application,
+): Promise<void> {
+  // Guardamos o par {job, match} como payload — é o que o cliente precisa para
+  // reconstruir um RankedJob quando listar o tracker, mesmo meses depois,
+  // quando a fonte original já apagou a vaga.
+  const payload = JSON.stringify({ job: application.job, match: application.match });
+  await pool.query(
+    `insert into applications
+       (user_id, job_id, job_payload, score, stage, created_at, updated_at)
+     values ($1, $2, $3::jsonb, $4, $5, to_timestamp($6/1000.0), to_timestamp($7/1000.0))
+     on conflict (user_id, job_id) do update set
+       job_payload = excluded.job_payload,
+       score       = excluded.score,
+       stage       = excluded.stage,
+       updated_at  = excluded.updated_at`,
+    [
+      userId,
+      application.id,
+      payload,
+      Math.round(application.match.score),
+      application.stage,
+      application.createdAt,
+      application.updatedAt,
+    ],
+  );
+}
+
+export async function updateApplicationStage(
+  userId: string,
+  jobId: string,
+  stage: Application["stage"],
+): Promise<void> {
+  await pool.query(
+    `update applications set stage = $3, updated_at = now()
+      where user_id = $1 and job_id = $2`,
+    [userId, jobId, stage],
+  );
+}
+
+export async function removeApplication(
+  userId: string,
+  jobId: string,
+): Promise<void> {
+  await pool.query(
+    `delete from applications where user_id = $1 and job_id = $2`,
+    [userId, jobId],
+  );
+}
+
+export async function listFavorites(userId: string): Promise<string[]> {
+  const result = await pool.query<{ job_id: string }>(
+    `select job_id from favorites where user_id = $1 order by created_at desc`,
+    [userId],
+  );
+  return result.rows.map((row) => row.job_id);
+}
+
+export async function setFavorite(
+  userId: string,
+  jobId: string,
+  on: boolean,
+): Promise<void> {
+  if (on) {
+    await pool.query(
+      `insert into favorites (user_id, job_id)
+         values ($1, $2)
+       on conflict do nothing`,
+      [userId, jobId],
+    );
+  } else {
+    await pool.query(
+      `delete from favorites where user_id = $1 and job_id = $2`,
+      [userId, jobId],
+    );
+  }
+}
+
+type LetterRow = {
+  job_id: string;
+  letter: unknown;
+  text: string;
+  tone: string;
+  length: string;
+  saved_at: string | number;
+};
+
+function rowToLetter(row: LetterRow): SavedLetter {
+  return SavedLetterSchema.parse({
+    letter: row.letter,
+    text: row.text,
+    tone: row.tone,
+    length: row.length,
+    savedAt: Number(row.saved_at),
+  });
+}
+
+export async function getLetter(
+  userId: string,
+  jobId: string,
+): Promise<SavedLetter | null> {
+  const result = await pool.query<LetterRow>(
+    `select job_id, letter, text, tone, length, saved_at::text as saved_at
+       from cover_letters
+      where user_id = $1 and job_id = $2`,
+    [userId, jobId],
+  );
+  const row = result.rows[0];
+  return row ? rowToLetter(row) : null;
+}
+
+export async function listLetters(
+  userId: string,
+): Promise<Record<string, SavedLetter>> {
+  const result = await pool.query<LetterRow>(
+    `select job_id, letter, text, tone, length, saved_at::text as saved_at
+       from cover_letters
+      where user_id = $1`,
+    [userId],
+  );
+  const map: Record<string, SavedLetter> = {};
+  for (const row of result.rows) map[row.job_id] = rowToLetter(row);
+  return map;
+}
+
+export async function upsertLetter(
+  userId: string,
+  jobId: string,
+  saved: SavedLetter,
+): Promise<void> {
+  await pool.query(
+    `insert into cover_letters
+       (user_id, job_id, letter, text, tone, length, saved_at, updated_at)
+     values ($1, $2, $3::jsonb, $4, $5, $6, $7, now())
+     on conflict (user_id, job_id) do update set
+       letter   = excluded.letter,
+       text     = excluded.text,
+       tone     = excluded.tone,
+       length   = excluded.length,
+       saved_at = excluded.saved_at,
+       updated_at = now()`,
+    [
+      userId,
+      jobId,
+      JSON.stringify(saved.letter),
+      saved.text,
+      saved.tone,
+      saved.length,
+      saved.savedAt,
+    ],
+  );
+}
+
+export async function removeLetter(
+  userId: string,
+  jobId: string,
+): Promise<void> {
+  await pool.query(
+    `delete from cover_letters where user_id = $1 and job_id = $2`,
+    [userId, jobId],
+  );
+}
+
+type AdaptedRow = { job_id: string; payload: unknown };
+
+export async function getAdaptedCV(
+  userId: string,
+  jobId: string,
+): Promise<AdaptedCV | null> {
+  const result = await pool.query<AdaptedRow>(
+    `select job_id, payload from adapted_cvs where user_id = $1 and job_id = $2`,
+    [userId, jobId],
+  );
+  const row = result.rows[0];
+  return row ? AdaptedCVSchema.parse(row.payload) : null;
+}
+
+export async function listAdaptedCVs(
+  userId: string,
+): Promise<Record<string, AdaptedCV>> {
+  const result = await pool.query<AdaptedRow>(
+    `select job_id, payload from adapted_cvs where user_id = $1`,
+    [userId],
+  );
+  const map: Record<string, AdaptedCV> = {};
+  for (const row of result.rows) {
+    map[row.job_id] = AdaptedCVSchema.parse(row.payload);
+  }
+  return map;
+}
+
+export async function upsertAdaptedCV(
+  userId: string,
+  jobId: string,
+  payload: AdaptedCV,
+): Promise<void> {
+  await pool.query(
+    `insert into adapted_cvs (user_id, job_id, payload, updated_at)
+       values ($1, $2, $3::jsonb, now())
+     on conflict (user_id, job_id) do update set
+       payload = excluded.payload,
+       updated_at = now()`,
+    [userId, jobId, JSON.stringify(payload)],
+  );
+}
