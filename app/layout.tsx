@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Figtree, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { Providers } from "@/components/Providers";
 import { StructuredData } from "@/components/StructuredData";
 import "./globals.css";
 
@@ -103,7 +104,7 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className="min-h-full flex flex-col">
-        {children}
+        <Providers>{children}</Providers>
         <Toaster
           position="top-center"
           toastOptions={{
