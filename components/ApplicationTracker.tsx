@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { FiArrowRight, FiBriefcase, FiTrash2 } from 'react-icons/fi';
-import { APPLICATION_STAGES, listApplications, type Application, type ApplicationStage, removeApplication, updateApplicationStage } from '@/lib/applications';
+import {
+  APPLICATION_STAGES,
+  type Application,
+  type ApplicationStage,
+} from '@/lib/application-schema';
+import { useAuthed } from '@/lib/client/use-authed';
+import {
+  fetchApplications,
+  removeApplicationStore,
+  updateApplicationStageStore,
+} from '@/lib/client/sync-client';
 
 const STAGE_LABELS: Record<ApplicationStage, string> = {
   aplicado: 'Aplicado',
@@ -11,21 +21,27 @@ const STAGE_LABELS: Record<ApplicationStage, string> = {
 };
 
 export function ApplicationTracker() {
+  const authed = useAuthed();
   const [applications, setApplications] = useState<Application[]>([]);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setApplications(listApplications()), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
+    let cancelled = false;
+    void fetchApplications(authed).then((list) => {
+      if (!cancelled) setApplications(list);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authed]);
 
-  function move(id: string, stage: ApplicationStage) {
-    setApplications(updateApplicationStage(id, stage));
+  async function move(id: string, stage: ApplicationStage) {
+    setApplications(await updateApplicationStageStore(authed, id, stage));
     setDraggedId(null);
   }
 
-  function remove(id: string) {
-    setApplications(removeApplication(id));
+  async function remove(id: string) {
+    setApplications(await removeApplicationStore(authed, id));
   }
 
   return (
@@ -36,7 +52,7 @@ export function ApplicationTracker() {
           <section
             key={stage}
             onDragOver={(event) => event.preventDefault()}
-            onDrop={() => { if (draggedId) move(draggedId, stage); }}
+            onDrop={() => { if (draggedId) void move(draggedId, stage); }}
             className="min-h-64 rounded-panel border border-border bg-surface-2/40 p-4"
           >
             <div className="flex items-center justify-between gap-3 px-2 pb-3">
@@ -64,13 +80,13 @@ export function ApplicationTracker() {
                     <select
                       id={`stage-${application.id}`}
                       value={application.stage}
-                      onChange={(event) => move(application.id, event.target.value as ApplicationStage)}
+                      onChange={(event) => void move(application.id, event.target.value as ApplicationStage)}
                       className="min-w-0 flex-1 rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-xs text-foreground"
                     >
                       {APPLICATION_STAGES.map((option) => <option key={option} value={option}>{STAGE_LABELS[option]}</option>)}
                     </select>
                     <a href={application.job.applyUrl} target="_blank" rel="noopener noreferrer" aria-label={`Abrir vaga de ${application.job.title}`} className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted hover:text-foreground"><FiArrowRight className="h-4 w-4" /></a>
-                    <button type="button" onClick={() => remove(application.id)} aria-label={`Remover ${application.job.title} do tracker`} className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted hover:text-warn"><FiTrash2 className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => void remove(application.id)} aria-label={`Remover ${application.job.title} do tracker`} className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted hover:text-warn"><FiTrash2 className="h-4 w-4" /></button>
                   </div>
                 </article>
               ))}

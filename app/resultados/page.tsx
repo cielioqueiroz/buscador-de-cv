@@ -12,7 +12,9 @@ import { LoadingJourney } from '@/components/LoadingJourney';
 import { Confetti } from '@/components/Confetti';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
-import { loadProfile, loadRanked, getFavorites, FAVORITES_EVENT } from '@/lib/store';
+import { loadProfile, loadRanked, FAVORITES_EVENT } from '@/lib/store';
+import { useAuthed } from '@/lib/client/use-authed';
+import { fetchFavorites } from '@/lib/client/sync-client';
 import type { CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/matching';
 
@@ -28,18 +30,26 @@ export default function ResultadosPage() {
   const [regionStage, setRegionStage] = useState<'searching' | 'scoring' | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
 
+  const authed = useAuthed();
+
   // Mantém os favoritos em sincronia: na montagem, quando o coração é clicado
   // num card (evento) e quando outra aba mexe no localStorage (storage).
   useEffect(() => {
-    setFavorites(getFavorites());
-    const atualizar = () => setFavorites(getFavorites());
+    let cancelled = false;
+    const atualizar = () => {
+      void fetchFavorites(authed).then((favs) => {
+        if (!cancelled) setFavorites(favs);
+      });
+    };
+    atualizar();
     window.addEventListener(FAVORITES_EVENT, atualizar);
     window.addEventListener('storage', atualizar);
     return () => {
+      cancelled = true;
       window.removeEventListener(FAVORITES_EVENT, atualizar);
       window.removeEventListener('storage', atualizar);
     };
-  }, []);
+  }, [authed]);
 
   useEffect(() => {
     const p = loadProfile();

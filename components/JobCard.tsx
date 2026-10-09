@@ -18,8 +18,15 @@ import { ScoreGauge } from './ScoreGauge';
 import { SourceBadge } from './SourceBadge';
 import { CoverLetterPanel } from './CoverLetterPanel';
 import { compartilhar } from '@/lib/share';
-import { getFavorites, loadLetter, toggleFavorite } from '@/lib/store';
-import { getApplication, saveApplication } from '@/lib/applications';
+import { useAuthed } from '@/lib/client/use-authed';
+import {
+  applicationExists,
+  fetchApplications,
+  fetchFavorites,
+  fetchLetter,
+  saveApplicationStore,
+  toggleFavoriteStore,
+} from '@/lib/client/sync-client';
 import { AdaptedCVPanel } from './AdaptedCVPanel';
 import type { CVProfile } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
@@ -33,10 +40,11 @@ interface JobCardProps {
 
 export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   const { job, match } = ranked;
-  const [fav, setFav] = useState(() => getFavorites().includes(job.id));
+  const authed = useAuthed();
+  const [fav, setFav] = useState(false);
   const [letterOpen, setLetterOpen] = useState(false);
   // Só para o rótulo do botão: quem já tem carta lê "Ver carta", não "Gerar".
-  const [hasLetter, setHasLetter] = useState(() => loadLetter(job.id) !== null);
+  const [hasLetter, setHasLetter] = useState(false);
   const [tracked, setTracked] = useState(false);
   const [adaptOpen, setAdaptOpen] = useState(false);
   // Compartilhar é async e passa pela Web Share API — sem este estado, o
@@ -44,22 +52,36 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setTracked(getApplication(job.id) !== null), 0);
-    return () => window.clearTimeout(timer);
-  }, [job.id]);
+    let cancelled = false;
+    void Promise.all([
+      fetchFavorites(authed),
+      fetchApplications(authed),
+      fetchLetter(authed, job.id),
+    ]).then(([favorites, applications, letter]) => {
+      if (cancelled) return;
+      setFav(favorites.includes(job.id));
+      setTracked(applicationExists(applications, job.id));
+      setHasLetter(letter !== null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, job.id]);
 
-  function onFav(e: React.MouseEvent) {
+  async function onFav(e: React.MouseEvent) {
     e.preventDefault();
-    setFav(toggleFavorite(job.id).includes(job.id));
+    const favs = await toggleFavoriteStore(authed, job.id, fav);
+    setFav(favs.includes(job.id));
   }
 
-  function fecharCarta() {
+  async function fecharCarta() {
     setLetterOpen(false);
-    setHasLetter(loadLetter(job.id) !== null);
+    const letter = await fetchLetter(authed, job.id);
+    setHasLetter(letter !== null);
   }
 
-  function acompanhar() {
-    saveApplication(ranked);
+  async function acompanhar() {
+    await saveApplicationStore(authed, ranked);
     setTracked(true);
     toast.success('Vaga adicionada ao tracker.');
   }
@@ -197,7 +219,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
 
         <button
           type="button"
-          onClick={acompanhar}
+          onClick={() => void acompanhar()}
           className={cn(
             'inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-display text-sm font-bold sm:flex-none',
             tracked ? 'border-accent-ink bg-accent/10 text-accent-ink' : 'border-border bg-surface-2 text-foreground hover:border-accent-ink',
@@ -220,7 +242,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
 
         <button
           type="button"
-          onClick={onFav}
+          onClick={(e) => void onFav(e)}
           aria-label={fav ? 'Remover dos favoritos' : 'Salvar vaga'}
           className={cn(
             'grid h-10 w-10 place-items-center rounded-xl border border-border transition-colors',
@@ -232,7 +254,7 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
       </div>
 
       {letterOpen && profile && (
-        <CoverLetterPanel job={job} profile={profile} onClose={fecharCarta} />
+        <CoverLetterPanel job={job} profile={profile} onClose={() => void fecharCarta()} />
       )}
       {adaptOpen && profile && (
         <AdaptedCVPanel job={job} profile={profile} onClose={() => setAdaptOpen(false)} />

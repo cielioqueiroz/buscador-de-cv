@@ -22,7 +22,8 @@ import {
   type Tone,
 } from '@/lib/cover-letter';
 import { compartilhar } from '@/lib/share';
-import { loadLetter, saveLetter } from '@/lib/store';
+import { useAuthed } from '@/lib/client/use-authed';
+import { fetchLetter, saveLetterStore } from '@/lib/client/sync-client';
 import type { CVProfile, Job } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
 
@@ -53,16 +54,37 @@ interface Props {
  *    editou, é a edição dela que sobrevive ao fechar o painel.
  */
 export function CoverLetterPanel({ job, profile, onClose }: Props) {
-  const [saved] = useState(() => loadLetter(job.id));
+  const authed = useAuthed();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
 
-  const [tone, setTone] = useState<Tone>(saved?.tone ?? 'entusiasmado');
-  const [length, setLength] = useState<Length>(saved?.length ?? 'media');
-  const [letter, setLetter] = useState<CoverLetter | null>(saved?.letter ?? null);
-  const [text, setText] = useState(saved?.text ?? '');
+  const [tone, setTone] = useState<Tone>('entusiasmado');
+  const [length, setLength] = useState<Length>('media');
+  const [letter, setLetter] = useState<CoverLetter | null>(null);
+  const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Carrega a versão salva (servidor quando logado; localStorage caso contrário)
+  // ao montar. Fica em `hydrated=false` até retornar para o painel não piscar
+  // entre "sem carta" e "com carta" no primeiro frame.
+  useEffect(() => {
+    let cancelled = false;
+    void fetchLetter(authed, job.id).then((saved) => {
+      if (cancelled) return;
+      if (saved) {
+        setTone(saved.tone);
+        setLength(saved.length);
+        setLetter(saved.letter);
+        setText(saved.text);
+      }
+      setHydrated(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, job.id]);
   // Qual ação pesada está em curso: impressão/compartilhamento precisam de
   // feedback para não parecerem botões quebrados.
   const [busy, setBusy] = useState<'pdf' | 'share' | null>(null);
@@ -118,7 +140,13 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
       const novoTexto = coverLetterToText(nova);
       setLetter(nova);
       setText(novoTexto);
-      saveLetter(job.id, { letter: nova, text: novoTexto, tone, length, savedAt: Date.now() });
+      void saveLetterStore(authed, job.id, {
+        letter: nova,
+        text: novoTexto,
+        tone,
+        length,
+        savedAt: Date.now(),
+      });
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Não deu para escrever a carta.');
     } finally {
@@ -129,7 +157,15 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
   /** Toda edição manual é persistida — a carta na tela é a carta de verdade. */
   function editar(novo: string) {
     setText(novo);
-    if (letter) saveLetter(job.id, { letter, text: novo, tone, length, savedAt: Date.now() });
+    if (letter) {
+      void saveLetterStore(authed, job.id, {
+        letter,
+        text: novo,
+        tone,
+        length,
+        savedAt: Date.now(),
+      });
+    }
   }
 
   async function copiar() {
@@ -249,7 +285,13 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
             </Escolha>
           </div>
 
-          {!letter && !loading && (
+          {!hydrated && !loading && (
+            <div className="mt-6 grid min-h-[200px] place-items-center text-sm text-muted">
+              Carregando sua carta…
+            </div>
+          )}
+
+          {hydrated && !letter && !loading && (
             <div className="mt-6 rounded-card border border-dashed border-border bg-surface-2/50 p-8 text-center">
               <p className="font-display text-lg font-bold">Nenhuma carta ainda</p>
               <p className="mx-auto mt-2 max-w-sm text-sm text-muted">

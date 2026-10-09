@@ -47,14 +47,14 @@ describe('CoverLetterPanel', () => {
     render(<CoverLetterPanel job={job} profile={profile} onClose={() => {}} />);
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(screen.getByText('Nenhuma carta ainda')).toBeInTheDocument();
+    expect(await screen.findByText('Nenhuma carta ainda')).toBeInTheDocument();
   });
 
   it('escreve a carta quando o usuário pede, e mostra as palavras-chave da vaga', async () => {
     const user = userEvent.setup();
     render(<CoverLetterPanel job={job} profile={profile} onClose={() => {}} />);
 
-    await user.click(screen.getByRole('button', { name: /escrever minha carta/i }));
+    await user.click(await screen.findByRole("button", { name: /escrever minha carta/i }));
 
     await waitFor(() =>
       expect(screen.getByLabelText('Texto da carta')).toHaveValue(
@@ -71,7 +71,7 @@ describe('CoverLetterPanel', () => {
 
     await user.click(screen.getByRole('button', { name: /direto ao ponto/i }));
     await user.click(screen.getByRole('button', { name: /^curta/i }));
-    await user.click(screen.getByRole('button', { name: /escrever minha carta/i }));
+    await user.click(await screen.findByRole("button", { name: /escrever minha carta/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
@@ -86,14 +86,14 @@ describe('CoverLetterPanel', () => {
       <CoverLetterPanel job={job} profile={profile} onClose={() => {}} />,
     );
 
-    await user.click(screen.getByRole('button', { name: /escrever minha carta/i }));
+    await user.click(await screen.findByRole("button", { name: /escrever minha carta/i }));
     await waitFor(() => expect(screen.getByLabelText('Texto da carta')).toBeInTheDocument());
     unmount();
 
     fetchMock.mockClear();
     render(<CoverLetterPanel job={job} profile={profile} onClose={() => {}} />);
 
-    expect((screen.getByLabelText('Texto da carta') as HTMLTextAreaElement).value).toContain(
+    expect(((await screen.findByLabelText('Texto da carta')) as HTMLTextAreaElement).value).toContain(
       'Trabalhei com React.',
     );
     expect(fetchMock).not.toHaveBeenCalled();
@@ -105,7 +105,7 @@ describe('CoverLetterPanel', () => {
       <CoverLetterPanel job={job} profile={profile} onClose={() => {}} />,
     );
 
-    await user.click(screen.getByRole('button', { name: /escrever minha carta/i }));
+    await user.click(await screen.findByRole("button", { name: /escrever minha carta/i }));
     await waitFor(() => expect(screen.getByLabelText('Texto da carta')).toBeInTheDocument());
 
     const area = screen.getByLabelText('Texto da carta');
@@ -114,7 +114,7 @@ describe('CoverLetterPanel', () => {
     unmount();
 
     render(<CoverLetterPanel job={job} profile={profile} onClose={() => {}} />);
-    expect(screen.getByLabelText('Texto da carta')).toHaveValue('Minha versão.');
+    expect(await screen.findByLabelText('Texto da carta')).toHaveValue('Minha versão.');
   });
 
   it('avisa o usuário quando a API falha, sem quebrar o painel', async () => {
@@ -125,7 +125,7 @@ describe('CoverLetterPanel', () => {
     });
 
     render(<CoverLetterPanel job={job} profile={profile} onClose={() => {}} />);
-    await user.click(screen.getByRole('button', { name: /escrever minha carta/i }));
+    await user.click(await screen.findByRole("button", { name: /escrever minha carta/i }));
 
     await waitFor(() => expect(screen.getByText('Nenhuma carta ainda')).toBeInTheDocument());
   });
