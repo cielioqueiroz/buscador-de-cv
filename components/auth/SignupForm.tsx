@@ -5,7 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
 
-export function SignupForm() {
+type Props = {
+  googleEnabled?: boolean;
+};
+
+export function SignupForm({ googleEnabled = true }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/perfil";
@@ -58,20 +62,24 @@ export function SignupForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <button
-        type="button"
-        onClick={onGoogle}
-        disabled={busy !== null}
-        className="flex w-full items-center justify-center gap-2 rounded-pill border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-60"
-      >
-        {busy === "google" ? <FiLoader className="animate-spin" aria-hidden /> : null}
-        Criar conta com Google
-      </button>
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="h-px flex-1 bg-border" />
-        ou com e-mail
-        <span className="h-px flex-1 bg-border" />
-      </div>
+      {googleEnabled ? (
+        <>
+          <button
+            type="button"
+            onClick={onGoogle}
+            disabled={busy !== null}
+            className="flex w-full items-center justify-center gap-2 rounded-pill border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-60"
+          >
+            {busy === "google" ? <FiLoader className="animate-spin" aria-hidden /> : null}
+            Criar conta com Google
+          </button>
+          <div className="flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-border" />
+            ou com e-mail
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      ) : null}
       <label className="block text-sm">
         <span className="mb-1 block text-muted">Nome</span>
         <input

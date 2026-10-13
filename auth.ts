@@ -6,6 +6,7 @@ import { pool } from "@/lib/db/client";
 import { findUserByEmail, getAccount } from "@/lib/auth/users";
 import { verifyPassword } from "@/lib/auth/password";
 import { LoginSchema } from "@/lib/auth/signup-schema";
+import { isGoogleEnabled } from "@/lib/auth/features";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PgAdapter(pool),
@@ -13,10 +14,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   pages: { signIn: "/entrar" },
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
+    ...(isGoogleEnabled()
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
     Credentials({
       credentials: {
         email: { label: "E-mail", type: "email" },

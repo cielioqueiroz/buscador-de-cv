@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { isGoogleEnabled, isPasswordResetEnabled } from "@/lib/auth/features";
 
 export const metadata: Metadata = {
   title: "Entrar",
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default function EntrarPage() {
+  const googleEnabled = isGoogleEnabled();
   return (
     <>
       <SiteHeader />
@@ -21,11 +23,16 @@ export default function EntrarPage() {
             Entrar
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Use seu e-mail e senha, ou entre com Google.
+            {googleEnabled
+              ? "Use seu e-mail e senha, ou entre com Google."
+              : "Use seu e-mail e senha."}
           </p>
           <div className="mt-6">
             <Suspense fallback={null}>
-              <LoginForm />
+              <LoginForm
+                googleEnabled={googleEnabled}
+                passwordResetEnabled={isPasswordResetEnabled()}
+              />
             </Suspense>
           </div>
           <p className="mt-6 text-sm text-muted">

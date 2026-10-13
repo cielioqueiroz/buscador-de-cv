@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
+import { isPasswordResetEnabled } from '@/lib/auth/features';
 
 export const metadata: Metadata = {
   title: 'Esqueci minha senha',
@@ -22,7 +23,13 @@ export default function EsqueciSenhaPage() {
             Digite seu e-mail; mandamos um link que vale por 30 minutos.
           </p>
           <div className="mt-6">
-            <ForgotPasswordForm />
+            {isPasswordResetEnabled() ? (
+              <ForgotPasswordForm />
+            ) : (
+              <p role="status" className="rounded-pill bg-background px-4 py-3 text-sm text-foreground">
+                A redefinição de senha por e-mail ainda não está disponível.
+              </p>
+            )}
           </div>
           <p className="mt-6 text-sm text-muted">
             Lembrou?{' '}

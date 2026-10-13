@@ -6,7 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
 
-export function LoginForm() {
+type Props = {
+  googleEnabled?: boolean;
+  passwordResetEnabled?: boolean;
+};
+
+export function LoginForm({ googleEnabled = true, passwordResetEnabled = true }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/perfil";
@@ -41,20 +46,24 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <button
-        type="button"
-        onClick={onGoogle}
-        disabled={busy !== null}
-        className="flex w-full items-center justify-center gap-2 rounded-pill border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-60"
-      >
-        {busy === "google" ? <FiLoader className="animate-spin" aria-hidden /> : null}
-        Entrar com Google
-      </button>
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="h-px flex-1 bg-border" />
-        ou com e-mail
-        <span className="h-px flex-1 bg-border" />
-      </div>
+      {googleEnabled ? (
+        <>
+          <button
+            type="button"
+            onClick={onGoogle}
+            disabled={busy !== null}
+            className="flex w-full items-center justify-center gap-2 rounded-pill border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-60"
+          >
+            {busy === "google" ? <FiLoader className="animate-spin" aria-hidden /> : null}
+            Entrar com Google
+          </button>
+          <div className="flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-border" />
+            ou com e-mail
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      ) : null}
       <label className="block text-sm">
         <span className="mb-1 block text-muted">E-mail</span>
         <input
@@ -69,12 +78,14 @@ export function LoginForm() {
       <label className="block text-sm">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-muted">Senha</span>
-          <Link
-            href="/esqueci-senha"
-            className="text-xs text-accent-ink underline-offset-2 hover:underline"
-          >
-            Esqueci minha senha
-          </Link>
+          {passwordResetEnabled ? (
+            <Link
+              href="/esqueci-senha"
+              className="text-xs text-accent-ink underline-offset-2 hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
+          ) : null}
         </div>
         <input
           type="password"

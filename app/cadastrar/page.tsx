@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SignupForm } from "@/components/auth/SignupForm";
+import { isGoogleEnabled } from "@/lib/auth/features";
 
 export const metadata: Metadata = {
   title: "Criar conta",
@@ -25,7 +26,7 @@ export default function CadastrarPage() {
           </p>
           <div className="mt-6">
             <Suspense fallback={null}>
-              <SignupForm />
+              <SignupForm googleEnabled={isGoogleEnabled()} />
             </Suspense>
           </div>
           <p className="mt-6 text-sm text-muted">
