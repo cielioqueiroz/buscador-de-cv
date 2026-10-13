@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { FiLogOut, FiUser, FiBriefcase } from "react-icons/fi";
-import { colorFor, initialsOf } from "@/lib/auth/initials";
+import { FiLogOut, FiUser, FiBriefcase, FiSettings } from "react-icons/fi";
+import { Avatar } from "@/components/auth/Avatar";
 
 export function UserMenu() {
   const { data: session, status } = useSession();
@@ -48,8 +48,6 @@ export function UserMenu() {
   }
 
   const identity = session.user.name || session.user.email || "";
-  const label = initialsOf(identity);
-  const bg = colorFor(identity);
 
   return (
     <div ref={rootRef} className="relative">
@@ -59,19 +57,13 @@ export function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Menu de ${identity}`}
-        className="grid h-9 w-9 place-items-center rounded-full text-sm font-semibold text-white shadow-accent transition-transform hover:-rotate-3"
-        style={{ background: bg }}
+        className="rounded-full shadow-accent transition-transform hover:-rotate-3"
       >
-        {session.user.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={session.user.image}
-            alt=""
-            className="h-full w-full rounded-full object-cover"
-          />
-        ) : (
-          label
-        )}
+        <Avatar
+          name={session.user.name}
+          email={session.user.email}
+          image={session.user.image}
+        />
       </button>
       {open ? (
         <div
@@ -99,6 +91,14 @@ export function UserMenu() {
             onClick={() => setOpen(false)}
           >
             <FiBriefcase aria-hidden /> Minhas candidaturas
+          </Link>
+          <Link
+            href="/conta"
+            role="menuitem"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-background"
+            onClick={() => setOpen(false)}
+          >
+            <FiSettings aria-hidden /> Conta
           </Link>
           <button
             type="button"

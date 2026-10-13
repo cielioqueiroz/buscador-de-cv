@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import PgAdapter from "@auth/pg-adapter";
 import { pool } from "@/lib/db/client";
-import { findUserByEmail } from "@/lib/auth/users";
+import { findUserByEmail, getAccount } from "@/lib/auth/users";
 import { verifyPassword } from "@/lib/auth/password";
 import { LoginSchema } from "@/lib/auth/signup-schema";
 
@@ -39,8 +39,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user?.id) token.sub = user.id;
+      // `update()` no cliente só sinaliza "mudou algo"; o que entra no token
+      // vem do banco, nunca do payload do navegador.
+      if (trigger === "update" && token.sub) {
+        const account = await getAccount(token.sub);
+        if (account) {
+          token.name = account.name;
+          token.email = account.email;
+          token.picture = account.image;
+        }
+      }
       return token;
     },
     async session({ session, token }) {

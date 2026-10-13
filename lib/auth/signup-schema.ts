@@ -5,13 +5,14 @@ const NAME_MAX = 120;
 const PASSWORD_MIN = 8;
 const PASSWORD_MAX = 200;
 
+export const NameSchema = z
+  .string()
+  .trim()
+  .min(1, "Informe seu nome.")
+  .max(NAME_MAX, "Nome muito longo.");
+
 export const SignupSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Informe seu nome.")
-    .max(NAME_MAX, "Nome muito longo.")
-    .optional(),
+  name: NameSchema.optional(),
   email: z
     .string()
     .trim()
@@ -34,3 +35,10 @@ export const LoginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;
+
+/** Campos que o próprio usuário pode editar em /conta. */
+export const AccountUpdateSchema = z.object({
+  name: NameSchema,
+});
+
+export type AccountUpdateInput = z.infer<typeof AccountUpdateSchema>;

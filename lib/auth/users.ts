@@ -54,3 +54,37 @@ export async function createUserWithPassword(
   );
   return result.rows[0];
 }
+
+export type AccountRow = {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  provider: string | null;
+};
+
+/** Dados públicos da conta — nunca devolve o hash da senha. */
+export async function getAccount(userId: string): Promise<AccountRow | null> {
+  const result = await pool.query<AccountRow>(
+    `select id, name, email::text as email, image, provider
+       from users
+      where id = $1
+      limit 1`,
+    [userId],
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateUserName(
+  userId: string,
+  name: string,
+): Promise<AccountRow | null> {
+  const result = await pool.query<AccountRow>(
+    `update users
+        set name = $2, updated_at = now()
+      where id = $1
+  returning id, name, email::text as email, image, provider`,
+    [userId, name],
+  );
+  return result.rows[0] ?? null;
+}

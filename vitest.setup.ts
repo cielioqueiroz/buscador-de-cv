@@ -14,8 +14,9 @@ vi.mock('next-auth/react', () => ({
 
 // O jsdom não implementa matchMedia. Vários componentes consultam
 // prefers-reduced-motion (ScoreGauge, HeroField, etc.); sem este stub eles
-// quebram no mount. Padrão: "não reduzir movimento".
-if (!window.matchMedia) {
+// quebram no mount. Padrão: "não reduzir movimento". Testes que rodam com
+// `@vitest-environment node` (sharp, multipart) não têm `window`.
+if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
