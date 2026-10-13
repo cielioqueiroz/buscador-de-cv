@@ -63,8 +63,8 @@ const schema = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              'Sim, é gratuito e não exige cadastro. Seus dados ficam no seu próprio navegador ' +
-              '(localStorage) e o currículo é lido no servidor apenas para gerar a análise.',
+              'Sim, é gratuito. Basta criar uma conta (e-mail ou Google). O currículo é lido no ' +
+              'servidor só para gerar a análise — guardamos o perfil extraído, não o arquivo.',
           },
         },
         {
