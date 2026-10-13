@@ -50,19 +50,27 @@ function describeBundle(bundle: GuestBundle): string {
   return parts.join(' · ');
 }
 
-export function ImportGuestProfileBanner() {
+type Props = {
+  /** Perfil já salvo na conta. Com ele, o perfil do navegador é só cache, não dado de convidado. */
+  serverProfile?: CVProfile | null;
+};
+
+export function ImportGuestProfileBanner({ serverProfile = null }: Props) {
   const router = useRouter();
   const [bundle, setBundle] = useState<GuestBundle | null>(null);
   const [status, setStatus] = useState<Status>('idle');
 
   useEffect(() => {
     setBundle({
-      profile: loadProfile(),
+      // O app logado também guarda o perfil no navegador (cache das telas de
+      // vagas). Se a conta já tem perfil, oferecer "importar" esse cache seria
+      // um falso alarme — e um 409 garantido.
+      profile: serverProfile ? null : loadProfile(),
       applications: listApplications(),
       favorites: getFavorites(),
       letters: loadAllLetters(),
     });
-  }, []);
+  }, [serverProfile]);
 
   if (!bundle || !hasAnythingToImport(bundle)) return null;
 

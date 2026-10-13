@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getProfile } from '@/lib/auth/profile';
+import { getAccount } from '@/lib/auth/users';
+import { getDashboardStats, type DashboardStats } from '@/lib/auth/dashboard';
+import { isGoogleEnabled } from '@/lib/auth/features';
 import { PerfilClient } from './PerfilClient';
 
 export const metadata: Metadata = {
@@ -8,16 +12,41 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+const EMPTY_STATS: DashboardStats = {
+  applied: 0,
+  interviews: 0,
+  offers: 0,
+  favorites: 0,
+  profileUpdatedAt: null,
+};
+
+// Formatado aqui, com fuso fixo: no cliente o fuso do navegador mudaria o
+// texto entre o HTML do servidor e a hidratação.
+const DATE_FMT = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'America/Sao_Paulo',
+});
+
 export default async function PerfilPage() {
   const session = await auth();
-  const initialProfile = session?.user?.id
-    ? await getProfile(session.user.id).catch(() => null)
-    : null;
+  if (!session?.user?.id) redirect('/entrar?callbackUrl=/perfil');
+  const userId = session.user.id;
+
+  const [account, profile, stats] = await Promise.all([
+    getAccount(userId),
+    getProfile(userId).catch(() => null),
+    getDashboardStats(userId).catch(() => EMPTY_STATS),
+  ]);
+  if (!account) redirect('/entrar?callbackUrl=/perfil');
 
   return (
     <PerfilClient
-      initialProfile={initialProfile}
-      isLoggedIn={Boolean(session?.user?.id)}
+      account={{ name: account.name, email: account.email, image: account.image }}
+      profile={profile}
+      stats={stats}
+      updatedLabel={stats.profileUpdatedAt ? DATE_FMT.format(new Date(stats.profileUpdatedAt)) : null}
+      googleEnabled={isGoogleEnabled()}
     />
   );
 }

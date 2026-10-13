@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { isGoogleEnabled } from "@/lib/auth/features";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
   title: "Criar conta",
@@ -17,7 +18,7 @@ export default function CadastrarPage() {
     <>
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-5">
-        <div className="rounded-panel border border-border bg-surface p-6 shadow-float sm:p-8">
+        <AuthCard>
           <h1 className="font-display text-2xl font-extrabold tracking-tight">
             Criar conta
           </h1>
@@ -35,7 +36,7 @@ export default function CadastrarPage() {
               Entrar
             </Link>
           </p>
-        </div>
+        </AuthCard>
       </main>
       <SiteFooter />
     </>

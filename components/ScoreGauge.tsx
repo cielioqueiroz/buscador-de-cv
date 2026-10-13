@@ -6,6 +6,10 @@ interface ScoreGaugeProps {
   score: number;
   size?: number;
   className?: string;
+  /** Palavra sob o número; o medidor também mede a força do perfil. */
+  label?: string;
+  /** Nome lido por leitor de tela, antes de "N de 100". */
+  ariaLabel?: string;
 }
 
 /**
@@ -15,7 +19,7 @@ interface ScoreGaugeProps {
  * mais importante do card — vê-lo *acontecer* dá a ele o peso que merece, e de
  * quebra guia o olho para o canto certo do card.
  */
-export function ScoreGauge({ score, size = 72, className }: ScoreGaugeProps) {
+export function ScoreGauge({ score, size = 72, className, label = 'match', ariaLabel = 'Compatibilidade' }: ScoreGaugeProps) {
   const clamped = Math.max(0, Math.min(100, Math.round(score)));
   const [shown, setShown] = useState(clamped);
 
@@ -57,7 +61,7 @@ export function ScoreGauge({ score, size = 72, className }: ScoreGaugeProps) {
       className={cn('relative grid place-items-center', className)}
       style={{ width: size, height: size }}
       role="img"
-      aria-label={`Compatibilidade ${clamped} de 100`}
+      aria-label={`${ariaLabel} ${clamped} de 100`}
     >
       <svg width={size} height={size} className="-rotate-90">
         <circle
@@ -87,7 +91,7 @@ export function ScoreGauge({ score, size = 72, className }: ScoreGaugeProps) {
           {shown}
         </span>
         <span className="font-mono text-[9px] uppercase tracking-widest text-muted">
-          match
+          {label}
         </span>
       </div>
     </div>

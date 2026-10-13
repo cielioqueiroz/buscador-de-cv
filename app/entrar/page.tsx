@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { isGoogleEnabled, isPasswordResetEnabled } from "@/lib/auth/features";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
   title: "Entrar",
@@ -18,7 +19,7 @@ export default function EntrarPage() {
     <>
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-5">
-        <div className="rounded-panel border border-border bg-surface p-6 shadow-float sm:p-8">
+        <AuthCard>
           <h1 className="font-display text-2xl font-extrabold tracking-tight">
             Entrar
           </h1>
@@ -41,7 +42,7 @@ export default function EntrarPage() {
               Criar conta
             </Link>
           </p>
-        </div>
+        </AuthCard>
       </main>
       <SiteFooter />
     </>
