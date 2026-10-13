@@ -11,13 +11,26 @@ type Props = {
   passwordResetEnabled?: boolean;
 };
 
+/**
+ * Erros que o Auth.js devolve em /entrar?error=... depois de um login com
+ * Google que não deu certo. Sem isso o usuário voltava à tela sem explicação.
+ */
+function oauthErrorMessage(code: string | null): string | null {
+  if (!code) return null;
+  if (code === "OAuthAccountNotLinked") {
+    return "Esse e-mail já tem uma conta com senha. Entre com e-mail e senha.";
+  }
+  if (code === "CredentialsSignin") return null;
+  return "Não deu para entrar com o Google. Tente de novo.";
+}
+
 export function LoginForm({ googleEnabled = true, passwordResetEnabled = true }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/perfil";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => oauthErrorMessage(params.get("error")));
   const [busy, setBusy] = useState<"credentials" | "google" | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
