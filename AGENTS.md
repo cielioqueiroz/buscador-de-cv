@@ -49,6 +49,7 @@ Prefira módulos profundos: uma interface pequena deve esconder validação, nor
 - Trate todo payload do navegador, da IA e dos provedores externos como não confiável.
 - Use os schemas de `lib/providers/types.ts`, `lib/cover-letter.ts` ou o schema específico do módulo antes de aceitar dados.
 - Para JSON HTTP, use `readJson` de `lib/api/request.ts`; preserve limites de tamanho e a guarda de origem.
+- Consultas a tabelas com `user_id` (perfil, tracker, favoritos, cartas, CVs adaptados, foto) usam `userQuery`/`userTransaction` de `lib/db/user-scope.ts`, nunca `pool.query`: é isso que ativa o RLS. Tabela nova com `user_id` entra na migration de RLS e no grant para `vaga_certa_rls`. Migrations são aplicadas nos branches `main` e `preview` do Neon.
 - Para fontes externas, use `fetchJson` de `lib/providers/http.ts`, com timeout e normalização do resultado.
 - URLs de candidatura devem permanecer HTTP(S). Não introduza `dangerouslySetInnerHTML` com entrada de usuário.
 - O upload aceita PDF, Word (`.doc`/`.docx`), TXT, Markdown, RTF e CSV. Novos formatos binários exigem parser aprovado, validação de assinatura e teste de regressão.

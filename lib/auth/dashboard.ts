@@ -1,17 +1,18 @@
-import { pool } from "@/lib/db/client";
+import { userQuery } from "@/lib/db/user-scope";
 import type { DashboardStats } from "@/lib/auth/checklist";
 
 export type { DashboardStats };
 
 /** Números do painel do /perfil numa ida só ao banco. */
 export async function getDashboardStats(userId: string): Promise<DashboardStats> {
-  const result = await pool.query<{
+  const result = await userQuery<{
     applied: number;
     interviews: number;
     offers: number;
     favorites: number;
     profile_updated_at: Date | null;
   }>(
+    userId,
     `select
        (select count(*) from applications where user_id = $1 and stage = 'aplicado')::int   as applied,
        (select count(*) from applications where user_id = $1 and stage = 'entrevista')::int as interviews,

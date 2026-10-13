@@ -1,4 +1,4 @@
-import { pool } from "@/lib/db/client";
+import { userQuery } from "@/lib/db/user-scope";
 import {
   ApplicationSchema,
   type Application,
@@ -36,7 +36,8 @@ function rowToApplication(row: ApplicationRow): Application {
 }
 
 export async function listApplications(userId: string): Promise<Application[]> {
-  const result = await pool.query<ApplicationRow>(
+  const result = await userQuery<ApplicationRow>(
+    userId,
     `select job_id, job_payload, score, stage, notes, created_at, updated_at
        from applications
       where user_id = $1
@@ -55,7 +56,8 @@ export async function upsertApplication(
   // reconstruir um RankedJob quando listar o tracker, mesmo meses depois,
   // quando a fonte original já apagou a vaga.
   const payload = JSON.stringify({ job: application.job, match: application.match });
-  await pool.query(
+  await userQuery(
+    userId,
     `insert into applications
        (user_id, job_id, job_payload, score, stage, created_at, updated_at)
      values ($1, $2, $3::jsonb, $4, $5, to_timestamp($6/1000.0), to_timestamp($7/1000.0))
@@ -81,7 +83,8 @@ export async function updateApplicationStage(
   jobId: string,
   stage: Application["stage"],
 ): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `update applications set stage = $3, updated_at = now()
       where user_id = $1 and job_id = $2`,
     [userId, jobId, stage],
@@ -92,14 +95,16 @@ export async function removeApplication(
   userId: string,
   jobId: string,
 ): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `delete from applications where user_id = $1 and job_id = $2`,
     [userId, jobId],
   );
 }
 
 export async function listFavorites(userId: string): Promise<string[]> {
-  const result = await pool.query<{ job_id: string }>(
+  const result = await userQuery<{ job_id: string }>(
+    userId,
     `select job_id from favorites where user_id = $1 order by created_at desc`,
     [userId],
   );
@@ -112,14 +117,16 @@ export async function setFavorite(
   on: boolean,
 ): Promise<void> {
   if (on) {
-    await pool.query(
+    await userQuery(
+      userId,
       `insert into favorites (user_id, job_id)
          values ($1, $2)
        on conflict do nothing`,
       [userId, jobId],
     );
   } else {
-    await pool.query(
+    await userQuery(
+      userId,
       `delete from favorites where user_id = $1 and job_id = $2`,
       [userId, jobId],
     );
@@ -149,7 +156,8 @@ export async function getLetter(
   userId: string,
   jobId: string,
 ): Promise<SavedLetter | null> {
-  const result = await pool.query<LetterRow>(
+  const result = await userQuery<LetterRow>(
+    userId,
     `select job_id, letter, text, tone, length, saved_at::text as saved_at
        from cover_letters
       where user_id = $1 and job_id = $2`,
@@ -162,7 +170,8 @@ export async function getLetter(
 export async function listLetters(
   userId: string,
 ): Promise<Record<string, SavedLetter>> {
-  const result = await pool.query<LetterRow>(
+  const result = await userQuery<LetterRow>(
+    userId,
     `select job_id, letter, text, tone, length, saved_at::text as saved_at
        from cover_letters
       where user_id = $1`,
@@ -178,7 +187,8 @@ export async function upsertLetter(
   jobId: string,
   saved: SavedLetter,
 ): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `insert into cover_letters
        (user_id, job_id, letter, text, tone, length, saved_at, updated_at)
      values ($1, $2, $3::jsonb, $4, $5, $6, $7, now())
@@ -205,7 +215,8 @@ export async function removeLetter(
   userId: string,
   jobId: string,
 ): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `delete from cover_letters where user_id = $1 and job_id = $2`,
     [userId, jobId],
   );
@@ -217,7 +228,8 @@ export async function getAdaptedCV(
   userId: string,
   jobId: string,
 ): Promise<AdaptedCV | null> {
-  const result = await pool.query<AdaptedRow>(
+  const result = await userQuery<AdaptedRow>(
+    userId,
     `select job_id, payload from adapted_cvs where user_id = $1 and job_id = $2`,
     [userId, jobId],
   );
@@ -228,7 +240,8 @@ export async function getAdaptedCV(
 export async function listAdaptedCVs(
   userId: string,
 ): Promise<Record<string, AdaptedCV>> {
-  const result = await pool.query<AdaptedRow>(
+  const result = await userQuery<AdaptedRow>(
+    userId,
     `select job_id, payload from adapted_cvs where user_id = $1`,
     [userId],
   );
@@ -244,7 +257,8 @@ export async function upsertAdaptedCV(
   jobId: string,
   payload: AdaptedCV,
 ): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `insert into adapted_cvs (user_id, job_id, payload, updated_at)
        values ($1, $2, $3::jsonb, now())
      on conflict (user_id, job_id) do update set

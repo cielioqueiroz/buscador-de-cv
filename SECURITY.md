@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | API keys | Ativo | Variáveis server-only; nenhum `NEXT_PUBLIC_*` para credenciais de providers. |
 | Secrets no Git | Ativo | `.env*` ignorado, com exceção apenas de `.env.example`; histórico rastreado sem arquivo de segredo. |
-| Banco / isolamento por usuário | Ativo, sem RLS | Neon Postgres acessado só pelo servidor (`DATABASE_URL` server-only). Toda query de dado do usuário filtra pelo `user_id` da sessão; nenhuma rota recebe o id do dono pelo cliente. RLS no Postgres ainda não está ligado — o isolamento é feito na aplicação. |
+| Banco / isolamento por usuário | Ativo, com RLS | Neon Postgres acessado só pelo servidor (`DATABASE_URL` server-only). Toda query de dado do usuário filtra pelo `user_id` da sessão e roda via `lib/db/user-scope.ts`, que troca para a role `vaga_certa_rls` (sem BYPASSRLS) e informa o usuário; as políticas de `db/migrations/0006_rls.sql` só deixam ver e gravar as próprias linhas. |
 | Criptografia | Limite documentado | Neon criptografa em repouso e exige TLS. Senhas só como hash bcrypt; tokens de reset só como hash SHA-256. O `localStorage` é só cache das telas e não é tratado como cofre. |
 | Auth server-side / acessos | Ativo | Conta obrigatória para usar o app, com NextAuth v5 (e-mail/senha e, quando configurado, Google). Rotas de IA, busca, conta e sync checam a sessão no servidor e devolvem 401 sem ela; páginas de conta redirecionam para `/entrar`. A landing é pública. |
 | Mass assignment | Ativo | Schemas Zod aceitam somente contratos conhecidos e removem campos extras antes do uso. |
@@ -39,7 +39,9 @@ Com conta, perfil, tracker, favoritos, cartas, CVs adaptados e foto ficam no Neo
 
 Em `/conta` o usuário baixa um JSON com todos os seus dados e exclui a conta (confirma digitando o e-mail e, se houver, a senha; limite de 5 tentativas por hora). Como a sessão é um JWT de 30 dias, as rotas de IA conferem no banco que o usuário ainda existe — conta excluída num aparelho para de funcionar nos outros.
 
-Ainda faltam, e estão no roadmap: RLS no Postgres como segunda barreira, verificação de e-mail no cadastro e troca de e-mail com verificação.
+O RLS é a segunda barreira: perfil, tracker, favoritos, cartas, CVs adaptados e foto têm política `user_id = app_user_id()` com `FORCE`. Detalhe importante do Neon: a role dona do banco tem `BYPASSRLS` e ignora qualquer política, por isso as consultas trocam para `vaga_certa_rls` dentro da transação (`set local role`). Validado contra o Postgres real: outro usuário não lê, não altera nem grava em nome alheio, e sem contexto nada é visível.
+
+Ainda faltam, e estão no roadmap: verificação de e-mail no cadastro e troca de e-mail com verificação.
 
 ## Limitações operacionais
 

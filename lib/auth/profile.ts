@@ -1,4 +1,4 @@
-import { pool } from "@/lib/db/client";
+import { userQuery } from "@/lib/db/user-scope";
 import type { CVProfile, Seniority } from "@/lib/providers/types";
 import { CVProfileSchema } from "@/lib/providers/types";
 
@@ -23,7 +23,8 @@ function rowToProfile(row: ProfileRow): CVProfile {
 }
 
 export async function getProfile(userId: string): Promise<CVProfile | null> {
-  const result = await pool.query<ProfileRow>(
+  const result = await userQuery<ProfileRow>(
+    userId,
     `select title, seniority, skills, areas, search_queries, raw_text
        from cv_profiles
       where user_id = $1`,
@@ -37,7 +38,8 @@ export async function upsertProfile(
   userId: string,
   profile: CVProfile,
 ): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `insert into cv_profiles
        (user_id, title, seniority, skills, areas, search_queries, raw_text, updated_at)
      values ($1, $2, $3, $4, $5, $6, $7, now())

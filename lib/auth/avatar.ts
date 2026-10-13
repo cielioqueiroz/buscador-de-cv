@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { pool } from "@/lib/db/client";
+import { userQuery } from "@/lib/db/user-scope";
 
 /** Limite do arquivo enviado. A saída re-encodada fica bem abaixo disso. */
 export const AVATAR_MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -93,7 +93,8 @@ export async function processAvatar(input: Uint8Array): Promise<Buffer> {
  * quebra o cache do navegador a cada troca.
  */
 export async function saveAvatar(userId: string, data: Buffer): Promise<string> {
-  const result = await pool.query<{ image: string }>(
+  const result = await userQuery<{ image: string }>(
+    userId,
     `with saved as (
        insert into user_avatars (user_id, data, mime, updated_at)
             values ($1, $2, 'image/webp', now())
@@ -119,7 +120,8 @@ export async function saveAvatar(userId: string, data: Buffer): Promise<string> 
 export async function getAvatar(
   userId: string,
 ): Promise<{ data: Buffer; mime: string } | null> {
-  const result = await pool.query<{ data: Buffer; mime: string }>(
+  const result = await userQuery<{ data: Buffer; mime: string }>(
+    userId,
     `select data, mime from user_avatars where user_id = $1`,
     [userId],
   );
@@ -131,7 +133,8 @@ export async function getAvatar(
  * endpoint — uma foto do Google não é apagada por acidente.
  */
 export async function deleteAvatar(userId: string): Promise<void> {
-  await pool.query(
+  await userQuery(
+    userId,
     `with removed as (
        delete from user_avatars where user_id = $1 returning user_id
      )

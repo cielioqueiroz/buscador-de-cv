@@ -1,9 +1,9 @@
 import { Pool as NeonPool } from "@neondatabase/serverless";
 import { Pool as NodePool } from "pg";
 
-const connectionString = process.env.DATABASE_URL;
+export const connectionString = process.env.DATABASE_URL;
 
-const isNeonUrl =
+export const isNeonUrl =
   typeof connectionString === "string" && /neon\.tech/i.test(connectionString);
 
 // Em runtimes edge e no Neon, o driver serverless usa HTTP/WebSocket; no node

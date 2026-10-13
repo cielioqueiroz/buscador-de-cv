@@ -28,3 +28,21 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     dispatchEvent: vi.fn(),
   }));
 }
+
+// Os módulos de dados do usuário (lib/auth/*) falam com o banco via
+// userQuery/userTransaction, que abrem a transação com RLS. Nos testes isso
+// vira um repasse direto para o `pool.query` que cada arquivo já simula —
+// assim os testes continuam conferindo SQL e parâmetros. O escopo em si é
+// testado em lib/__tests__/user-scope.test.ts, que desfaz este mock.
+vi.mock('@/lib/db/user-scope', async () => {
+  const { pool } = await import('@/lib/db/client');
+  const run = (text: string, params: unknown[] = []) => pool.query(text, params);
+  return {
+    userQuery: (_userId: string, text: string, params?: unknown[]) => run(text, params),
+    userTransaction: async (_userId: string, queries: { text: string; params?: unknown[] }[]) => {
+      const out = [];
+      for (const q of queries) out.push(await run(q.text, q.params));
+      return out;
+    },
+  };
+});
