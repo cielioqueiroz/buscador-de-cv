@@ -6,34 +6,38 @@
 | --- | --- | --- |
 | API keys | Ativo | Variáveis server-only; nenhum `NEXT_PUBLIC_*` para credenciais de providers. |
 | Secrets no Git | Ativo | `.env*` ignorado, com exceção apenas de `.env.example`; histórico rastreado sem arquivo de segredo. |
-| Public key de banco / RLS | N/A | Não existe banco de dados neste produto. |
-| Criptografia | Limite documentado | Não há armazenamento persistente no servidor; o `localStorage` não é tratado como cofre. |
-| Auth server-side / acessos | N/A + proteção ativa | O app é anônimo; origem, payload, formatos e custo das rotas são restringidos. |
+| Banco / isolamento por usuário | Ativo, sem RLS | Neon Postgres acessado só pelo servidor (`DATABASE_URL` server-only). Toda query de dado do usuário filtra pelo `user_id` da sessão; nenhuma rota recebe o id do dono pelo cliente. RLS no Postgres ainda não está ligado — o isolamento é feito na aplicação. |
+| Criptografia | Limite documentado | Neon criptografa em repouso e exige TLS. Senhas só como hash bcrypt; tokens de reset só como hash SHA-256. O `localStorage` do modo convidado não é tratado como cofre. |
+| Auth server-side / acessos | Ativo | Conta opcional com NextAuth v5 (e-mail/senha e, quando configurado, Google). Rotas de conta e sync checam `auth()` no servidor e devolvem 401 sem sessão. O modo convidado continua anônimo. |
 | Mass assignment | Ativo | Schemas Zod aceitam somente contratos conhecidos e removem campos extras antes do uso. |
-| Cookies / senhas | N/A | O app não cria sessão, cookie de autenticação ou senha. |
+| Cookies / senhas | Ativo | Sessão JWT em cookie `HttpOnly`, `SameSite=Lax` e `Secure` em produção (padrões do NextAuth), assinada com `AUTH_SECRET`. Senha: mínimo 8 caracteres com letra e número, bcrypt com 12 rounds. Reset: token aleatório de uso único, 30 minutos, tokens antigos invalidados; respostas idênticas para e-mail existente ou não. |
 | Rate limit / bots | Ativo com limite operacional | Rate limit por IP, `Retry-After` e guarda same-origin. Distribuído via Upstash Redis quando as variáveis existem; sem elas, cai para o limiter em memória. CAPTCHA fica na borda quando o tráfego exigir. |
-| Queries parametrizadas | N/A | Não há SQL; parâmetros de APIs externas usam `URLSearchParams`. |
+| Queries parametrizadas | Ativo | Todo SQL usa parâmetros posicionais (`$1`, `$2`…) do driver; nenhum valor é concatenado na query. Parâmetros de APIs externas usam `URLSearchParams`. |
 | Vazamento de conteúdo | Ativo | Erros públicos são genéricos; CV, prompts e chaves não são devolvidos nos logs/respostas. |
-| Uploads | Ativo | Allowlist, limite de 8 MB, assinatura binária e limite de texto/páginas. |
+| Uploads | Ativo | CV: allowlist, limite de 8 MB, assinatura binária e limite de texto/páginas. Foto de perfil: só JPEG/PNG/WebP por assinatura, 2 MB, teto de pixels e re-encode com `sharp` para WebP 256×256 sem metadados. |
 | Respostas de API | Ativo | Dados externos e IA passam por schemas; APIs usam `no-store` e respostas 429 informam retry. |
 | Headers / HTTPS | Ativo em produção | CSP, anti-frame, `nosniff`, HSTS, políticas de origem e redirect HTTP→HTTPS. |
 | Dependências | Ativo | `npm audit --omit=dev` deve permanecer sem vulnerabilidades. |
 
 ## Controles ativos
 
-- Chaves de Gemini, RapidAPI, Adzuna e o token REST do Upstash são lidas apenas no servidor e ficam fora do Git por `.gitignore`.
+- Chaves de Gemini, RapidAPI, Adzuna, Resend, Google OAuth, o token REST do Upstash, `DATABASE_URL` e `AUTH_SECRET` são lidas apenas no servidor e ficam fora do Git por `.gitignore`.
 - Rotas rejeitam chamadas cross-site, limitam o corpo, validam JSON com Zod e retornam respostas sem cache.
 - Uploads aceitam somente PDF, Word (`.doc`/`.docx`), TXT, Markdown, RTF e CSV; há limite de 8 MB, validação de assinatura binária e limite de texto/PDF.
 - Dados dos providers e da IA são normalizados contra schemas antes de alcançar a interface ou outra chamada.
-- Rate limit por IP protege análise, busca, matching e geração de carta; respostas `429` informam `Retry-After`.
+- Rate limit por IP protege análise, busca, matching e geração de carta; respostas `429` informam `Retry-After`. Cadastro e "esqueci a senha" somam um limite por e-mail ao limite por IP; rotas de conta e sync limitam por usuário.
+- A foto de perfil é servida em `/api/perfil/avatar` sem id na URL: só devolve a foto de quem está logado, com `Content-Security-Policy: default-src 'none'`.
+- Na sessão, `update()` do cliente só sinaliza que algo mudou; nome, e-mail e foto são relidos do banco, nunca aceitos do navegador.
 - CSP, HSTS em produção, `nosniff`, anti-frame, políticas de origem/referer/permissões e `no-store` nas APIs estão configurados em `next.config.ts`.
 - Dependências de produção são verificadas com `npm audit --omit=dev`.
 
-## O que não se aplica ao produto atual
+## Modo convidado e conta
 
-O projeto não possui banco de dados, autenticação, sessões/cookies de usuário ou queries SQL. Por isso public key de banco, RLS, hash de senha, auth server-side e queries parametrizadas não são controles ausentes: não há esses subsistemas para proteger.
+O app funciona sem cadastro. Nesse modo, o perfil e o ranking ficam no `localStorage`. Isso não é criptografia em repouso e não deve ser tratado como armazenamento seguro contra XSS ou contra alguém com acesso ao navegador. A proteção adequada para esse cenário é manter as chaves no servidor, reduzir a retenção e preservar CSP/validação; criptografia persistente exigiria uma chave fornecida pelo usuário ou uma conta autenticada.
 
-O perfil e o ranking ficam no `localStorage` para permitir uso sem cadastro. Isso não é criptografia em repouso e não deve ser tratado como armazenamento seguro contra XSS ou contra alguém com acesso ao navegador. A proteção adequada para esse cenário é manter as chaves no servidor, reduzir a retenção e preservar CSP/validação; criptografia persistente exigiria uma chave fornecida pelo usuário ou uma conta autenticada.
+Com conta, perfil, tracker, favoritos, cartas, CVs adaptados e foto ficam no Neon, ligados ao usuário com `on delete cascade`. O texto do CV continua sendo enviado ao Gemini para análise, como no modo convidado.
+
+Ainda faltam, e estão no roadmap: RLS no Postgres como segunda barreira, excluir conta, exportar dados e troca de e-mail com verificação.
 
 ## Limitações operacionais
 

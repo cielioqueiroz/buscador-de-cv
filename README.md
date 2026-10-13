@@ -40,10 +40,14 @@ Você solta o currículo — **PDF, Word (.doc/.docx), TXT, Markdown, RTF ou CSV
 4. **Se você quiser**, a IA escreve a **carta de apresentação** daquela vaga — no tom e no
    tamanho que você escolher, mostrando quais palavras-chave da vaga entraram no texto.
    Baixe em **PDF** ou **compartilhe** pelo menu do seu próprio celular.
-5. Você vai direto ao **link oficial** — sem intermediário, sem cadastro.
+5. Você vai direto ao **link oficial** — sem intermediário e sem precisar de cadastro.
 6. Em cada vaga, você pode **adaptar o CV** para destacar somente experiências reais relevantes.
 7. Adicione oportunidades ao **tracker Kanban** e acompanhe Aplicado → Entrevista → Oferta.
 8. No seu perfil, gere um relatório de **como melhorar o CV** com prioridades acionáveis.
+
+Se quiser, **crie uma conta** (e-mail e senha, ou Google) e o perfil, o tracker, os favoritos,
+as cartas e a foto passam a ficar salvos no servidor — em qualquer aparelho. Sem conta, tudo
+continua funcionando no navegador.
 
 > ⚖️ **Nada de scraping.** Só agregadores legais — e nós sempre levamos você ao anúncio original.
 
@@ -246,16 +250,21 @@ e citarem o projeto.
 
 ## Arquitetura
 
-Para a matriz de controles, limites conhecidos e itens que não se aplicam ao app sem banco/auth,
-consulte [`SECURITY.md`](SECURITY.md).
+Para a matriz de controles e os limites conhecidos, consulte [`SECURITY.md`](SECURITY.md).
 
 ```text
 app/
   page.tsx                 landing + upload do CV
   resultados/page.tsx      vagas com score + filtros
   perfil/page.tsx          perfil extraído do CV
-  candidaturas/page.tsx    tracker Kanban local
+  candidaturas/page.tsx    tracker Kanban (local ou na conta)
+  entrar · cadastrar       login e cadastro (NextAuth v5)
+  esqueci-senha · redefinir-senha
+  conta/page.tsx           foto de perfil e nome
   api/
+    auth/                  NextAuth + cadastro + reset de senha
+    perfil/                import do perfil convidado, foto (avatar) e conta
+    sync/                  tracker, favoritos, cartas e CVs adaptados no banco
     cv/analyze             extrai texto → Gemini devolve o CVProfile
     cv/adapt               adapta o CV para uma vaga específica
     cv/report              relatório de melhorias do CV
@@ -278,6 +287,9 @@ lib/
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por IP nas API Routes
   store.ts                 persistência local (localStorage)
+  auth/                    usuários, senha, reset, avatar, perfil e sync no banco
+  db/client.ts             pool do Postgres (Neon serverless ou pg)
+db/migrations/             SQL fonte de verdade do schema
 components/                UI própria — sem kit genérico
 ```
 
@@ -309,6 +321,10 @@ npm run dev                  # http://localhost:3000
 | `ADZUNA_APP_ID` · `ADZUNA_APP_KEY` | Vagas no Brasil | [developer.adzuna.com](https://developer.adzuna.com) | recomendada |
 | `RAPIDAPI_KEY` | JSearch | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | recomendada |
 | `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` | Rate limit distribuído por IP | [upstash.com](https://upstash.com) (Redis grátis) | produção |
+| `DATABASE_URL` | Contas e dados salvos (Postgres) | [neon.tech](https://neon.tech) → connection string *pooled* | para contas |
+| `AUTH_SECRET` | Assina a sessão | `openssl rand -base64 32` | para contas |
+| `AUTH_GOOGLE_ID` · `AUTH_GOOGLE_SECRET` | "Entrar com Google" | Google Cloud Console → OAuth client | opcional |
+| `RESEND_API_KEY` · `EMAIL_FROM` | E-mail de redefinir senha | [resend.com](https://resend.com) + domínio verificado | opcional |
 
 Só a do Gemini é **obrigatória** — sem ela o app não analisa o CV. As outras duas são gratuitas
 e é delas que vêm as vagas brasileiras: o JSearch agrega **Indeed, Gupy, Catho, ProgramaThor,
@@ -319,6 +335,11 @@ Cada provider degrada com elegância — faltando uma chave, ele retorna vazio e
 funcionando. O Upstash é opcional: sem ele, o rate limit usa um contador em memória por
 instância; com ele, o teto por IP vale para o app inteiro (recomendado em produção, pois é o
 principal freio da cota paga do Gemini num app aberto).
+
+As contas são opcionais. Com `DATABASE_URL` e `AUTH_SECRET`, o login por e-mail e senha
+funciona. O botão do Google só aparece com as credenciais dele, e o "esqueci minha senha" só
+aparece em produção com o Resend configurado. As migrations ficam em `db/migrations/` e são
+aplicadas em ordem no banco.
 
 > 🔒 As chaves ficam **só no servidor** (API Routes) — nunca chegam ao navegador.
 
@@ -342,7 +363,9 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 
 ## Roadmap
 
-- [ ] Perfil com login (e-mail/senha + Google) e dados persistidos no servidor — PRD arquivado no planejamento local. Backend: Neon Postgres + NextAuth v5. Modo convidado continua funcionando.
+- [x] Conta opcional — e-mail/senha ou Google, reset de senha, foto de perfil e dados salvos no Neon; o modo convidado continua funcionando
+- [ ] Excluir conta e exportar os dados
+- [ ] Trocar o e-mail com verificação
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
 - [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência
 - [x] Tracker de candidaturas — Kanban local: Aplicado → Entrevista → Oferta
