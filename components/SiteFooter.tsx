@@ -37,6 +37,7 @@ export function SiteFooter() {
               <li><Link href="/#cv-upload" className="link-underline text-foreground/80 hover:text-foreground">Enviar currículo</Link></li>
               <li><Link href="/resultados" className="link-underline text-foreground/80 hover:text-foreground">Ver vagas</Link></li>
               <li><Link href="/perfil" className="link-underline text-foreground/80 hover:text-foreground">Meu perfil</Link></li>
+              <li><Link href="/privacidade" className="link-underline text-foreground/80 hover:text-foreground">Privacidade</Link></li>
             </ul>
           </div>
 
