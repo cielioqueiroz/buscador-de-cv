@@ -37,7 +37,9 @@ Desde 2026-10-13 o app exige conta. O navegador ainda guarda uma cópia do perfi
 
 Com conta, perfil, tracker, favoritos, cartas, CVs adaptados e foto ficam no Neon, ligados ao usuário com `on delete cascade`. O texto do CV é enviado ao Gemini para análise.
 
-Ainda faltam, e estão no roadmap: RLS no Postgres como segunda barreira, excluir conta, exportar dados e troca de e-mail com verificação.
+Em `/conta` o usuário baixa um JSON com todos os seus dados e exclui a conta (confirma digitando o e-mail e, se houver, a senha; limite de 5 tentativas por hora). Como a sessão é um JWT de 30 dias, as rotas de IA conferem no banco que o usuário ainda existe — conta excluída num aparelho para de funcionar nos outros.
+
+Ainda faltam, e estão no roadmap: RLS no Postgres como segunda barreira, verificação de e-mail no cadastro e troca de e-mail com verificação.
 
 ## Limitações operacionais
 

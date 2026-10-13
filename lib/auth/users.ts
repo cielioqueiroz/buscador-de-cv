@@ -61,12 +61,15 @@ export type AccountRow = {
   email: string;
   image: string | null;
   provider: string | null;
+  /** Conta com senha própria (e-mail) — quem só usa Google não tem. */
+  has_password: boolean;
 };
 
 /** Dados públicos da conta — nunca devolve o hash da senha. */
 export async function getAccount(userId: string): Promise<AccountRow | null> {
   const result = await pool.query<AccountRow>(
-    `select id, name, email::text as email, image, provider
+    `select id, name, email::text as email, image, provider,
+            password_hash is not null as has_password
        from users
       where id = $1
       limit 1`,
@@ -83,7 +86,8 @@ export async function updateUserName(
     `update users
         set name = $2, updated_at = now()
       where id = $1
-  returning id, name, email::text as email, image, provider`,
+  returning id, name, email::text as email, image, provider,
+            password_hash is not null as has_password`,
     [userId, name],
   );
   return result.rows[0] ?? null;

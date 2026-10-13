@@ -87,8 +87,8 @@ export default function PrivacidadePage() {
           <section>
             <h2>Por quanto tempo guardamos</h2>
             <p>
-              Enquanto a conta existir. Ao excluir a conta, o perfil, o currículo, as candidaturas, os favoritos, as cartas, os CVs
-              adaptados e a foto são apagados juntos.
+              Enquanto a conta existir. Ao excluir a conta (na página Conta), o perfil, o currículo, as candidaturas, os favoritos,
+              as cartas, os CVs adaptados e a foto são apagados na hora.
             </p>
           </section>
 
@@ -96,8 +96,9 @@ export default function PrivacidadePage() {
             <h2>Seus direitos</h2>
             <p>
               Pela Lei Geral de Proteção de Dados (LGPD), você pode pedir acesso, correção, cópia ou exclusão dos seus dados.
-              Nome e foto podem ser alterados na página <Link href="/conta" className="text-accent-ink underline underline-offset-2">Conta</Link>.
-              Para os outros pedidos, incluindo excluir a conta, fale com o responsável pelo{' '}
+              Na página <Link href="/conta" className="text-accent-ink underline underline-offset-2">Conta</Link> você
+              altera nome e foto, baixa uma cópia de tudo que guardamos e exclui a conta. Para outros pedidos, fale com o
+              responsável pelo{' '}
               <a href={CONTATO} target="_blank" rel="noopener noreferrer" className="text-accent-ink underline underline-offset-2">
                 portfólio
               </a>

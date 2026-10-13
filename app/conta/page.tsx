@@ -5,6 +5,7 @@ import { getAccount } from '@/lib/auth/users';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AccountSettings } from '@/components/auth/AccountSettings';
+import { AccountDataSection } from '@/components/auth/AccountDataSection';
 
 export const metadata: Metadata = {
   title: 'Conta',
@@ -28,6 +29,9 @@ export default async function ContaPage() {
           email={account.email}
           initialImage={account.image}
         />
+        <div className="mt-6">
+          <AccountDataSection email={account.email} hasPassword={account.has_password} />
+        </div>
       </main>
       <SiteFooter />
     </>

@@ -364,7 +364,7 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 ## Roadmap
 
 - [x] Contas — e-mail/senha ou Google, reset de senha, foto de perfil, painel e dados salvos no Neon
-- [ ] Excluir conta e exportar os dados
+- [x] Excluir conta e exportar os dados — em `/conta`, com confirmação por e-mail e senha
 - [ ] Trocar o e-mail com verificação
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
 - [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência

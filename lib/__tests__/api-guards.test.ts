@@ -6,6 +6,10 @@ const { rankJobs } = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/matching', () => ({ rankJobs }));
 vi.mock('@/auth', () => ({ auth: vi.fn(async () => ({ user: { id: 'u1' } })) }));
+vi.mock('@/lib/db/client', () => ({
+  pool: { query: vi.fn(async () => ({ rows: [{}], rowCount: 1 })) },
+  assertDatabaseUrl: () => 'x',
+}));
 
 import { POST as matchPOST } from '@/app/api/jobs/match/route';
 import { assertSameOrigin } from '@/lib/api/request';

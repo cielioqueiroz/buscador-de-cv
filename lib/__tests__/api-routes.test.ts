@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }));
+const { authMock, queryMock } = vi.hoisted(() => ({ authMock: vi.fn(), queryMock: vi.fn() }));
 vi.mock('@/auth', () => ({ auth: authMock }));
+vi.mock('@/lib/db/client', () => ({ pool: { query: queryMock }, assertDatabaseUrl: () => 'x' }));
 vi.mock('@/lib/cv/parser', () => ({ extractText: vi.fn(async () => 'texto cv') }));
 vi.mock('@/lib/ai/gemini', () => ({
   analyzeCV: vi.fn(async () => ({ title: 'Dev', seniority: 'pleno', skills: [], areas: [], searchQueries: ['react'], rawText: 'texto cv' })),
@@ -20,6 +21,8 @@ import { POST as letterPOST } from '@/app/api/cover-letter/route';
 beforeEach(() => {
   authMock.mockReset();
   authMock.mockResolvedValue({ user: { id: 'u1' } });
+  queryMock.mockReset();
+  queryMock.mockResolvedValue({ rows: [{ '?column?': 1 }], rowCount: 1 });
 });
 
 describe('POST /api/jobs/search', () => {
@@ -50,5 +53,13 @@ describe('rotas de IA e busca exigem conta', () => {
     const res = await handler(new Request(`http://x${path}`, { method: 'POST', body: '{}' }));
     expect(res.status).toBe(401);
     expect((await res.json()).error).toMatch(/entre na sua conta/i);
+  });
+
+  it('recusa sessão de conta já excluída (JWT ainda válido em outro aparelho)', async () => {
+    queryMock.mockResolvedValue({ rows: [], rowCount: 0 });
+    const res = await searchPOST(new Request('http://x/api/jobs/search', {
+      method: 'POST', body: JSON.stringify({ queries: ['react'], opts: {} }),
+    }));
+    expect(res.status).toBe(401);
   });
 });
