@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
+import { HeaderLinks } from './HeaderLinks';
 
 export function SiteHeader() {
   return (
@@ -15,18 +16,7 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-2">
-          <Link
-            href="/perfil"
-            className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-foreground sm:inline-flex sm:px-4"
-          >
-            Meu perfil
-          </Link>
-          <Link
-            href="/candidaturas"
-            className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-foreground sm:inline-flex sm:px-4"
-          >
-            Tracker
-          </Link>
+          <HeaderLinks />
           <ThemeToggle />
           <UserMenu />
         </nav>

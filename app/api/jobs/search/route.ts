@@ -3,6 +3,7 @@ import { searchAllProviders } from '@/lib/providers';
 import { parseProviderJobs, SearchRequestSchema } from '@/lib/providers/types';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
+import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 
 const MAX_BODY_BYTES = 96 * 1024;
 
@@ -13,6 +14,8 @@ export async function POST(req: Request) {
     const status = error instanceof ApiRequestError ? error.status : 400;
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
+
+  if (!(await sessionUserId())) return unauthorized();
 
   if (!(await checkRateLimit(`search:${clientIp(req)}`, 20, 60_000))) {
     return NextResponse.json(

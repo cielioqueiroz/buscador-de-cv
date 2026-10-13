@@ -3,6 +3,7 @@ import { rankJobs } from '@/lib/matching';
 import { MatchRequestSchema, MAX_JOBS_PER_MATCH } from '@/lib/providers/types';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
+import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -15,6 +16,8 @@ export async function POST(req: Request) {
     const status = error instanceof ApiRequestError ? error.status : 400;
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
+
+  if (!(await sessionUserId())) return unauthorized();
 
   // Cada request aqui dispara uma chamada de lote ao Gemini — é a rota mais
   // cara do app e a que mais precisa de freio.

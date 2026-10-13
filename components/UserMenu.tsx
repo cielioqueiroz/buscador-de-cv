@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { FiLogOut, FiUser, FiBriefcase, FiSettings } from "react-icons/fi";
 import { Avatar } from "@/components/auth/Avatar";
+import { clearLocalUserData } from "@/lib/store";
 
 export function UserMenu() {
   const { data: session, status } = useSession();
@@ -104,7 +105,10 @@ export function UserMenu() {
             type="button"
             role="menuitem"
             className="flex w-full items-center gap-2 border-t border-border px-4 py-2 text-sm text-foreground hover:bg-background"
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => {
+              clearLocalUserData();
+              void signOut({ callbackUrl: "/" });
+            }}
           >
             <FiLogOut aria-hidden /> Sair
           </button>

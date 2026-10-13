@@ -7,8 +7,8 @@
 | API keys | Ativo | Variáveis server-only; nenhum `NEXT_PUBLIC_*` para credenciais de providers. |
 | Secrets no Git | Ativo | `.env*` ignorado, com exceção apenas de `.env.example`; histórico rastreado sem arquivo de segredo. |
 | Banco / isolamento por usuário | Ativo, sem RLS | Neon Postgres acessado só pelo servidor (`DATABASE_URL` server-only). Toda query de dado do usuário filtra pelo `user_id` da sessão; nenhuma rota recebe o id do dono pelo cliente. RLS no Postgres ainda não está ligado — o isolamento é feito na aplicação. |
-| Criptografia | Limite documentado | Neon criptografa em repouso e exige TLS. Senhas só como hash bcrypt; tokens de reset só como hash SHA-256. O `localStorage` do modo convidado não é tratado como cofre. |
-| Auth server-side / acessos | Ativo | Conta opcional com NextAuth v5 (e-mail/senha e, quando configurado, Google). Rotas de conta e sync checam `auth()` no servidor e devolvem 401 sem sessão. O modo convidado continua anônimo. |
+| Criptografia | Limite documentado | Neon criptografa em repouso e exige TLS. Senhas só como hash bcrypt; tokens de reset só como hash SHA-256. O `localStorage` é só cache das telas e não é tratado como cofre. |
+| Auth server-side / acessos | Ativo | Conta obrigatória para usar o app, com NextAuth v5 (e-mail/senha e, quando configurado, Google). Rotas de IA, busca, conta e sync checam a sessão no servidor e devolvem 401 sem ela; páginas de conta redirecionam para `/entrar`. A landing é pública. |
 | Mass assignment | Ativo | Schemas Zod aceitam somente contratos conhecidos e removem campos extras antes do uso. |
 | Cookies / senhas | Ativo | Sessão JWT em cookie `HttpOnly`, `SameSite=Lax` e `Secure` em produção (padrões do NextAuth), assinada com `AUTH_SECRET`. Senha: mínimo 8 caracteres com letra e número, bcrypt com 12 rounds. Reset: token aleatório de uso único, 30 minutos, tokens antigos invalidados; respostas idênticas para e-mail existente ou não. |
 | Rate limit / bots | Ativo com limite operacional | Rate limit por IP, `Retry-After` e guarda same-origin. Distribuído via Upstash Redis quando as variáveis existem; sem elas, cai para o limiter em memória. CAPTCHA fica na borda quando o tráfego exigir. |
@@ -31,11 +31,11 @@
 - CSP, HSTS em produção, `nosniff`, anti-frame, políticas de origem/referer/permissões e `no-store` nas APIs estão configurados em `next.config.ts`.
 - Dependências de produção são verificadas com `npm audit --omit=dev`.
 
-## Modo convidado e conta
+## Conta e dados no navegador
 
-O app funciona sem cadastro. Nesse modo, o perfil e o ranking ficam no `localStorage`. Isso não é criptografia em repouso e não deve ser tratado como armazenamento seguro contra XSS ou contra alguém com acesso ao navegador. A proteção adequada para esse cenário é manter as chaves no servidor, reduzir a retenção e preservar CSP/validação; criptografia persistente exigiria uma chave fornecida pelo usuário ou uma conta autenticada.
+Desde 2026-10-13 o app exige conta. O navegador ainda guarda uma cópia do perfil e do ranking no `localStorage`, como cache das telas de vagas; o logout apaga essa cópia, para o próximo usuário do mesmo computador não herdar nada. Isso não é criptografia em repouso e não deve ser tratado como armazenamento seguro contra XSS ou contra alguém com acesso ao navegador. A proteção adequada para esse cenário é manter as chaves no servidor, reduzir a retenção e preservar CSP/validação; criptografia persistente exigiria uma chave fornecida pelo usuário ou uma conta autenticada.
 
-Com conta, perfil, tracker, favoritos, cartas, CVs adaptados e foto ficam no Neon, ligados ao usuário com `on delete cascade`. O texto do CV continua sendo enviado ao Gemini para análise, como no modo convidado.
+Com conta, perfil, tracker, favoritos, cartas, CVs adaptados e foto ficam no Neon, ligados ao usuário com `on delete cascade`. O texto do CV é enviado ao Gemini para análise.
 
 Ainda faltam, e estão no roadmap: RLS no Postgres como segunda barreira, excluir conta, exportar dados e troca de e-mail com verificação.
 

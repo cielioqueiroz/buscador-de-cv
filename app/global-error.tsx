@@ -40,7 +40,7 @@ export default function GlobalError({
             Algo quebrou aqui do nosso lado
           </h1>
           <p style={{ marginTop: '0.75rem', color: '#9b9b91', lineHeight: 1.6 }}>
-            Não foi culpa sua, e o seu currículo continua salvo neste navegador.
+            Não foi culpa sua, e o seu perfil continua salvo na sua conta.
           </p>
           <button
             onClick={reset}

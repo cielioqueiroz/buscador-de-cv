@@ -3,6 +3,7 @@ import { generateCoverLetter } from '@/lib/ai/gemini';
 import { CoverLetterRequestSchema } from '@/lib/cover-letter';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
+import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -15,6 +16,8 @@ export async function POST(req: Request) {
     const status = error instanceof ApiRequestError ? error.status : 400;
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
+
+  if (!(await sessionUserId())) return unauthorized();
 
   // Uma chamada ao Gemini por carta — mais barata que /match, que dispara o
   // lote inteiro. Mas o botão "regenerar" convida a insistir, então o teto

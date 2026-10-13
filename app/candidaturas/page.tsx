@@ -16,7 +16,7 @@ export default function CandidaturasPage() {
           <div>
             <p className="font-mono text-[11px] uppercase tracking-widest text-muted">Seu processo seletivo</p>
             <h1 className="mt-2 font-display text-4xl font-extrabold">Tracker de candidaturas</h1>
-            <p className="mt-2 max-w-xl text-muted">Organize cada oportunidade do primeiro clique até a oferta. Seus dados ficam neste navegador.</p>
+            <p className="mt-2 max-w-xl text-muted">Organize cada oportunidade do primeiro clique até a oferta. Fica salvo na sua conta, em qualquer aparelho.</p>
           </div>
           <span className="rounded-full border border-border bg-surface px-3 py-1.5 font-mono text-xs text-muted">Arraste para mover</span>
         </div>

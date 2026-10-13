@@ -3,7 +3,7 @@ import { extractText, hasValidSignature, SUPPORTED_EXTENSIONS } from '@/lib/cv/p
 import { analyzeCV } from '@/lib/ai/gemini';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
-import { auth } from '@/auth';
+import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { upsertProfile } from '@/lib/auth/profile';
 
 export const runtime = 'nodejs';
@@ -17,6 +17,9 @@ export async function POST(req: Request) {
     const status = error instanceof ApiRequestError ? error.status : 400;
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
+
+  const userId = await sessionUserId();
+  if (!userId) return unauthorized();
 
   if (!(await checkRateLimit(`analyze:${clientIp(req)}`, 5, 60_000))) {
     return NextResponse.json(
@@ -61,16 +64,12 @@ export async function POST(req: Request) {
 
     const profile = await analyzeCV(text);
 
-    // Quando o usuário está logado, o servidor é a fonte de verdade do perfil:
-    // persistimos sem perguntar e devolvemos o mesmo payload que o convidado
-    // receberia, para o cliente continuar o fluxo normal.
-    const session = await auth();
-    if (session?.user?.id) {
-      try {
-        await upsertProfile(session.user.id, profile);
-      } catch (err) {
-        console.error('[api/cv/analyze] falha ao persistir perfil:', err);
-      }
+    // O servidor é a fonte de verdade do perfil. Se a gravação falhar, o
+    // usuário ainda recebe o perfil e segue para as vagas nesta sessão.
+    try {
+      await upsertProfile(userId, profile);
+    } catch (err) {
+      console.error('[api/cv/analyze] falha ao persistir perfil:', err);
     }
 
     return NextResponse.json({ profile });

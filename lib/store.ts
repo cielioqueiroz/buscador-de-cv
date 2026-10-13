@@ -27,6 +27,18 @@ export function clearProfile() {
   safeRemove(LETTERS_KEY);
 }
 
+/**
+ * Apaga deste navegador tudo que pertence à conta: perfil, ranking, cartas,
+ * favoritos e tracker (a chave do tracker vive em lib/applications.ts). Roda
+ * no logout para o próximo usuário do mesmo computador não herdar nada — nem
+ * via banner de importação. Tema e região são preferências do aparelho e ficam.
+ */
+export function clearLocalUserData() {
+  for (const key of [CV_KEY, RANKED_KEY, LETTERS_KEY, FAV_KEY, 'jf_applications']) {
+    safeRemove(key);
+  }
+}
+
 type LetterMap = Record<string, SavedLetter>;
 
 function readLetters(): LetterMap {

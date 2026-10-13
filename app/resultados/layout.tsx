@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
 
-/**
- * Mesma razão do /perfil: as vagas vêm do localStorage. Sem CV enviado, o robô
- * vê só o estado vazio.
- */
+/** Página de conta: exige login (ver page.tsx); robô só veria o redirect. */
 export const metadata: Metadata = {
   title: 'Vagas para o seu perfil',
   robots: { index: false, follow: true },

@@ -53,7 +53,7 @@ export default function Error({
 
         <h1 className="mt-5 font-display text-2xl font-extrabold">Algo quebrou aqui do nosso lado</h1>
         <p className="mt-2 text-sm text-muted">
-          Não foi culpa sua, e o seu currículo continua salvo neste navegador. Tentar de novo
+          Não foi culpa sua, e o seu perfil continua salvo na sua conta. Tentar de novo
           costuma resolver.
         </p>
 

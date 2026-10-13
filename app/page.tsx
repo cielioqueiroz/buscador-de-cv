@@ -6,6 +6,7 @@ import { LogoMarquee } from '@/components/LogoMarquee';
 import { HeroFieldLazy } from '@/components/HeroFieldLazy';
 import { Reveal } from '@/components/Reveal';
 import { Magnetic } from '@/components/Magnetic';
+import { isGoogleEnabled } from '@/lib/auth/features';
 
 const STEPS = [
   {
@@ -42,7 +43,7 @@ const FAQ = [
   },
   {
     q: 'O Vaga Certa é gratuito?',
-    a: 'Sim, e sem cadastro. Seus dados ficam no seu próprio navegador. O currículo é lido no servidor apenas para gerar a análise — não guardamos o arquivo.',
+    a: 'Sim. Basta criar uma conta grátis (e-mail ou Google). O currículo é lido no servidor só para gerar a análise — guardamos o perfil extraído, não o arquivo.',
   },
   {
     q: 'De onde vêm as vagas?',
@@ -62,7 +63,7 @@ const FEATURES = [
   { icon: FiCpu, title: 'Análise com IA de verdade', desc: 'Nada de palavra-chave boba. O Gemini entende contexto, senioridade e o que você sabe fazer.' },
   { icon: FiShield, title: 'Só fontes legais', desc: 'Agregadores oficiais e JSearch. Sem scraping, sem cair em site duvidoso.' },
   { icon: FiTarget, title: 'Score explicado', desc: 'Cada vaga vem com a nota de match, os motivos a favor e o que falta no seu CV.' },
-  { icon: FiZap, title: 'Sem cadastro', desc: 'Comece em segundos. Seus dados ficam no seu navegador, sob seu controle.' },
+  { icon: FiZap, title: 'Tudo salvo na conta', desc: 'Cadastro grátis em segundos. Perfil, vagas, cartas e tracker te acompanham em qualquer aparelho.' },
 ];
 
 export default function Home() {
@@ -104,9 +105,9 @@ export default function Home() {
             </div>
 
             <div className="animate-rise" style={{ animationDelay: '120ms' }}>
-              <CVUpload />
+              <CVUpload googleEnabled={isGoogleEnabled()} />
               <p className="mt-3 text-center font-mono text-xs text-muted">
-                Sem cadastro. Seus dados ficam no seu navegador.
+                Conta grátis. Perfil e vagas salvos em qualquer aparelho.
               </p>
             </div>
           </div>
@@ -188,7 +189,7 @@ export default function Home() {
               Pronto para achar a sua vaga?
             </h2>
             <p className="relative mx-auto mt-3 max-w-md text-muted">
-              Leva menos de um minuto. Sem cadastro, sem enrolação.
+              Leva menos de um minuto. Conta grátis, sem enrolação.
             </p>
             <div className="relative mt-7">
               <Magnetic>

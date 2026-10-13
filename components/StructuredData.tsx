@@ -33,7 +33,7 @@ const schema = {
         'Score de compatibilidade de 0 a 100 por vaga',
         'Motivos do match e lacunas do currículo',
         'Link oficial de candidatura, sem intermediário',
-        'Sem cadastro — os dados ficam no navegador',
+        'Conta grátis com perfil, vagas e tracker salvos',
       ],
       author: {
         '@type': 'Person',

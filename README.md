@@ -20,7 +20,7 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 
 ### [🚀 Ver funcionando →](https://vaga-certa-sooty.vercel.app)
 
-<sub>Sem cadastro. Suba um currículo e veja o score.</sub>
+<sub>Conta grátis. Suba um currículo e veja o score.</sub>
 
 <br/>
 
@@ -40,14 +40,14 @@ Você solta o currículo — **PDF, Word (.doc/.docx), TXT, Markdown, RTF ou CSV
 4. **Se você quiser**, a IA escreve a **carta de apresentação** daquela vaga — no tom e no
    tamanho que você escolher, mostrando quais palavras-chave da vaga entraram no texto.
    Baixe em **PDF** ou **compartilhe** pelo menu do seu próprio celular.
-5. Você vai direto ao **link oficial** — sem intermediário e sem precisar de cadastro.
+5. Você vai direto ao **link oficial** — sem intermediário.
 6. Em cada vaga, você pode **adaptar o CV** para destacar somente experiências reais relevantes.
 7. Adicione oportunidades ao **tracker Kanban** e acompanhe Aplicado → Entrevista → Oferta.
 8. No seu perfil, gere um relatório de **como melhorar o CV** com prioridades acionáveis.
 
-Se quiser, **crie uma conta** (e-mail e senha, ou Google) e o perfil, o tracker, os favoritos,
-as cartas e a foto passam a ficar salvos no servidor — em qualquer aparelho. Sem conta, tudo
-continua funcionando no navegador.
+Para usar, basta **criar uma conta grátis** (e-mail e senha, ou Google). O perfil, o tracker,
+os favoritos, as cartas e a foto ficam salvos na conta — em qualquer aparelho. Quem está logado
+abre o site direto no painel do perfil.
 
 > ⚖️ **Nada de scraping.** Só agregadores legais — e nós sempre levamos você ao anúncio original.
 
@@ -125,8 +125,7 @@ cautelas para você revisar antes de enviar.
 
 O botão **Acompanhar** salva a vaga no tracker, disponível em `/candidaturas`.
 O quadro tem três colunas e aceita arrastar os cards ou mudar a etapa pelo
-seletor. O estado fica no `localStorage`, sem cadastro e sem enviar dados para
-um servidor.
+seletor. O tracker fica salvo na conta.
 
 ### Relatório de melhoria do CV
 
@@ -263,7 +262,7 @@ app/
   conta/page.tsx           foto de perfil e nome
   api/
     auth/                  NextAuth + cadastro + reset de senha
-    perfil/                import do perfil convidado, foto (avatar) e conta
+    perfil/                import de dados antigos do navegador, foto (avatar) e conta
     sync/                  tracker, favoritos, cartas e CVs adaptados no banco
     cv/analyze             extrai texto → Gemini devolve o CVProfile
     cv/adapt               adapta o CV para uma vaga específica
@@ -336,7 +335,8 @@ funcionando. O Upstash é opcional: sem ele, o rate limit usa um contador em mem
 instância; com ele, o teto por IP vale para o app inteiro (recomendado em produção, pois é o
 principal freio da cota paga do Gemini num app aberto).
 
-As contas são opcionais. Com `DATABASE_URL` e `AUTH_SECRET`, o login por e-mail e senha
+O app exige conta para analisar o CV, buscar e pontuar vagas e gerar textos — as rotas de IA
+devolvem 401 sem sessão. Com `DATABASE_URL` e `AUTH_SECRET`, o login por e-mail e senha
 funciona. O botão do Google só aparece com as credenciais dele, e o "esqueci minha senha" só
 aparece em produção com o Resend configurado. As migrations ficam em `db/migrations/` e são
 aplicadas em ordem no banco.
@@ -363,7 +363,7 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 
 ## Roadmap
 
-- [x] Conta opcional — e-mail/senha ou Google, reset de senha, foto de perfil e dados salvos no Neon; o modo convidado continua funcionando
+- [x] Contas — e-mail/senha ou Google, reset de senha, foto de perfil, painel e dados salvos no Neon
 - [ ] Excluir conta e exportar os dados
 - [ ] Trocar o e-mail com verificação
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar

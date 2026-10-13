@@ -3,6 +3,7 @@ import { adaptCV } from '@/lib/ai/gemini';
 import { AdaptCVRequestSchema } from '@/lib/cv-features';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 
 export const runtime = 'nodejs';
 const MAX_BODY_BYTES = 256 * 1024;
@@ -10,6 +11,7 @@ const MAX_BODY_BYTES = 256 * 1024;
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
+    if (!(await sessionUserId())) return unauthorized();
     if (!(await checkRateLimit(`adapt:${clientIp(req)}`, 8, 60_000))) {
       return NextResponse.json(
         { error: 'Muitas adaptações seguidas. Aguarde um minuto.' },

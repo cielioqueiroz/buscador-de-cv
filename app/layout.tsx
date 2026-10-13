@@ -25,7 +25,7 @@ const SITE = "https://vaga-certa-sooty.vercel.app";
 const TITULO = "Vaga Certa — encontre vagas pelo seu currículo, com IA";
 const DESCRICAO =
   "Envie seu currículo e a IA encontra vagas reais no Brasil que combinam com o seu perfil — " +
-  "com nota de compatibilidade de 0 a 100, os motivos do match e o link oficial de candidatura. Grátis, sem cadastro.";
+  "com nota de compatibilidade de 0 a 100, os motivos do match e o link oficial de candidatura. Grátis, com conta.";
 
 export const metadata: Metadata = {
   // Sem metadataBase o Next não consegue montar as URLs absolutas que o

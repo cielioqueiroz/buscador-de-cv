@@ -1,21 +1,46 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 import { FiUploadCloud, FiFileText } from 'react-icons/fi';
 import { runJourney, type Stage } from '@/lib/journey';
 import { LoadingJourney } from '@/components/LoadingJourney';
+import { AuthGateModal } from '@/components/auth/AuthGateModal';
 import { cn } from '@/lib/utils';
 
 const ACCEPT = '.pdf,.doc,.docx,.txt,.md,.rtf,.csv';
 const MAX_MB = 8;
 
-export function CVUpload() {
+type Props = {
+  /** Se o modal de cadastro deve oferecer "Criar conta com Google". */
+  googleEnabled?: boolean;
+};
+
+export function CVUpload({ googleEnabled = false }: Props) {
   const router = useRouter();
+  const { status } = useSession();
+  const authed = status === 'authenticated';
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [stage, setStage] = useState<Stage | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [gateOpen, setGateOpen] = useState(false);
+  const closeGate = useCallback(() => setGateOpen(false), []);
+
+  /** Visitante vê o convite para criar conta; enquanto a sessão carrega, nada acontece. */
+  function canUse(): boolean {
+    if (status === 'loading') return false;
+    if (!authed) {
+      setGateOpen(true);
+      return false;
+    }
+    return true;
+  }
+
+  function openPicker() {
+    if (canUse()) inputRef.current?.click();
+  }
 
   async function handleFile(file: File) {
     // Permite escolher o mesmo arquivo novamente depois de uma falha.
@@ -40,6 +65,7 @@ export function CVUpload() {
   if (stage) return <LoadingJourney stage={stage} />;
 
   return (
+    <>
     <div
       id="cv-upload"
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -48,16 +74,16 @@ export function CVUpload() {
         e.preventDefault();
         setDragging(false);
         const f = e.dataTransfer.files?.[0];
-        if (f) handleFile(f);
+        if (f && canUse()) handleFile(f);
       }}
-      onClick={() => inputRef.current?.click()}
+      onClick={openPicker}
       role="button"
       tabIndex={0}
       aria-label="Enviar currículo"
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          inputRef.current?.click();
+          openPicker();
         }
       }}
       className={cn(
@@ -107,7 +133,12 @@ export function CVUpload() {
         <span className="mt-1 rounded-full bg-accent px-5 py-2 font-display text-sm font-bold text-accent-foreground transition-all duration-300 group-hover:scale-105 group-hover:shadow-accent">
           Escolher arquivo
         </span>
+        {status === 'unauthenticated' ? (
+          <span className="text-xs text-muted">Precisa de uma conta grátis — leva 30 segundos.</span>
+        ) : null}
       </div>
     </div>
+    <AuthGateModal open={gateOpen} onClose={closeGate} googleEnabled={googleEnabled} />
+    </>
   );
 }
