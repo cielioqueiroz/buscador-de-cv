@@ -1,5 +1,6 @@
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { z } from 'zod';
+import { clampToJsonSchema } from '@/lib/ai/clamp';
 import {
   CVProfile,
   CVProfileAISchema,
@@ -89,6 +90,7 @@ async function generateJson<T>(
   prompt: string,
   maxOutputTokens: number,
 ): Promise<T> {
+  const jsonSchema = toGeminiSchema(schema);
   const res = await withRetry(() => client().models.generateContent({
     model: MODEL,
     contents: prompt,
@@ -97,16 +99,16 @@ async function generateJson<T>(
       maxOutputTokens,
       thinkingConfig: THINKING,
       responseMimeType: 'application/json',
-      responseJsonSchema: toGeminiSchema(schema),
+      responseJsonSchema: jsonSchema,
     },
   }));
 
   const text = res.text;
   if (!text) throw new Error('A IA não devolveu resposta.');
 
-  // O responseJsonSchema já restringe a saída, mas quem garante o contrato aqui
-  // dentro é o zod — a validação não é opcional.
-  return schema.parse(JSON.parse(text));
+  // O responseJsonSchema orienta a saída, mas o modelo às vezes estoura
+  // tamanhos; encurtamos o excesso e o zod continua garantindo o contrato.
+  return schema.parse(clampToJsonSchema(JSON.parse(text), jsonSchema));
 }
 
 export async function analyzeCV(rawText: string): Promise<CVProfile> {
