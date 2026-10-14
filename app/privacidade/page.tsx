@@ -44,7 +44,10 @@ export default function PrivacidadePage() {
                 <strong>Currículo:</strong> o arquivo é lido no servidor e descartado. Guardamos o texto extraído dele e o perfil
                 que a IA monta a partir desse texto (cargo, senioridade, habilidades, áreas e buscas).
               </li>
-              <li><strong>Uso do app:</strong> candidaturas do tracker, vagas favoritas, cartas de apresentação e CVs adaptados que você gerar.</li>
+              <li>
+                <strong>Uso do app:</strong> a última busca de vagas e o ranking com as notas, candidaturas do tracker (com suas
+                anotações), vagas favoritas e descartadas, cartas de apresentação e CVs adaptados que você gerar.
+              </li>
               <li><strong>Foto de perfil:</strong> se você enviar uma, guardamos uma versão reduzida, sem os metadados da imagem (como localização).</li>
               <li><strong>Endereço IP:</strong> usado de forma temporária para limitar o número de requisições e evitar abuso.</li>
             </ul>
@@ -68,7 +71,10 @@ export default function PrivacidadePage() {
               <li><strong>Google Gemini:</strong> recebe o texto do currículo e da vaga para gerar a análise e os textos.</li>
               <li><strong>Fontes de vagas (Adzuna, Remotive e JSearch):</strong> recebem apenas os termos de busca, nunca o seu currículo.</li>
               <li><strong>Neon:</strong> banco de dados onde a conta e os dados ficam guardados.</li>
-              <li><strong>Vercel:</strong> hospedagem do site.</li>
+              <li>
+                <strong>Vercel:</strong> hospedagem do site e métricas agregadas de visitas e de velocidade das páginas, sem
+                cookies e sem identificar quem visita (o endereço das páginas vai sem parâmetros).
+              </li>
               <li><strong>Upstash:</strong> contagem temporária de requisições por IP.</li>
               <li><strong>Resend:</strong> envio dos e-mails da conta.</li>
               <li><strong>Google:</strong> autenticação, se você entrar com a conta Google.</li>
@@ -78,17 +84,18 @@ export default function PrivacidadePage() {
           <section>
             <h2>Cookies e dados no navegador</h2>
             <p>
-              Usamos um cookie de sessão, necessário para manter você conectado. O navegador também guarda uma cópia do perfil e
-              das vagas para as telas abrirem mais rápido; ela é apagada quando você sai da conta. A preferência de tema claro ou
-              escuro também fica no navegador. Não usamos cookies de anúncio nem de rastreamento.
+              Usamos um cookie de sessão, necessário para manter você conectado. O perfil, as vagas e o ranking ficam na sua
+              conta, não no navegador; ele guarda só preferências do aparelho (tema claro ou escuro, a última região buscada) e
+              uma cópia de favoritos e cartas, apagada quando você sai da conta. Não usamos cookies de anúncio nem de rastreamento.
             </p>
           </section>
 
           <section>
             <h2>Por quanto tempo guardamos</h2>
             <p>
-              Enquanto a conta existir. Ao excluir a conta (na página Conta), o perfil, o currículo, as candidaturas, os favoritos,
-              as cartas, os CVs adaptados e a foto são apagados na hora.
+              Enquanto a conta existir. Dados de apoio expiram antes: a busca de vagas vale por 2 horas e as notas guardadas para
+              não repetir a análise, por 14 dias. Ao excluir a conta (na página Conta), o perfil, o currículo, as buscas, o
+              ranking, as candidaturas, os favoritos, as cartas, os CVs adaptados e a foto são apagados na hora.
             </p>
           </section>
 

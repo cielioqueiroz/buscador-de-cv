@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Figtree, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/Providers";
 import { StructuredData } from "@/components/StructuredData";
+import { Telemetry } from "@/components/Telemetry";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -105,6 +106,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <Telemetry />
         <Toaster
           position="top-center"
           toastOptions={{
