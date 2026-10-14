@@ -13,7 +13,7 @@ import {
   FiBookmark,
   FiFileText,
 } from 'react-icons/fi';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 import { ScoreGauge } from './ScoreGauge';
 import { SourceBadge } from './SourceBadge';
 import { CoverLetterPanel } from './CoverLetterPanel';

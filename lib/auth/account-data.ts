@@ -4,6 +4,7 @@ import { verifyPassword } from "@/lib/auth/password";
 import { getAvatar } from "@/lib/auth/avatar";
 import { getProfile } from "@/lib/auth/profile";
 import { listAdaptedCVs, listApplications, listFavorites, listLetters } from "@/lib/auth/sync";
+import { loadRanking } from "@/lib/jobs/store";
 
 /**
  * Direitos do titular (LGPD): levar os dados embora e apagar a conta. Os dois
@@ -11,7 +12,7 @@ import { listAdaptedCVs, listApplications, listFavorites, listLetters } from "@/
  */
 
 export async function exportAccountData(userId: string) {
-  const [accountResult, profile, applications, favorites, letters, adaptedCVs, avatar] = await Promise.all([
+  const [accountResult, profile, applications, favorites, letters, adaptedCVs, avatar, ranking] = await Promise.all([
     pool.query<{ name: string | null; email: string; provider: string | null; created_at: Date }>(
       `select name, email::text as email, provider, created_at from users where id = $1`,
       [userId],
@@ -22,6 +23,7 @@ export async function exportAccountData(userId: string) {
     listLetters(userId),
     listAdaptedCVs(userId),
     getAvatar(userId),
+    loadRanking(userId),
   ]);
   const account = accountResult.rows[0];
   if (!account) return null;
@@ -40,6 +42,9 @@ export async function exportAccountData(userId: string) {
     favorites,
     coverLetters: letters,
     adaptedCVs,
+    // Busca e notas em cache são derivadas e expiram sozinhas; o ranking é o
+    // resultado que o usuário vê, então vai junto.
+    ranking,
     avatar: avatar
       ? { mime: avatar.mime, base64: Buffer.from(avatar.data).toString("base64") }
       : null,

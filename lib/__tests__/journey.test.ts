@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { runJourney, searchAndRank, type Stage } from '@/lib/journey';
-import { loadProfile, loadRanked } from '@/lib/store';
 import type { CVProfile } from '@/lib/providers/types';
 
 const profile = {
@@ -51,17 +50,20 @@ describe('runJourney', () => {
     expect(out.profile.title).toBe('Analista de Dados');
   });
 
-  it('salva perfil e ranking, para /resultados abrir pronto', async () => {
-    vi.stubGlobal('fetch', mockFetch({
+  // O servidor pontua a busca que ele guardou contra o perfil da conta: o
+  // navegador não manda (nem pode adulterar) perfil e vagas.
+  it('pede o match sem mandar perfil nem vagas', async () => {
+    const fetchMock = mockFetch({
       '/api/cv/analyze': { profile },
       '/api/jobs/search': { jobs: [job] },
       '/api/jobs/match': { ranked },
-    }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     await runJourney(file, () => {});
 
-    expect(loadProfile()?.title).toBe('Analista de Dados');
-    expect(loadRanked()).toHaveLength(1);
+    const match = fetchMock.mock.calls.find((c) => c[0] === '/api/jobs/match');
+    expect(JSON.parse((match![1] as RequestInit).body as string)).toEqual({});
   });
 
   /**
@@ -122,6 +124,5 @@ describe('searchAndRank (re-busca regional)', () => {
     expect(corpo.opts).toEqual({ location: 'Goiânia, GO', country: 'br' });
     expect(stages).toEqual(['searching', 'scoring']);
     expect(out).toHaveLength(1);
-    expect(loadRanked()).toHaveLength(1);
   });
 });

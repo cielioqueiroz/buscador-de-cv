@@ -1,31 +1,29 @@
 import { matchJobs } from '@/lib/ai/gemini';
-import { CVProfile, Job, JobSchema, MatchResult, MatchResultSchema } from '@/lib/providers/types';
-import { z } from 'zod';
+import type { CVProfile, Job, MatchResult } from '@/lib/providers/types';
+import type { RankedJob } from '@/lib/ranked';
 
-export interface RankedJob {
-  job: Job;
-  match: MatchResult;
-}
-
-export const RankedJobSchema = z.object({
-  job: JobSchema,
-  match: MatchResultSchema,
-});
+export type { RankedJob } from '@/lib/ranked';
 
 /**
  * Pontua as vagas contra o CV e devolve ordenado por score desc.
  *
- * A pontuação é uma chamada só para o lote inteiro (ver `matchJobs`), então não
- * há mais nada a orquestrar aqui: nem paralelismo, nem aquecimento de cache.
- * Se a chamada falhar, a busca falha — e é isso que o usuário precisa ver, em
- * vez de uma lista vazia fingindo que não há vagas.
+ * `cached` traz notas já conhecidas para este CV (lib/jobs/rank-search.ts):
+ * só as vagas sem nota vão à IA, numa chamada só para o lote (ver
+ * `matchJobs`). `fresh` devolve as notas novas para quem quiser guardá-las.
+ * Se nada puder ser pontuado, a busca falha — é isso que o usuário precisa
+ * ver, em vez de uma lista vazia fingindo que não há vagas.
  */
-export async function rankJobs(cv: CVProfile, jobs: Job[]): Promise<RankedJob[]> {
-  if (jobs.length === 0) return [];
+export async function rankJobs(
+  cv: CVProfile,
+  jobs: Job[],
+  cached: ReadonlyMap<string, MatchResult> = new Map(),
+): Promise<{ ranked: RankedJob[]; fresh: MatchResult[] }> {
+  if (jobs.length === 0) return { ranked: [], fresh: [] };
 
-  const matches = await matchJobs(cv, jobs);
+  const pending = jobs.filter((job) => !cached.has(job.id));
+  const fresh = pending.length > 0 ? await matchJobs(cv, pending) : [];
 
-  const porId = new Map(matches.map((m) => [m.jobId, m]));
+  const porId = new Map<string, MatchResult>([...cached, ...fresh.map((m) => [m.jobId, m] as const)]);
   const ranked: RankedJob[] = [];
   for (const job of jobs) {
     const match = porId.get(job.id);
@@ -42,5 +40,5 @@ export async function rankJobs(cv: CVProfile, jobs: Job[]): Promise<RankedJob[]>
     console.warn(`[rankJobs] a IA pontuou ${ranked.length} de ${jobs.length} vagas`);
   }
 
-  return ranked.sort((a, b) => b.match.score - a.match.score);
+  return { ranked: ranked.sort((a, b) => b.match.score - a.match.score), fresh };
 }

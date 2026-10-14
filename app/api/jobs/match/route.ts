@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
-import { rankJobs } from '@/lib/matching';
-import { MatchRequestSchema, MAX_JOBS_PER_MATCH } from '@/lib/providers/types';
+import { MissingProfileError, MissingSearchError, rankLatestSearch } from '@/lib/jobs/rank-search';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
-import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
+import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
-const MAX_BODY_BYTES = 1_500_000;
 
+/**
+ * Pontua a última busca do usuário. Sem corpo: o perfil e as vagas vêm do
+ * banco (lib/jobs/rank-search.ts). Antes o navegador mandava os dois, e quem
+ * editasse a requisição punha o texto que quisesse no prompt da IA.
+ */
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
@@ -17,10 +20,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
 
-  if (!(await sessionUserId())) return unauthorized();
+  const userId = await sessionUserId();
+  if (!userId) return unauthorized();
 
-  // Cada request aqui dispara uma chamada de lote ao Gemini — é a rota mais
-  // cara do app e a que mais precisa de freio.
+  // Cada request aqui pode disparar uma chamada de lote ao Gemini — é a rota
+  // mais cara do app e a que mais precisa de freio.
   if (!(await checkRateLimit(`match:${clientIp(req)}`, 5, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas buscas seguidas. Aguarde um minuto.' },
@@ -29,15 +33,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { profile, jobs } = await readJson(req, MatchRequestSchema, MAX_BODY_BYTES);
-    // A busca volta com dezenas de vagas e o cliente manda todas. Cortamos aqui
-    // porque cada vaga pontuada é uma chamada paga — recusar seria quebrar o
-    // fluxo normal do app por causa de um limite que é nosso, não do usuário.
-    const ranked = await rankJobs(profile, jobs.slice(0, MAX_JOBS_PER_MATCH));
+    const ranked = await rankLatestSearch(userId);
     return NextResponse.json({ ranked });
   } catch (err) {
-    if (err instanceof ApiRequestError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
+    if (err instanceof MissingProfileError || err instanceof MissingSearchError) {
+      return NextResponse.json({ error: err.message }, { status: 409 });
     }
     console.error('[api/jobs/match]', err);
     return NextResponse.json({ error: 'Falha no matching' }, { status: 500 });

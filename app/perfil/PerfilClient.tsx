@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { FiCheck, FiRefreshCw, FiSearch, FiSettings } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -9,7 +9,6 @@ import { ScoreGauge } from '@/components/ScoreGauge';
 import { CVImprovementReportPanel } from '@/components/CVImprovementReportPanel';
 import { Avatar } from '@/components/auth/Avatar';
 import { profileChecklist, type DashboardStats } from '@/lib/auth/checklist';
-import { saveProfile } from '@/lib/store';
 import type { CVProfile } from '@/lib/providers/types';
 
 const SENIORITY_LABEL: Record<CVProfile['seniority'], string> = {
@@ -34,12 +33,6 @@ function displayName(account: Props['account']): string {
 
 export function PerfilClient({ account, profile, stats, updatedLabel, googleEnabled }: Props) {
   const [replacing, setReplacing] = useState(false);
-
-  // As outras telas (vagas, carta, CV adaptado) leem o perfil do cache local;
-  // aqui ele é alinhado com o que está salvo na conta.
-  useEffect(() => {
-    if (profile) saveProfile(profile);
-  }, [profile]);
 
   const name = displayName(account);
 

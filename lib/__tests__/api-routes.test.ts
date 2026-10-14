@@ -7,6 +7,8 @@ vi.mock('@/lib/cv/parser', () => ({ extractText: vi.fn(async () => 'texto cv') }
 vi.mock('@/lib/ai/gemini', () => ({
   analyzeCV: vi.fn(async () => ({ title: 'Dev', seniority: 'pleno', skills: [], areas: [], searchQueries: ['react'], rawText: 'texto cv' })),
 }));
+const { saveSearch } = vi.hoisted(() => ({ saveSearch: vi.fn(async () => {}) }));
+vi.mock('@/lib/jobs/store', () => ({ saveSearch }));
 vi.mock('@/lib/providers', () => ({
   searchAllProviders: vi.fn(async () => [{ id: 'a1', title: 'Dev', company: 'A', location: 'SP', remote: false, description: 'd', source: 'adzuna', applyUrl: 'https://x.com/a1' }]),
 }));
@@ -35,6 +37,8 @@ describe('POST /api/jobs/search', () => {
     expect(res.status).toBe(200);
     expect(json.jobs).toHaveLength(1);
     expect(json.jobs[0].applyUrl).toBe('https://x.com/a1');
+    // a lista que o match vai pontuar é a guardada aqui, não a do navegador
+    expect(saveSearch).toHaveBeenCalledWith('u1', json.jobs);
   });
 });
 

@@ -24,7 +24,7 @@ describe('rankJobs', () => {
   it('ordena por score desc e casa cada match com a sua vaga', async () => {
     matchJobs.mockResolvedValueOnce([score('low', 40), score('high', 90)]);
 
-    const ranked = await rankJobs(cv, [mk('low'), mk('high')]);
+    const { ranked } = await rankJobs(cv, [mk('low'), mk('high')]);
     expect(ranked[0].job.id).toBe('high');
     expect(ranked[0].match.score).toBe(90);
     expect(ranked[1].job.id).toBe('low');
@@ -43,7 +43,7 @@ describe('rankJobs', () => {
   it('omite a vaga que a IA deixou de pontuar, em vez de inventar um score', async () => {
     matchJobs.mockResolvedValueOnce([score('a', 50)]); // 'b' ficou de fora
 
-    const ranked = await rankJobs(cv, [mk('a'), mk('b')]);
+    const { ranked } = await rankJobs(cv, [mk('a'), mk('b')]);
     expect(ranked).toHaveLength(1);
     expect(ranked[0].job.id).toBe('a');
   });
@@ -57,5 +57,23 @@ describe('rankJobs', () => {
   it('propaga a falha da IA em vez de engolir', async () => {
     matchJobs.mockRejectedValueOnce(new Error('429 quota'));
     await expect(rankJobs(cv, [mk('a')])).rejects.toThrow(/429/);
+  });
+
+  it('reaproveita as notas em cache e só manda à IA as vagas sem nota', async () => {
+    matchJobs.mockResolvedValueOnce([score('b', 80)]);
+    const cached = new Map([['a', score('a', 95)]]);
+
+    const { ranked, fresh } = await rankJobs(cv, [mk('a'), mk('b')], cached);
+    expect(matchJobs.mock.calls[0][1].map((j: Job) => j.id)).toEqual(['b']);
+    expect(ranked.map((r) => r.job.id)).toEqual(['a', 'b']);
+    expect(fresh).toEqual([score('b', 80)]);
+  });
+
+  it('com tudo em cache, nem chama a IA', async () => {
+    const cached = new Map([['a', score('a', 70)]]);
+    const { ranked, fresh } = await rankJobs(cv, [mk('a')], cached);
+    expect(matchJobs).not.toHaveBeenCalled();
+    expect(ranked).toHaveLength(1);
+    expect(fresh).toEqual([]);
   });
 });

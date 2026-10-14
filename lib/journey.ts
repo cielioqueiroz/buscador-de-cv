@@ -1,9 +1,9 @@
 'use client';
 import { z } from 'zod';
-import { clearProfile, saveProfile, saveRanked } from '@/lib/store';
+import { forgetCVDerivedData } from '@/lib/store';
 import type { CVProfile, Job } from '@/lib/providers/types';
 import { CVProfileSchema, JobSchema } from '@/lib/providers/types';
-import { RankedJobSchema, type RankedJob } from '@/lib/matching';
+import { RankedJobSchema, type RankedJob } from '@/lib/ranked';
 
 /**
  * As etapas que o usuário atravessa entre soltar o currículo e ver as vagas.
@@ -74,21 +74,17 @@ export async function searchAndRank(
 
   // Sem vagas não é falha, é resultado: /resultados já tem estado vazio para
   // isso, e mandar lista vazia para a IA só queimaria uma chamada.
-  if (jobs.length === 0) {
-    saveRanked([]);
-    return [];
-  }
+  if (jobs.length === 0) return [];
 
+  // O servidor pontua a busca que ele mesmo acabou de guardar, contra o perfil
+  // salvo na conta — nada disso viaja de volta daqui.
   onStage('scoring');
   const matched = await post(
     '/api/jobs/match',
-    json({ profile, jobs }),
+    json({}),
     z.object({ ranked: z.array(RankedJobSchema).max(200) }),
   );
-  const ranked: RankedJob[] = matched.ranked;
-  saveRanked(ranked);
-
-  return ranked;
+  return matched.ranked;
 }
 
 /**
@@ -110,8 +106,7 @@ export async function runJourney(
   const profile: CVProfile = analyzed.profile;
 
   onStage('profiling');
-  clearProfile();
-  saveProfile(profile);
+  forgetCVDerivedData();
 
   const ranked = await searchAndRank(profile, {}, onStage);
   return { profile, ranked };

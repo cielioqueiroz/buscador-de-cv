@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { JobCard } from '@/components/JobCard';
 import { FAVORITES_EVENT, getFavorites } from '@/lib/store';
 import { getApplication } from '@/lib/applications';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 import type { CVProfile } from '@/lib/providers/types';
 
 vi.mock('sonner', () => ({

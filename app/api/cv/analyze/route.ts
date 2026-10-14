@@ -5,6 +5,7 @@ import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { upsertProfile } from '@/lib/auth/profile';
+import { clearRanking } from '@/lib/jobs/store';
 
 export const runtime = 'nodejs';
 
@@ -66,8 +67,10 @@ export async function POST(req: Request) {
 
     // O servidor é a fonte de verdade do perfil. Se a gravação falhar, o
     // usuário ainda recebe o perfil e segue para as vagas nesta sessão.
+    // O ranking salvo foi pontuado contra o CV anterior: não vale mais.
     try {
       await upsertProfile(userId, profile);
+      await clearRanking(userId);
     } catch (err) {
       console.error('[api/cv/analyze] falha ao persistir perfil:', err);
     }

@@ -1,30 +1,24 @@
 'use client';
 import { z } from 'zod';
-import { CVProfile } from '@/lib/providers/types';
-import { CVProfileSchema } from '@/lib/providers/types';
-import { RankedJobSchema, type RankedJob } from '@/lib/matching';
 import { LetterMapSchema, type SavedLetter } from '@/lib/letter-schema';
 export type { SavedLetter } from '@/lib/letter-schema';
 
-const CV_KEY = 'jf_cv_profile';
+// Perfil e ranking moram na conta (cv_profiles, rankings). Estas duas chaves
+// são de quando o navegador guardava cópias; só ficam para serem apagadas.
+const LEGACY_CV_KEY = 'jf_cv_profile';
+const LEGACY_RANKED_KEY = 'jf_ranked';
 const FAV_KEY = 'jf_favorites';
-const RANKED_KEY = 'jf_ranked';
 const LETTERS_KEY = 'jf_letters';
 const REGION_KEY = 'jf_region';
 
-export function saveProfile(p: CVProfile) {
-  safeSet(CV_KEY, JSON.stringify(p));
-}
-export function loadProfile(): CVProfile | null {
-  if (typeof window === 'undefined') return null;
-  return readValidated(CV_KEY, CVProfileSchema);
-}
-export function clearProfile() {
-  safeRemove(CV_KEY);
-  safeRemove(RANKED_KEY);
-  // As cartas nasceram do CV antigo. Trocar de currículo e reabrir uma carta
-  // escrita a partir do anterior seria pior do que não ter carta nenhuma.
+/**
+ * CV novo: as cartas guardadas aqui nasceram do anterior, e reabrir uma delas
+ * seria pior do que não ter carta nenhuma.
+ */
+export function forgetCVDerivedData() {
   safeRemove(LETTERS_KEY);
+  safeRemove(LEGACY_CV_KEY);
+  safeRemove(LEGACY_RANKED_KEY);
 }
 
 /**
@@ -34,7 +28,7 @@ export function clearProfile() {
  * via banner de importação. Tema e região são preferências do aparelho e ficam.
  */
 export function clearLocalUserData() {
-  for (const key of [CV_KEY, RANKED_KEY, LETTERS_KEY, FAV_KEY, 'jf_applications']) {
+  for (const key of [LEGACY_CV_KEY, LEGACY_RANKED_KEY, LETTERS_KEY, FAV_KEY, 'jf_applications']) {
     safeRemove(key);
   }
 }
@@ -70,15 +64,6 @@ export function removeLetter(jobId: string) {
   const all = readLetters();
   delete all[jobId];
   safeSet(LETTERS_KEY, JSON.stringify(all));
-}
-
-/** Cache do último ranking para não re-chamar a IA ao navegar. */
-export function saveRanked(jobs: RankedJob[]) {
-  safeSet(RANKED_KEY, JSON.stringify(jobs));
-}
-export function loadRanked(): RankedJob[] | null {
-  if (typeof window === 'undefined') return null;
-  return readValidated(RANKED_KEY, z.array(RankedJobSchema).max(200));
 }
 
 /**

@@ -3,12 +3,10 @@ import { z } from 'zod';
 /**
  * Dois tetos diferentes, de propósito:
  *
- * - MAX_JOBS_IN_REQUEST: quantas vagas o corpo aceita. Com as três fontes
- *   ligadas, uma busca real volta com ~70 vagas (3 queries x 3 providers), e o
- *   cliente manda todas. Este teto já foi 60 e rejeitava o fluxo normal com um
- *   400 — serve para barrar payload absurdo, não para limitar o uso legítimo.
- *   Uma busca de 70 vagas pesa ~85 KB; 200 caberiam em ~240 KB, bem abaixo do
- *   limite de corpo da Vercel.
+ * - MAX_JOBS_IN_REQUEST: quantas vagas uma busca guarda e devolve. Com as três
+ *   fontes ligadas, uma busca real volta com ~70 vagas (3 queries x 3
+ *   providers). Este teto já foi 60 e cortava o fluxo normal — serve para
+ *   barrar volume absurdo, não para limitar o uso legítimo.
  * - MAX_JOBS_PER_MATCH: quantas vagas a IA pontua. É o teto de custo. O
  *   excedente é descartado, não recusado.
  */
@@ -96,11 +94,6 @@ export const SearchRequestSchema = z.object({
     remoteOnly: z.boolean().optional(),
     page: z.number().int().min(1).max(10).optional(),
   }).default({}),
-});
-
-export const MatchRequestSchema = z.object({
-  profile: CVProfileSchema,
-  jobs: z.array(JobSchema).min(1).max(MAX_JOBS_IN_REQUEST),
 });
 
 /** Valida a saída de um adapter antes que ela alcance outra camada. */

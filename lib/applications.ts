@@ -1,7 +1,7 @@
 'use client';
 
 import { z } from 'zod';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 import {
   APPLICATION_STAGES,
   ApplicationSchema,

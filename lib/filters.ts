@@ -1,5 +1,5 @@
 import type { Job } from '@/lib/providers/types';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 
 /**
  * Filtros que agem na hora sobre o ranking já carregado, sem custo.

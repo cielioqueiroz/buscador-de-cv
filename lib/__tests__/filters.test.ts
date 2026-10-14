@@ -7,7 +7,7 @@ import {
   DEFAULT_FILTERS,
 } from '@/lib/filters';
 import type { Job } from '@/lib/providers/types';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 
 function job(over: Partial<Job> = {}): Job {
   return {

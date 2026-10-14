@@ -12,7 +12,7 @@
 
 import type { Application, ApplicationStage } from '@/lib/application-schema';
 import type { SavedLetter } from '@/lib/letter-schema';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 import {
   listApplications as listLocalApplications,
   removeApplication as removeLocalApplication,

@@ -12,22 +12,26 @@ import { LoadingJourney } from '@/components/LoadingJourney';
 import { Confetti } from '@/components/Confetti';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
-import { clearProfile, loadProfile, loadRanked, saveProfile, FAVORITES_EVENT } from '@/lib/store';
+import { FAVORITES_EVENT } from '@/lib/store';
 import { useAuthed } from '@/lib/client/use-authed';
 import { fetchFavorites } from '@/lib/client/sync-client';
 import type { CVProfile } from '@/lib/providers/types';
-import type { RankedJob } from '@/lib/matching';
+import type { RankedJob } from '@/lib/ranked';
 
 type Props = {
-  /** Perfil salvo na conta — vale mais que o cache do navegador. */
+  /** Perfil salvo na conta: é contra ele que o servidor pontua as vagas. */
   serverProfile: CVProfile | null;
+  /** Último ranking salvo na conta — a página abre pronta, em qualquer aparelho. */
+  serverRanked: RankedJob[] | null;
 };
 
-export function ResultadosClient({ serverProfile }: Props) {
+export function ResultadosClient({ serverProfile, serverRanked }: Props) {
   const router = useRouter();
-  const [profile, setProfile] = useState<CVProfile | null>(null);
-  const [ranked, setRanked] = useState<RankedJob[]>([]);
-  const [status, setStatus] = useState<'idle' | 'searching' | 'matching' | 'done' | 'error'>('idle');
+  const profile = serverProfile;
+  const [ranked, setRanked] = useState<RankedJob[]>(serverRanked ?? []);
+  const [status, setStatus] = useState<'idle' | 'searching' | 'matching' | 'done' | 'error'>(
+    serverRanked ? 'done' : 'idle',
+  );
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   // Overlay da re-busca regional. Vive em estado próprio (e não no `status`)
   // para a página continuar montada por baixo: trocar a árvore inteira pelo
@@ -57,31 +61,17 @@ export function ResultadosClient({ serverProfile }: Props) {
   }, [authed]);
 
   useEffect(() => {
-    // A conta manda. Se o navegador guarda outro CV (outro aparelho, outra
-    // pessoa no mesmo computador, upload antigo), o cache local é descartado
-    // junto com o ranking que nasceu dele.
-    const local = loadProfile();
-    if (serverProfile && local?.rawText !== serverProfile.rawText) {
-      clearProfile();
-      saveProfile(serverProfile);
-    }
-    const p = serverProfile ?? local;
-    if (!p) {
+    if (!serverProfile) {
       router.replace('/perfil');
       return;
     }
-    setProfile(p);
+    if (serverRanked) return;
 
-    const cached = loadRanked();
-    if (cached !== null) {
-      setRanked(cached);
-      setStatus('done');
-      return;
-    }
-
+    // Conta sem ranking salvo (primeira visita, CV novo): busca aqui mesmo,
+    // com a mesma jornada de quem veio pela home.
     (async () => {
       try {
-        const result = await searchAndRank(p, {}, (s) =>
+        const result = await searchAndRank(serverProfile, {}, (s) =>
           setStatus(s === 'searching' ? 'searching' : 'matching'),
         );
         setRanked(result);
@@ -91,7 +81,7 @@ export function ResultadosClient({ serverProfile }: Props) {
         toast.error(e instanceof Error ? e.message : 'Erro ao buscar vagas.');
       }
     })();
-  }, [router, serverProfile]);
+  }, [router, serverProfile, serverRanked]);
 
   /**
    * Re-busca regional: mudar de lugar exige nova consulta às fontes — só 15

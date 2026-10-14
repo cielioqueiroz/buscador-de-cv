@@ -1,11 +1,16 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getProfile } from '@/lib/auth/profile';
+import { loadRanking } from '@/lib/jobs/store';
 import { ResultadosClient } from './ResultadosClient';
 
 export default async function ResultadosPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/entrar?callbackUrl=/resultados');
-  const serverProfile = await getProfile(session.user.id).catch(() => null);
-  return <ResultadosClient serverProfile={serverProfile} />;
+  const userId = session.user.id;
+  const [serverProfile, serverRanked] = await Promise.all([
+    getProfile(userId).catch(() => null),
+    loadRanking(userId).catch(() => null),
+  ]);
+  return <ResultadosClient serverProfile={serverProfile} serverRanked={serverRanked} />;
 }
