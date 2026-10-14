@@ -1,4 +1,4 @@
-import { userQuery } from "@/lib/db/user-scope";
+import { userQuery, userTransaction } from "@/lib/db/user-scope";
 import {
   ApplicationSchema,
   type Application,
@@ -266,4 +266,17 @@ export async function upsertAdaptedCV(
        updated_at = now()`,
     [userId, jobId, JSON.stringify(payload)],
   );
+}
+
+/** O que cada card de vaga precisa saber, para a lista inteira, numa ida só ao banco. */
+export type CardState = { favorites: string[]; tracked: string[]; withLetter: string[] };
+
+export async function loadCardState(userId: string): Promise<CardState> {
+  const [favorites, tracked, letters] = await userTransaction<{ job_id: string }>(userId, [
+    { text: `select job_id from favorites where user_id = $1`, params: [userId] },
+    { text: `select job_id from applications where user_id = $1`, params: [userId] },
+    { text: `select job_id from cover_letters where user_id = $1`, params: [userId] },
+  ]);
+  const ids = (r: { rows: { job_id: string }[] }) => r.rows.map((row) => row.job_id);
+  return { favorites: ids(favorites), tracked: ids(tracked), withLetter: ids(letters) };
 }

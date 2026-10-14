@@ -40,22 +40,29 @@ interface JobCardProps {
   profile?: CVProfile | null;
   /** "Não tenho interesse". Sem ele, o botão não aparece (ex.: fora do ranking). */
   onDismiss?: (reason: DismissReason) => void;
+  /**
+   * Estado já conhecido (a página carrega o da lista inteira de uma vez). Sem
+   * ele, o card busca o próprio — caminho de quem usa o card avulso.
+   */
+  initial?: { fav: boolean; tracked: boolean; hasLetter: boolean };
 }
 
-export function JobCard({ ranked, index = 0, profile, onDismiss }: JobCardProps) {
+export function JobCard({ ranked, index = 0, profile, onDismiss, initial }: JobCardProps) {
   const { job, match } = ranked;
   const authed = useAuthed();
-  const [fav, setFav] = useState(false);
+  const [fav, setFav] = useState(initial?.fav ?? false);
   const [letterOpen, setLetterOpen] = useState(false);
   // Só para o rótulo do botão: quem já tem carta lê "Ver carta", não "Gerar".
-  const [hasLetter, setHasLetter] = useState(false);
-  const [tracked, setTracked] = useState(false);
+  const [hasLetter, setHasLetter] = useState(initial?.hasLetter ?? false);
+  const [tracked, setTracked] = useState(initial?.tracked ?? false);
+  const conhecido = initial !== undefined;
   const [adaptOpen, setAdaptOpen] = useState(false);
   // Compartilhar é async e passa pela Web Share API — sem este estado, o
   // usuário clicava e não via nada enquanto o menu do sistema abria.
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
+    if (conhecido) return;
     let cancelled = false;
     void Promise.all([
       fetchFavorites(authed),
@@ -70,7 +77,7 @@ export function JobCard({ ranked, index = 0, profile, onDismiss }: JobCardProps)
     return () => {
       cancelled = true;
     };
-  }, [authed, job.id]);
+  }, [authed, job.id, conhecido]);
 
   async function onFav(e: React.MouseEvent) {
     e.preventDefault();

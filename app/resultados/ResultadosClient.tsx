@@ -18,6 +18,7 @@ import { FAVORITES_EVENT } from '@/lib/store';
 import { useAuthed } from '@/lib/client/use-authed';
 import { dismissJobRemote, fetchFavorites, undismissJobRemote } from '@/lib/client/sync-client';
 import type { DismissReason } from '@/lib/dismiss-reasons';
+import type { CardState } from '@/lib/auth/sync';
 import type { CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/ranked';
 
@@ -28,9 +29,11 @@ type Props = {
   serverRanked: RankedJob[] | null;
   /** Vagas que o usuário disse não interessar. */
   serverDismissed: string[];
+  /** Favoritos, tracker e cartas da lista inteira, carregados com a página. */
+  serverCards: CardState;
 };
 
-export function ResultadosClient({ serverProfile, serverRanked, serverDismissed }: Props) {
+export function ResultadosClient({ serverProfile, serverRanked, serverDismissed, serverCards }: Props) {
   const router = useRouter();
   const profile = serverProfile;
   const [ranked, setRanked] = useState<RankedJob[]>(serverRanked ?? []);
@@ -42,12 +45,15 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed 
   // para a página continuar montada por baixo: trocar a árvore inteira pelo
   // overlay desmontava o Filters e o formulário de região esquecia a escolha.
   const [regionStage, setRegionStage] = useState<'searching' | 'scoring' | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>(serverCards.favorites);
+  const tracked = useMemo(() => new Set(serverCards.tracked), [serverCards.tracked]);
+  const withLetter = useMemo(() => new Set(serverCards.withLetter), [serverCards.withLetter]);
 
   const authed = useAuthed();
 
-  // Mantém os favoritos em sincronia: na montagem, quando o coração é clicado
-  // num card (evento) e quando outra aba mexe no localStorage (storage).
+  // Mantém os favoritos em sincronia quando o coração é clicado num card
+  // (evento) e quando outra aba mexe neles (storage). A lista inicial já veio
+  // com a página.
   useEffect(() => {
     let cancelled = false;
     const atualizar = () => {
@@ -55,7 +61,6 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed 
         if (!cancelled) setFavorites(favs);
       });
     };
-    atualizar();
     window.addEventListener(FAVORITES_EVENT, atualizar);
     window.addEventListener('storage', atualizar);
     return () => {
@@ -233,6 +238,11 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed 
                 ranked={r}
                 index={i}
                 profile={profile}
+                initial={{
+                  fav: favSet.has(r.job.id),
+                  tracked: tracked.has(r.job.id),
+                  hasLetter: withLetter.has(r.job.id),
+                }}
                 onDismiss={(reason) => void descartar(r.job.id, reason)}
               />
             ))}

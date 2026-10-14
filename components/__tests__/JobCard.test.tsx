@@ -40,6 +40,22 @@ beforeEach(() => {
 });
 
 describe('JobCard', () => {
+  it('com o estado inicial da página, mostra-o sem buscar nada', () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    render(
+      <JobCard
+        ranked={ranked()}
+        profile={profile}
+        initial={{ fav: true, tracked: true, hasLetter: true }}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Remover dos favoritos' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Acompanhando/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver carta/ })).toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
   it('mostra os dados da vaga e um link de candidatura seguro para o anúncio oficial', () => {
     render(<JobCard ranked={ranked()} />);
 
