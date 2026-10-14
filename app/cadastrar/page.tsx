@@ -23,7 +23,7 @@ export default function CadastrarPage() {
             Criar conta
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Grátis. Dá para seguir usando como convidado se preferir.
+            Grátis. Seu CV, vagas e candidaturas ficam salvos na sua conta.
           </p>
           <div className="mt-6">
             <Suspense fallback={null}>

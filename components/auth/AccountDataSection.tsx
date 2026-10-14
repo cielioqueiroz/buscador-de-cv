@@ -101,7 +101,7 @@ export function AccountDataSection({ email, hasPassword }: Props) {
                 autoComplete="off"
                 value={typedEmail}
                 onChange={(e) => setTypedEmail(e.target.value)}
-                className="w-full rounded-pill border border-border bg-surface px-4 py-2 outline-none focus:ring-accent-ring"
+                className="w-full rounded-pill border border-border bg-surface px-4 py-2 field outline-none"
               />
             </label>
             {hasPassword ? (
@@ -112,7 +112,7 @@ export function AccountDataSection({ email, hasPassword }: Props) {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-pill border border-border bg-surface px-4 py-2 outline-none focus:ring-accent-ring"
+                  className="w-full rounded-pill border border-border bg-surface px-4 py-2 field outline-none"
                 />
               </label>
             ) : null}

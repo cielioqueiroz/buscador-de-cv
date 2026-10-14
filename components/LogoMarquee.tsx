@@ -1,42 +1,42 @@
-const ROW_A = ['LinkedIn', 'Indeed', 'Glassdoor', 'Gupy', 'JSearch', 'Adzuna', 'Remotive'];
-const ROW_B = ['Vagas.com', 'InfoJobs', 'Catho', 'Remotar', 'We Work Remotely', 'Trampos', 'Programathor'];
+const SOURCES = [
+  'LinkedIn', 'Gupy', 'Indeed', 'Vagas.com', 'Glassdoor', 'InfoJobs', 'Catho',
+  'Remotive', 'Programathor', 'Adzuna', 'Trampos', 'We Work Remotely', 'Remotar', 'JSearch',
+];
 
-// Quantas vezes repetir a lista em CADA metade da faixa. Precisa ser largo o
-// bastante para uma metade exceder a maior tela (evita o "buraco" no loop).
-const REPEAT = 5;
+// Quantas vezes repetir a lista em CADA metade da faixa. Uma metade precisa
+// ser mais larga que a área visível, senão aparece um "buraco" no loop.
+const REPEAT = 2;
 
-function Row({ items, reverse }: { items: string[]; reverse?: boolean }) {
-  // Uma "metade" larga o suficiente; a faixa tem duas metades idênticas e
-  // anima translateX(-50%) → o loop fica perfeitamente sem emenda.
-  const half = Array.from({ length: REPEAT }, () => items).flat();
+/**
+ * Faixa das fontes de vagas: nomes como texto puro, sem pílula nem marcador,
+ * uma faixa só. A faixa animada é decorativa (aria-hidden); leitores de tela
+ * recebem a lista uma vez, sem as repetições do loop.
+ */
+export function LogoMarquee() {
+  const half = Array.from({ length: REPEAT }, () => SOURCES).flat();
   const track = [...half, ...half];
   return (
-    <div
-      className={`marquee-track flex w-max gap-3 sm:gap-4 ${reverse ? 'animate-marquee-rev' : 'animate-marquee'}`}
-    >
-      {track.map((name, i) => (
-        <span
-          key={i}
-          className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface px-4 py-2 font-display text-sm font-bold text-foreground/80 sm:px-5 sm:py-2.5 sm:text-base"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-accent-bright sm:h-2 sm:w-2" />
-          {name}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/** Carrossel infinito das fontes/empresas de vagas (duas faixas opostas). */
-export function LogoMarquee() {
-  return (
-    <section aria-label="Fontes de vagas" className="overflow-hidden border-y border-border bg-surface-2/40 py-8 sm:py-10">
-      <p className="mb-5 px-5 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted sm:mb-6 sm:text-[11px] sm:tracking-[0.25em]">
-        vagas reunidas de fontes como
-      </p>
-      <div className="marquee-mask flex flex-col gap-3 sm:gap-4">
-        <Row items={ROW_A} />
-        <Row items={ROW_B} reverse />
+    <section aria-label="Fontes de vagas" className="border-y border-border bg-surface-2/40 py-8 sm:py-10">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 md:flex-row md:items-center md:gap-8">
+        <p className="shrink-0 text-sm text-muted md:w-52 md:border-r md:border-border md:pr-8">
+          Vagas reunidas de{' '}
+          <span className="whitespace-nowrap font-semibold text-foreground">{SOURCES.length} fontes</span>, como:
+        </p>
+        <ul className="sr-only">
+          {SOURCES.map((name) => <li key={name}>{name}</li>)}
+        </ul>
+        <div aria-hidden className="marquee-mask min-w-0 flex-1 overflow-hidden">
+          <div className="marquee-track flex w-max animate-marquee items-center">
+            {track.map((name, i) => (
+              <span
+                key={i}
+                className="shrink-0 whitespace-nowrap px-5 font-display text-lg font-bold tracking-tight text-foreground/40 transition-colors duration-200 hover:text-foreground sm:px-7 sm:text-xl"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 
 type Props = {
   googleEnabled?: boolean;
@@ -65,9 +66,13 @@ export function LoginForm({ googleEnabled = true, passwordResetEnabled = true }:
             type="button"
             onClick={onGoogle}
             disabled={busy !== null}
-            className="flex w-full items-center justify-center gap-2 rounded-pill border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2.5 rounded-pill border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-surface-2 disabled:opacity-60"
           >
-            {busy === "google" ? <FiLoader className="animate-spin" aria-hidden /> : null}
+            {busy === "google" ? (
+              <FiLoader className="animate-spin" aria-hidden />
+            ) : (
+              <FcGoogle className="h-[18px] w-[18px]" aria-hidden />
+            )}
             Entrar com Google
           </button>
           <div className="flex items-center gap-3 text-xs text-muted">
@@ -85,7 +90,7 @@ export function LoginForm({ googleEnabled = true, passwordResetEnabled = true }:
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-pill border border-border bg-background px-4 py-2 outline-none focus:ring-accent-ring"
+          className="w-full rounded-pill border border-border bg-background px-4 py-2 field outline-none"
         />
       </label>
       <label className="block text-sm">
@@ -106,7 +111,7 @@ export function LoginForm({ googleEnabled = true, passwordResetEnabled = true }:
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-pill border border-border bg-background px-4 py-2 outline-none focus:ring-accent-ring"
+          className="w-full rounded-pill border border-border bg-background px-4 py-2 field outline-none"
         />
       </label>
       {error ? (

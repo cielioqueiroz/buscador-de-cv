@@ -62,7 +62,7 @@ export function ResetPasswordForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-pill border border-border bg-background px-4 py-2 outline-none focus:ring-accent-ring"
+          className="w-full rounded-pill border border-border bg-background px-4 py-2 field outline-none"
         />
         <span className="mt-1 block text-xs text-muted">
           Mínimo 8 caracteres, com letra e número.

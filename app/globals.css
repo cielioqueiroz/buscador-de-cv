@@ -167,6 +167,20 @@ body::before {
   box-shadow: 0 10px 28px -10px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
+/* campos de formulário: o hover clareia borda e fundo; o foco acende na cor
+   da marca com um anel suave (o outline padrão fica desligado no campo). */
+.field {
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.field:hover:not(:focus):not(:disabled) {
+  border-color: color-mix(in srgb, var(--foreground) 30%, var(--border));
+  background-color: var(--surface-2);
+}
+.field:focus {
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
 .link-underline { position: relative; }
 .link-underline::after {
   content: "";
@@ -203,7 +217,6 @@ body::before {
   to { transform: translateX(-50%); }
 }
 .animate-marquee { animation: marquee 60s linear infinite; }
-.animate-marquee-rev { animation: marquee 72s linear infinite reverse; }
 .marquee-track:hover { animation-play-state: paused; }
 
 @keyframes spin-slow { to { transform: rotate(360deg); } }

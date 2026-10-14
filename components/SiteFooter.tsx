@@ -1,13 +1,20 @@
 import Link from 'next/link';
-import { FiArrowUpRight } from 'react-icons/fi';
+import type { IconType } from 'react-icons';
+import { FaGithub, FaLinkedinIn } from 'react-icons/fa6';
+import { FiGlobe } from 'react-icons/fi';
 
-const EXTERNO = 'group inline-flex items-center gap-1 text-foreground/80 hover:text-foreground';
-const SETA = 'h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5';
+const LINK = 'link-underline text-foreground/80 hover:text-foreground';
 
-const CONTATO = [
-  { label: 'Portfólio', href: 'https://cielio-portfolio.vercel.app' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jacielio-queiroz/' },
-  { label: 'GitHub', href: 'https://github.com/cielioqueiroz' },
+const FONTES = [
+  { label: 'Adzuna', href: 'https://www.adzuna.com.br' },
+  { label: 'Remotive', href: 'https://remotive.com' },
+  { label: 'JSearch', href: 'https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch' },
+];
+
+const CONTATO: { label: string; href: string; icon: IconType }[] = [
+  { label: 'Portfólio', href: 'https://cielio-portfolio.vercel.app', icon: FiGlobe },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jacielio-queiroz/', icon: FaLinkedinIn },
+  { label: 'GitHub', href: 'https://github.com/cielioqueiroz', icon: FaGithub },
 ];
 
 export function SiteFooter() {
@@ -34,41 +41,41 @@ export function SiteFooter() {
           <div>
             <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Navegar</h4>
             <ul className="mt-4 space-y-2.5 text-sm">
-              <li><Link href="/#cv-upload" className="link-underline text-foreground/80 hover:text-foreground">Enviar currículo</Link></li>
-              <li><Link href="/resultados" className="link-underline text-foreground/80 hover:text-foreground">Ver vagas</Link></li>
-              <li><Link href="/perfil" className="link-underline text-foreground/80 hover:text-foreground">Meu perfil</Link></li>
-              <li><Link href="/privacidade" className="link-underline text-foreground/80 hover:text-foreground">Privacidade</Link></li>
+              <li><Link href="/#cv-upload" className={LINK}>Enviar currículo</Link></li>
+              <li><Link href="/resultados" className={LINK}>Ver vagas</Link></li>
+              <li><Link href="/perfil" className={LINK}>Meu perfil</Link></li>
+              <li><Link href="/privacidade" className={LINK}>Privacidade</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Fontes legais</h4>
             <ul className="mt-4 space-y-2.5 text-sm">
-              <li>
-                <a href="https://www.adzuna.com.br" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1 text-foreground/80 hover:text-foreground">
-                  Adzuna <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-              </li>
-              <li>
-                <a href="https://remotive.com" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1 text-foreground/80 hover:text-foreground">
-                  Remotive <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-              </li>
-              <li>
-                <a href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1 text-foreground/80 hover:text-foreground">
-                  JSearch <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-              </li>
+              {FONTES.map(({ label, href }) => (
+                <li key={label}>
+                  <a href={href} target="_blank" rel="noopener noreferrer" className={LINK}>
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Contato</h4>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              {CONTATO.map(({ label, href }) => (
+            <ul className="mt-4 space-y-2 text-sm">
+              {CONTATO.map(({ label, href, icon: Icon }) => (
                 <li key={label}>
-                  <a href={href} target="_blank" rel="noopener noreferrer" className={EXTERNO}>
-                    {label} <FiArrowUpRight className={SETA} />
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2.5 text-foreground/80 transition-colors hover:text-foreground"
+                  >
+                    <span className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-[15px] text-foreground/70 transition-colors group-hover:border-accent group-hover:bg-accent group-hover:text-accent-foreground">
+                      <Icon aria-hidden />
+                    </span>
+                    {label}
                   </a>
                 </li>
               ))}
@@ -80,17 +87,17 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {year} Vaga Certa — feito por{' '}
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
+            <span>© {year} Vaga Certa — feito por</span>
             <a
               href="https://cielio-portfolio.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="link-underline font-medium text-foreground/80 hover:text-foreground"
+              className="inline-flex items-center gap-1.5 rounded-pill border border-accent/40 bg-accent/10 px-3 py-1 text-sm font-semibold text-accent-ink transition-colors hover:border-accent hover:bg-accent hover:text-accent-foreground"
             >
               Ciélio Queiroz
             </a>
-            . Sem scraping — sempre com o link oficial.
+            <span>Sem scraping — sempre com o link oficial.</span>
           </p>
           <p className="font-display font-bold text-foreground/80">
             Todo talento merece a <span className="text-accent-ink">vaga certa</span>.
