@@ -3,9 +3,8 @@ import { useSession } from 'next-auth/react';
 
 /**
  * `true` quando há sessão autenticada confirmada; `false` enquanto
- * `useSession` ainda carrega ou quando é convidado. É esse `false` que mantém
- * o modo convidado funcionando — nada do servidor é tentado antes de termos
- * certeza de que vale a pena.
+ * `useSession` ainda carrega. Nada do servidor é tentado antes disso: no
+ * intervalo, as telas leem o cache do localStorage.
  */
 export function useAuthed(): boolean {
   const { status } = useSession();

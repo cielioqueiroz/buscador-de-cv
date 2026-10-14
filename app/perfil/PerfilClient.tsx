@@ -7,7 +7,6 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { CVUpload } from '@/components/CVUpload';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { CVImprovementReportPanel } from '@/components/CVImprovementReportPanel';
-import { ImportGuestProfileBanner } from '@/components/ImportGuestProfileBanner';
 import { Avatar } from '@/components/auth/Avatar';
 import { profileChecklist, type DashboardStats } from '@/lib/auth/checklist';
 import { saveProfile } from '@/lib/store';
@@ -48,7 +47,6 @@ export function PerfilClient({ account, profile, stats, updatedLabel, googleEnab
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-5">
-        <ImportGuestProfileBanner serverProfile={profile} />
         {profile ? (
           <Dashboard
             account={account}
