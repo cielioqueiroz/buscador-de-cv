@@ -13,7 +13,7 @@ beforeEach(() => queryMock.mockReset());
 
 describe('issueResetToken', () => {
   it('gera token em claro, grava hash e devolve expiração', async () => {
-    queryMock.mockResolvedValueOnce({ rows: [] });
+    queryMock.mockResolvedValue({ rows: [] });
     const { token, expiresAt } = await issueResetToken('u1');
     expect(token).toMatch(/^[A-Za-z0-9_-]{20,}$/);
     expect(expiresAt.getTime()).toBeGreaterThan(Date.now());
@@ -24,60 +24,31 @@ describe('issueResetToken', () => {
     expect(args[0]).not.toBe(token);
     expect(args[0]).toMatch(/^[a-f0-9]{64}$/);
     expect(args[1]).toBe('u1');
+    expect(queryMock.mock.calls[1][0]).toContain('delete from password_reset_tokens where expires_at');
   });
 });
 
 describe('consumeResetToken', () => {
-  it('devolve null para token inexistente', async () => {
+  it('devolve null quando o token não pode ser reivindicado (inexistente, vencido ou usado)', async () => {
     queryMock.mockResolvedValueOnce({ rows: [] });
     expect(await consumeResetToken('qualquer', 'novasenha1')).toBeNull();
+    const sql = queryMock.mock.calls[0][0];
+    // validade e uso único checados no próprio UPDATE — sem corrida entre ler e gravar
+    expect(sql).toContain('used_at is null');
+    expect(sql).toContain('expires_at > now()');
+    expect(queryMock).toHaveBeenCalledTimes(1);
   });
 
-  it('devolve null para token expirado', async () => {
-    queryMock.mockResolvedValueOnce({
-      rows: [
-        {
-          user_id: 'u1',
-          expires_at: new Date(Date.now() - 1_000),
-          used_at: null,
-        },
-      ],
-    });
-    expect(await consumeResetToken('abc', 'novasenha1')).toBeNull();
-  });
-
-  it('devolve null para token já usado', async () => {
-    queryMock.mockResolvedValueOnce({
-      rows: [
-        {
-          user_id: 'u1',
-          expires_at: new Date(Date.now() + 60_000),
-          used_at: new Date(Date.now() - 1_000),
-        },
-      ],
-    });
-    expect(await consumeResetToken('abc', 'novasenha1')).toBeNull();
-  });
-
-  it('troca a senha e marca o token como usado', async () => {
+  it('troca a senha, carimba password_changed_at e invalida os outros tokens', async () => {
     queryMock
-      .mockResolvedValueOnce({
-        rows: [
-          {
-            user_id: 'u1',
-            expires_at: new Date(Date.now() + 60_000),
-            used_at: null,
-          },
-        ],
-      })
+      .mockResolvedValueOnce({ rows: [{ user_id: 'u1' }] }) // reivindica o token
       .mockResolvedValueOnce({ rows: [] }) // update users
-      .mockResolvedValueOnce({ rows: [] }) // update tokens this one
       .mockResolvedValueOnce({ rows: [] }); // invalida outros tokens
 
     expect(await consumeResetToken('abc', 'novasenha1')).toBe('u1');
-    expect(queryMock.mock.calls[1][0]).toContain('update users set password_hash');
-    expect(queryMock.mock.calls[2][0]).toContain('update password_reset_tokens');
-    expect(queryMock.mock.calls[3][0]).toContain(
+    expect(queryMock.mock.calls[0][0]).toContain('update password_reset_tokens set used_at = now()');
+    expect(queryMock.mock.calls[1][0]).toContain('password_changed_at = now()');
+    expect(queryMock.mock.calls[2][0]).toContain(
       'update password_reset_tokens set used_at = now() where user_id',
     );
   });

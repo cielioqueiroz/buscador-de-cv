@@ -25,41 +25,44 @@ export async function issueResetToken(userId: string): Promise<IssuedToken> {
        values ($1, $2, $3)`,
     [hash(token), userId, expiresAt],
   );
+  // Faxina: tokens vencidos há mais de um dia não servem nem para auditoria.
+  await pool.query(`delete from password_reset_tokens where expires_at < now() - interval '1 day'`);
   return { token, expiresAt };
 }
 
 /**
- * Consome o token: valida e troca a senha numa transação lógica.
- * Devolve o id do usuário em caso de sucesso; `null` em qualquer falha
- * (expirado, inexistente, já usado). Mensagens genéricas evitam vazar o estado
- * do token para quem está do outro lado.
+ * Consome o token e troca a senha. Devolve o id do usuário em caso de sucesso;
+ * `null` em qualquer falha (expirado, inexistente, já usado). Mensagens
+ * genéricas evitam vazar o estado do token para quem está do outro lado.
+ *
+ * O token é reivindicado num UPDATE só (`used_at is null` + validade no WHERE):
+ * dois cliques simultâneos no mesmo link não trocam a senha duas vezes. A troca
+ * carimba `password_changed_at`, que derruba as sessões abertas antes dela
+ * (lib/auth/session-guard.ts).
  */
 export async function consumeResetToken(
   token: string,
   newPassword: string,
 ): Promise<string | null> {
-  const tokenHash = hash(token);
-  const found = await pool.query<{ user_id: string; expires_at: Date; used_at: Date | null }>(
-    `select user_id, expires_at, used_at from password_reset_tokens where token_hash = $1`,
-    [tokenHash],
+  const claimed = await pool.query<{ user_id: string }>(
+    `update password_reset_tokens set used_at = now()
+      where token_hash = $1 and used_at is null and expires_at > now()
+  returning user_id`,
+    [hash(token)],
   );
-  const row = found.rows[0];
-  if (!row || row.used_at || row.expires_at.getTime() < Date.now()) {
-    return null;
-  }
+  const userId = claimed.rows[0]?.user_id;
+  if (!userId) return null;
+
   const passwordHash = await hashPassword(newPassword);
-  await pool.query(`update users set password_hash = $2, updated_at = now() where id = $1`, [
-    row.user_id,
-    passwordHash,
-  ]);
-  await pool.query(`update password_reset_tokens set used_at = now() where token_hash = $1`, [
-    tokenHash,
-  ]);
+  await pool.query(
+    `update users set password_hash = $2, password_changed_at = now(), updated_at = now() where id = $1`,
+    [userId, passwordHash],
+  );
   // Qualquer outro token em aberto desse usuário vira pó depois de uma troca
   // bem sucedida: ninguém usa duas vezes.
   await pool.query(
     `update password_reset_tokens set used_at = now() where user_id = $1 and used_at is null`,
-    [row.user_id],
+    [userId],
   );
-  return row.user_id;
+  return userId;
 }

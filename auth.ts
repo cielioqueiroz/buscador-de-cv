@@ -5,6 +5,7 @@ import PgAdapter from "@auth/pg-adapter";
 import { pool } from "@/lib/db/client";
 import { getAccount } from "@/lib/auth/users";
 import { authorizeCredentials } from "@/lib/auth/credentials";
+import { guardToken } from "@/lib/auth/session-guard";
 import { isGoogleEnabled } from "@/lib/auth/features";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -30,8 +31,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
-      if (user?.id) token.sub = user.id;
+    async jwt({ token: current, user, trigger }) {
+      if (user?.id) current.sub = user.id;
+      // Senha trocada depois do login ou conta excluída: null encerra a sessão.
+      const token = await guardToken(current, Boolean(user));
+      if (!token) return null;
       // `update()` no cliente só sinaliza "mudou algo"; o que entra no token
       // vem do banco, nunca do payload do navegador.
       if (trigger === "update" && token.sub) {
