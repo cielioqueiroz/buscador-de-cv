@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import { FiCheck, FiCopy, FiX } from 'react-icons/fi';
 import { toast } from 'sonner';
 import type { AdaptedCV } from '@/lib/cv-features';
-import type { CVProfile, Job } from '@/lib/providers/types';
+import type { Job } from '@/lib/providers/types';
+import { useModalDialog } from '@/lib/client/use-modal-dialog';
 
 /**
  * Painel modal com o CV adaptado para uma vaga específica.
@@ -22,35 +23,17 @@ import type { CVProfile, Job } from '@/lib/providers/types';
  */
 export function AdaptedCVPanel({
   job,
-  profile,
   onClose,
 }: {
   job: Job;
-  profile: CVProfile;
   onClose: () => void;
 }) {
   const [result, setResult] = useState<AdaptedCV | null>(null);
   const [error, setError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const previousFocus = useRef<HTMLElement | null>(null);
 
-  // Esc fecha e scroll do body trava enquanto o painel está aberto.
-  useEffect(() => {
-    previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    dialogRef.current?.focus();
-
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = overflow;
-      previousFocus.current?.focus();
-    };
-  }, [onClose]);
+  // Esc fecha, Tab fica dentro (faltava aqui) e a rolagem do fundo trava.
+  useModalDialog(dialogRef, onClose);
 
   useEffect(() => {
     let mounted = true;
@@ -68,7 +51,7 @@ export function AdaptedCVPanel({
         if (mounted) setError(reason instanceof Error ? reason.message : 'Não foi possível adaptar o CV.');
       });
     return () => { mounted = false; };
-  }, [job, profile]);
+  }, [job.id]);
 
   const text = useMemo(() => {
     if (!result) return '';

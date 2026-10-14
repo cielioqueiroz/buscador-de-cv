@@ -2,16 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AdaptedCVPanel } from '@/components/AdaptedCVPanel';
-import type { CVProfile, Job } from '@/lib/providers/types';
-
-const profile: CVProfile = {
-  title: 'Desenvolvedor Frontend',
-  seniority: 'pleno',
-  skills: ['React'],
-  areas: ['ti'],
-  searchQueries: ['react'],
-  rawText: 'cv',
-};
+import type { Job } from '@/lib/providers/types';
 
 const job: Job = {
   id: 'vaga-1',
@@ -48,7 +39,7 @@ describe('AdaptedCVPanel', () => {
   // block para `position: fixed`, então o painel ficava colado ao card, com o
   // X fora da tela e sem jeito de fechar. Portal para document.body conserta.
   it('é renderizado pelo portal em document.body (não fica preso ao pai)', () => {
-    const { container } = render(<AdaptedCVPanel job={job} profile={profile} onClose={() => {}} />);
+    const { container } = render(<AdaptedCVPanel job={job} onClose={() => {}} />);
 
     // Nada dentro do container do render; o dialog real está no body.
     expect(container.querySelector('[role="dialog"]')).toBeNull();
@@ -56,12 +47,12 @@ describe('AdaptedCVPanel', () => {
   });
 
   it('mostra o estado "adaptando" imediatamente — feedback que faltava antes', () => {
-    render(<AdaptedCVPanel job={job} profile={profile} onClose={() => {}} />);
+    render(<AdaptedCVPanel job={job} onClose={() => {}} />);
     expect(screen.getByText(/adaptando seu cv/i)).toBeInTheDocument();
   });
 
   it('exibe o CV adaptado quando a API responde', async () => {
-    render(<AdaptedCVPanel job={job} profile={profile} onClose={() => {}} />);
+    render(<AdaptedCVPanel job={job} onClose={() => {}} />);
 
     await waitFor(() => expect(screen.getByText('Migrou checkout')).toBeInTheDocument());
     expect(screen.getAllByText('React').length).toBeGreaterThan(0);
@@ -71,7 +62,7 @@ describe('AdaptedCVPanel', () => {
   it('o botão X fecha', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
-    render(<AdaptedCVPanel job={job} profile={profile} onClose={onClose} />);
+    render(<AdaptedCVPanel job={job} onClose={onClose} />);
 
     await user.click(screen.getByRole('button', { name: /fechar cv adaptado/i }));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -80,7 +71,7 @@ describe('AdaptedCVPanel', () => {
   it('a tecla Esc fecha (sem isso, o único recurso era o X)', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
-    render(<AdaptedCVPanel job={job} profile={profile} onClose={onClose} />);
+    render(<AdaptedCVPanel job={job} onClose={onClose} />);
 
     await user.keyboard('{Escape}');
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -88,7 +79,7 @@ describe('AdaptedCVPanel', () => {
 
   it('trava a rolagem do fundo enquanto aberto e devolve ao desmontar', () => {
     const antes = document.body.style.overflow;
-    const { unmount } = render(<AdaptedCVPanel job={job} profile={profile} onClose={() => {}} />);
+    const { unmount } = render(<AdaptedCVPanel job={job} onClose={() => {}} />);
 
     expect(document.body.style.overflow).toBe('hidden');
     unmount();

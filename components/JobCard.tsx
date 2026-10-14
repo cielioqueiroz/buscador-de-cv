@@ -271,7 +271,7 @@ export function JobCard({ ranked, index = 0, profile, onDismiss, initial }: JobC
         <CoverLetterPanel job={job} profile={profile} onClose={() => void fecharCarta()} />
       )}
       {adaptOpen && profile && (
-        <AdaptedCVPanel job={job} profile={profile} onClose={() => setAdaptOpen(false)} />
+        <AdaptedCVPanel job={job} onClose={() => setAdaptOpen(false)} />
       )}
     </article>
   );

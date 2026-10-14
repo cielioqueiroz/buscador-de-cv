@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useModalDialog } from '@/lib/client/use-modal-dialog';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import {
@@ -26,6 +27,7 @@ import { useAuthed } from '@/lib/client/use-authed';
 import { fetchLetter, saveLetterStore } from '@/lib/client/sync-client';
 import type { CVProfile, Job } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
+import { Escolha, Escrevendo, Pilula } from './cover-letter/parts';
 
 const TONES: Tone[] = ['formal', 'entusiasmado', 'direto'];
 const LENGTHS: Length[] = ['curta', 'media'];
@@ -56,7 +58,6 @@ interface Props {
 export function CoverLetterPanel({ job, profile, onClose }: Props) {
   const authed = useAuthed();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const previousFocus = useRef<HTMLElement | null>(null);
 
   const [tone, setTone] = useState<Tone>('entusiasmado');
   const [length, setLength] = useState<Length>('media');
@@ -89,41 +90,9 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
   // feedback para não parecerem botões quebrados.
   const [busy, setBusy] = useState<'pdf' | 'share' | null>(null);
 
-  // Esc fecha, e a rolagem do fundo trava enquanto o painel está aberto —
-  // sem isso, rolar dentro do textarea acaba rolando a lista de vagas atrás.
-  useEffect(() => {
-    previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    dialogRef.current?.focus();
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (e.key !== 'Tab' || !dialogRef.current) return;
-      const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), textarea, input, select, a[href]',
-      )];
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = overflow;
-      previousFocus.current?.focus();
-    };
-  }, [onClose]);
+  // Esc fecha, Tab fica dentro, e a rolagem do fundo trava — sem isso, rolar
+  // dentro do textarea acaba rolando a lista de vagas atrás.
+  useModalDialog(dialogRef, onClose);
 
   async function gerar() {
     setLoading(true);
@@ -427,61 +396,5 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
       )}
     </div>,
     document.body,
-  );
-}
-
-function Escolha({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <fieldset>
-      <legend className="mb-2 font-mono text-[11px] uppercase tracking-widest text-muted">
-        {label}
-      </legend>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
-    </fieldset>
-  );
-}
-
-function Pilula({
-  ativo,
-  onClick,
-  children,
-}: {
-  ativo: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={ativo}
-      onClick={onClick}
-      className={cn(
-        'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-        ativo
-          ? 'border-accent-ink bg-accent/15 text-accent-ink'
-          : 'border-border bg-surface-2 text-muted hover:text-foreground',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-/** A espera tem que parecer escrita acontecendo, não uma barra parada. */
-function Escrevendo() {
-  return (
-    <div className="mt-6 space-y-3 rounded-card border border-border bg-surface-2/40 p-6">
-      <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-accent-ink">
-        <span className="h-1.5 w-1.5 animate-pulse-ring rounded-full bg-accent-bright" />
-        escrevendo sua carta
-      </p>
-      {[92, 100, 84, 96, 70].map((w, i) => (
-        <div
-          key={i}
-          className="animate-type-line h-3 rounded-full bg-foreground/10"
-          style={{ width: `${w}%`, animationDelay: `${i * 140}ms` }}
-        />
-      ))}
-    </div>
   );
 }

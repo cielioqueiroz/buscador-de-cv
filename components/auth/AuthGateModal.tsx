@@ -1,5 +1,6 @@
 'use client';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useRef } from 'react';
+import { useModalDialog } from '@/lib/client/use-modal-dialog';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { FiX } from 'react-icons/fi';
@@ -11,51 +12,14 @@ type Props = {
   googleEnabled: boolean;
 };
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 /**
  * Convite para criar conta quando o visitante tenta usar o app. É só a porta:
  * as rotas de IA recusam quem não está logado de qualquer jeito.
  */
 export function AuthGateModal({ open, onClose, googleEnabled }: Props) {
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    returnFocusRef.current = document.activeElement as HTMLElement | null;
-    const panel = panelRef.current;
-    panel?.querySelector<HTMLElement>('input, button')?.focus();
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (e.key !== 'Tab' || !panel) return;
-      // Mantém o Tab dentro do modal enquanto ele está aberto.
-      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previousOverflow;
-      returnFocusRef.current?.focus?.();
-    };
-  }, [open, onClose]);
+  useModalDialog(panelRef, onClose, { active: open, initialFocus: 'first-field' });
 
   if (!open) return null;
 
