@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { FiCheck, FiRefreshCw, FiSearch, FiSettings } from 'react-icons/fi';
+import { FiCheck, FiEdit2, FiRefreshCw, FiSearch, FiSettings } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { CVUpload } from '@/components/CVUpload';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { CVImprovementReportPanel } from '@/components/CVImprovementReportPanel';
+import { ProfileEditor } from '@/components/ProfileEditor';
 import { Avatar } from '@/components/auth/Avatar';
 import { profileChecklist, type DashboardStats } from '@/lib/auth/checklist';
 import type { CVProfile } from '@/lib/providers/types';
@@ -96,6 +97,7 @@ function Dashboard({ account, name, profile, stats, updatedLabel, replacing, onR
     stats,
   });
   const pending = items.filter((i) => !i.done);
+  const [editing, setEditing] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -224,7 +226,23 @@ function Dashboard({ account, name, profile, stats, updatedLabel, replacing, onR
           aria-labelledby="habilidades-titulo"
           className={`rounded-panel border border-border bg-surface p-6 ${pending.length > 0 ? 'md:col-span-3' : 'md:col-span-5'}`}
         >
-          <h2 id="habilidades-titulo" className="font-display text-lg font-bold">Habilidades</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="habilidades-titulo" className="font-display text-lg font-bold">Habilidades</h2>
+            {!editing ? (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-sm font-medium transition-colors hover:border-foreground/30 hover:bg-surface-2"
+              >
+                <FiEdit2 className="h-3.5 w-3.5" aria-hidden /> Corrigir
+              </button>
+            ) : null}
+          </div>
+          {editing ? (
+            <ProfileEditor profile={profile} onDone={() => setEditing(false)} />
+          ) : (
+          <>
+          <p className="mt-1 text-sm text-muted">O que a IA entendeu do seu CV. Errou algo? Corrija — as próximas buscas usam esta versão.</p>
           <ul className="mt-4 flex flex-wrap gap-2">
             {profile.skills.map((s) => (
               <li key={s} className="rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-sm">
@@ -248,6 +266,8 @@ function Dashboard({ account, name, profile, stats, updatedLabel, replacing, onR
               </li>
             ))}
           </ul>
+          </>
+          )}
         </section>
       </div>
 

@@ -1,6 +1,30 @@
+import { z } from "zod";
 import { userQuery } from "@/lib/db/user-scope";
 import type { CVProfile, Seniority } from "@/lib/providers/types";
 import { CVProfileSchema } from "@/lib/providers/types";
+
+/** Itens repetidos (ignorando caixa) viram um só, na ordem em que apareceram. */
+function uniqueCaseless(items: string[]): string[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const k = item.toLocaleLowerCase("pt-BR");
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+/**
+ * O que o usuário pode corrigir no perfil que a IA extraiu. O texto do CV
+ * (`rawText`) fica de fora: ele é a fonte, não a interpretação — para mudá-lo,
+ * troca-se o currículo.
+ */
+export const ProfileEditSchema = CVProfileSchema.omit({ rawText: true }).extend({
+  skills: CVProfileSchema.shape.skills.transform(uniqueCaseless),
+  areas: CVProfileSchema.shape.areas.transform(uniqueCaseless),
+  searchQueries: CVProfileSchema.shape.searchQueries.transform(uniqueCaseless),
+});
+export type ProfileEdit = z.infer<typeof ProfileEditSchema>;
 
 type ProfileRow = {
   title: string;
