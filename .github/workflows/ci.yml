@@ -1,0 +1,32 @@
+# Mesmo roteiro do AGENTS.md, rodado a cada push e PR. Não precisa de
+# segredos: os testes usam mocks e o build não lê banco nem chaves.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test -- --run
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
