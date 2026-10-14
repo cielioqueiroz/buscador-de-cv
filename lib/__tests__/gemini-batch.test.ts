@@ -45,6 +45,17 @@ describe('matchJobs (lote)', () => {
     expect(out.find((m) => m.jobId === 'primeira')!.score).toBe(10);
   });
 
+  it('repassa as habilidades que faltam, e o lote sobrevive se o modelo esquecer o campo', async () => {
+    generateContent.mockResolvedValueOnce(reply([
+      { index: 0, score: 70, reasons: [], gaps: [], missingSkills: ['Docker'] },
+      { index: 1, score: 60, reasons: [], gaps: [] },
+    ]));
+
+    const out = await matchJobs(cv, [mk('a'), mk('b')]);
+    expect(out.find((m) => m.jobId === 'a')!.missingSkills).toEqual(['Docker']);
+    expect(out.find((m) => m.jobId === 'b')!.missingSkills).toEqual([]);
+  });
+
   it('descarta índice fora da lista em vez de estourar', async () => {
     generateContent.mockResolvedValueOnce(reply([
       { index: 0, score: 80, reasons: [], gaps: [] },

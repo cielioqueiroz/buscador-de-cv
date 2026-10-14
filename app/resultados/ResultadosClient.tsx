@@ -10,6 +10,8 @@ import { JobCard } from '@/components/JobCard';
 import { Filters } from '@/components/Filters';
 import { LoadingJourney } from '@/components/LoadingJourney';
 import { Confetti } from '@/components/Confetti';
+import { SkillsGap } from '@/components/SkillsGap';
+import { topMissingSkills } from '@/lib/skills-gap';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
 import { FAVORITES_EVENT } from '@/lib/store';
@@ -96,6 +98,7 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
         setRegionStage(s === 'searching' ? 'searching' : 'scoring'),
       );
       setRanked(result);
+      setStatus('done'); // também tira a tela do erro quando é o "tentar de novo"
       if (result.length === 0) toast.info('Nenhuma vaga nessa região. Tente ampliar o escopo.');
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Erro ao buscar vagas.');
@@ -109,6 +112,7 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
     () => applyFilters(ranked, filters, undefined, favSet),
     [ranked, filters, favSet],
   );
+  const lacunas = useMemo(() => topMissingSkills(ranked), [ranked]);
   const filtrosAtivos = useMemo(
     () => JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS),
     [filters],
@@ -158,6 +162,8 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
           </div>
 
           <div className="space-y-4">
+            {status === 'done' && <SkillsGap skills={lacunas} total={ranked.length} />}
+
             {status === 'done' && visible.length === 0 && (
               <EmptyState
                 hasAny={ranked.length > 0}
@@ -169,8 +175,16 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
               <div className="rounded-card border border-warn/40 bg-warn/10 p-8 text-center">
                 <p className="font-display text-lg font-bold">Algo deu errado na busca.</p>
                 <p className="mt-1 text-sm text-muted">
-                  Confira se as chaves de API estão no <code className="font-mono">.env.local</code>.
+                  As fontes de vagas ou a IA não responderam a tempo. Costuma passar em instantes.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => void buscarRegiao({})}
+                  disabled={regionStage !== null}
+                  className="mt-4 rounded-pill bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  Tentar de novo
+                </button>
               </div>
             )}
 

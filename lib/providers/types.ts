@@ -22,6 +22,8 @@ const SAFE_HTTP_URL = z.string().url().refine((value) => {
 
 const ShortText = z.string().trim().min(1).max(240);
 const ExplanationText = z.string().trim().min(1).max(600);
+/** Uma habilidade em 1–3 palavras ("Docker", "inglês avançado"), para somar entre vagas. */
+const SkillTag = z.string().trim().min(1).max(40);
 
 export const SeniorityEnum = z.enum(['estagio', 'junior', 'pleno', 'senior', 'lead']);
 export type Seniority = z.infer<typeof SeniorityEnum>;
@@ -62,6 +64,9 @@ export const MatchResultSchema = z.object({
   score: z.number().min(0).max(100),
   reasons: z.array(ExplanationText).max(8),
   gaps: z.array(ExplanationText).max(8),
+  // Opcional: notas pontuadas antes deste campo existir (cache, rankings
+  // salvos) continuam válidas — só não somam no painel de habilidades.
+  missingSkills: z.array(SkillTag).max(5).optional(),
 });
 export type MatchResult = z.infer<typeof MatchResultSchema>;
 
@@ -84,6 +89,8 @@ export const MatchBatchSchema = z.object({
     score: z.number().min(0).max(100),
     reasons: z.array(ExplanationText).max(8),
     gaps: z.array(ExplanationText).max(8),
+    // Com padrão: se o modelo esquecer o campo, o lote não se perde por isso.
+    missingSkills: z.array(SkillTag).max(5).default([]),
   })).max(MAX_JOBS_PER_MATCH),
 });
 

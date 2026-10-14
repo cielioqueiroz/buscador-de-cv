@@ -18,13 +18,19 @@ export class MissingSearchError extends Error {
 }
 
 /**
+ * Sobe quando o formato da nota muda (ex.: v2 trouxe `missingSkills`): as
+ * notas antigas em cache deixam de casar e são pontuadas de novo.
+ */
+const SCORE_FORMAT = 2;
+
+/**
  * Identidade de uma versão do CV para o cache de notas. Entra tudo o que a IA
  * lê ao pontuar; `searchQueries` fica de fora porque não muda a nota.
  */
 export function profileHash(profile: CVProfile): string {
   const { title, seniority, skills, areas, rawText } = profile;
   return createHash('sha256')
-    .update(JSON.stringify({ title, seniority, skills, areas, rawText }))
+    .update(JSON.stringify({ v: SCORE_FORMAT, title, seniority, skills, areas, rawText }))
     .digest('hex');
 }
 

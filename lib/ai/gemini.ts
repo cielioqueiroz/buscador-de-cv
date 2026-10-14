@@ -168,10 +168,13 @@ ${listaDeVagas}
 
 Pontue CADA uma das ${jobs.length} vagas. Devolva um item por vaga em "matches",
 com "index" igual ao número da vaga. Em "reasons", por que o perfil combina;
-em "gaps", o que falta no CV.`,
-    // Cada vaga rende ~150 tokens de resposta; sem folga aqui, o JSON do lote
+em "gaps", o que falta no CV. Em "missingSkills", até 5 habilidades ou
+ferramentas concretas que a vaga pede e o CV não mostra, em 1 a 3 palavras cada
+e com o nome usual (ex.: "Docker", "Power BI", "inglês avançado"); lista vazia
+se não faltar nada.`,
+    // Cada vaga rende ~170 tokens de resposta; sem folga aqui, o JSON do lote
     // é truncado no meio e a resposta inteira se perde.
-    1024 + jobs.length * 400,
+    1024 + jobs.length * 450,
   );
 
   // A IA pode devolver um índice fora da lista ou repetir um. Ancoramos no que
@@ -188,6 +191,7 @@ em "gaps", o que falta no CV.`,
       score: m.score,
       reasons: m.reasons,
       gaps: m.gaps,
+      missingSkills: m.missingSkills,
     }));
 }
 
