@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
+    "db:status": "node --env-file-if-exists=.env.local scripts/migrate.mjs --status"
   },
   "overrides": {
     "brace-expansion": "1.1.18",

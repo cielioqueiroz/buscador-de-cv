@@ -338,8 +338,9 @@ principal freio da cota paga do Gemini num app aberto).
 O app exige conta para analisar o CV, buscar e pontuar vagas e gerar textos — as rotas de IA
 devolvem 401 sem sessão. Com `DATABASE_URL` e `AUTH_SECRET`, o login por e-mail e senha
 funciona. O botão do Google só aparece com as credenciais dele, e o "esqueci minha senha" só
-aparece em produção com o Resend configurado. As migrations ficam em `db/migrations/` e são
-aplicadas em ordem no banco.
+aparece em produção com o Resend configurado. As migrations ficam em `db/migrations/`; `npm run db:migrate` aplica
+as pendentes (registradas na tabela `schema_migrations`) e `npm run db:status` lista o estado.
+Rode nos dois branches do Neon (main e preview).
 
 > 🔒 As chaves ficam **só no servidor** (API Routes) — nunca chegam ao navegador.
 
