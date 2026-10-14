@@ -4,6 +4,7 @@ import { rankJobs } from '@/lib/matching';
 import { MAX_JOBS_PER_MATCH, type CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/ranked';
 import { loadCachedScores, loadSearch, saveRanking, saveScores } from '@/lib/jobs/store';
+import { listDismissedIds } from '@/lib/jobs/dismissals';
 
 export class MissingProfileError extends Error {
   constructor() {
@@ -40,12 +41,19 @@ export function profileHash(profile: CVProfile): string {
  * cache; só as novas vão à IA. O ranking final fica salvo para /resultados.
  */
 export async function rankLatestSearch(userId: string): Promise<RankedJob[]> {
-  const [profile, jobs] = await Promise.all([getProfile(userId), loadSearch(userId)]);
+  const [profile, jobs, dismissed] = await Promise.all([
+    getProfile(userId),
+    loadSearch(userId),
+    listDismissedIds(userId),
+  ]);
   if (!profile) throw new MissingProfileError();
   if (!jobs) throw new MissingSearchError();
 
-  // Cada vaga pontuada é custo pago: o teto corta, não recusa.
-  const batch = jobs.slice(0, MAX_JOBS_PER_MATCH);
+  // Vaga descartada não volta, e nem gasta uma das vagas do teto: quem entra
+  // no lugar dela é uma que ainda pode interessar. O teto é custo pago — corta,
+  // não recusa.
+  const skip = new Set(dismissed);
+  const batch = jobs.filter((job) => !skip.has(job.id)).slice(0, MAX_JOBS_PER_MATCH);
   if (batch.length === 0) {
     await saveRanking(userId, []);
     return [];

@@ -13,6 +13,7 @@
 import type { Application, ApplicationStage } from '@/lib/application-schema';
 import type { SavedLetter } from '@/lib/letter-schema';
 import type { RankedJob } from '@/lib/ranked';
+import type { DismissReason } from '@/lib/dismiss-reasons';
 import {
   listApplications as listLocalApplications,
   removeApplication as removeLocalApplication,
@@ -31,6 +32,32 @@ async function readJson<T>(res: Response, fallback: T): Promise<T> {
   if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error ?? 'Falha na requisição.');
   const json = await res.json().catch(() => fallback);
   return json as T;
+}
+
+// ---------- DESCARTES ----------
+// Só existem na conta: a vaga descartada também deixa de ser pontuada no
+// servidor, o que o localStorage não teria como fazer.
+
+export async function dismissJobRemote(jobId: string, reason: DismissReason): Promise<void> {
+  await readJson(
+    await fetch('/api/sync/dismissals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId, reason }),
+    }),
+    {},
+  );
+}
+
+export async function undismissJobRemote(jobId: string): Promise<void> {
+  await readJson(
+    await fetch('/api/sync/dismissals', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId }),
+    }),
+    {},
+  );
 }
 
 // ---------- APPLICATIONS ----------

@@ -16,7 +16,8 @@ import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
 import { FAVORITES_EVENT } from '@/lib/store';
 import { useAuthed } from '@/lib/client/use-authed';
-import { fetchFavorites } from '@/lib/client/sync-client';
+import { dismissJobRemote, fetchFavorites, undismissJobRemote } from '@/lib/client/sync-client';
+import type { DismissReason } from '@/lib/dismiss-reasons';
 import type { CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/ranked';
 
@@ -25,9 +26,11 @@ type Props = {
   serverProfile: CVProfile | null;
   /** Último ranking salvo na conta — a página abre pronta, em qualquer aparelho. */
   serverRanked: RankedJob[] | null;
+  /** Vagas que o usuário disse não interessar. */
+  serverDismissed: string[];
 };
 
-export function ResultadosClient({ serverProfile, serverRanked }: Props) {
+export function ResultadosClient({ serverProfile, serverRanked, serverDismissed }: Props) {
   const router = useRouter();
   const profile = serverProfile;
   const [ranked, setRanked] = useState<RankedJob[]>(serverRanked ?? []);
@@ -107,12 +110,48 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
     }
   }
 
+  const [dismissed, setDismissed] = useState(() => new Set(serverDismissed));
+  const kept = useMemo(() => ranked.filter((r) => !dismissed.has(r.job.id)), [ranked, dismissed]);
+
+  function marcar(jobId: string, on: boolean) {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(jobId);
+      else next.delete(jobId);
+      return next;
+    });
+  }
+
+  async function desfazerDescarte(jobId: string) {
+    marcar(jobId, false);
+    try {
+      await undismissJobRemote(jobId);
+    } catch {
+      marcar(jobId, true);
+      toast.error('Não deu para trazer a vaga de volta. Tente de novo.');
+    }
+  }
+
+  /** Some na hora (otimista); o servidor também deixa de pontuá-la nas próximas buscas. */
+  async function descartar(jobId: string, reason: DismissReason) {
+    marcar(jobId, true);
+    try {
+      await dismissJobRemote(jobId, reason);
+      toast('Vaga removida da lista.', {
+        action: { label: 'Desfazer', onClick: () => void desfazerDescarte(jobId) },
+      });
+    } catch {
+      marcar(jobId, false);
+      toast.error('Não deu para descartar a vaga. Tente de novo.');
+    }
+  }
+
   const favSet = useMemo(() => new Set(favorites), [favorites]);
   const visible = useMemo(
-    () => applyFilters(ranked, filters, undefined, favSet),
-    [ranked, filters, favSet],
+    () => applyFilters(kept, filters, undefined, favSet),
+    [kept, filters, favSet],
   );
-  const lacunas = useMemo(() => topMissingSkills(ranked), [ranked]);
+  const lacunas = useMemo(() => topMissingSkills(kept), [kept]);
   const filtrosAtivos = useMemo(
     () => JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS),
     [filters],
@@ -162,11 +201,11 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
           </div>
 
           <div className="space-y-4">
-            {status === 'done' && <SkillsGap skills={lacunas} total={ranked.length} />}
+            {status === 'done' && <SkillsGap skills={lacunas} total={kept.length} />}
 
             {status === 'done' && visible.length === 0 && (
               <EmptyState
-                hasAny={ranked.length > 0}
+                hasAny={kept.length > 0}
                 onClear={filtrosAtivos ? () => setFilters(DEFAULT_FILTERS) : undefined}
               />
             )}
@@ -189,7 +228,13 @@ export function ResultadosClient({ serverProfile, serverRanked }: Props) {
             )}
 
             {visible.map((r, i) => (
-              <JobCard key={r.job.id} ranked={r} index={i} profile={profile} />
+              <JobCard
+                key={r.job.id}
+                ranked={r}
+                index={i}
+                profile={profile}
+                onDismiss={(reason) => void descartar(r.job.id, reason)}
+              />
             ))}
           </div>
         </div>

@@ -8,7 +8,9 @@ const m = vi.hoisted(() => ({
   saveScores: vi.fn(),
   saveRanking: vi.fn(),
   matchJobs: vi.fn(),
+  listDismissedIds: vi.fn(),
 }));
+vi.mock('@/lib/jobs/dismissals', () => ({ listDismissedIds: m.listDismissedIds }));
 vi.mock('@/lib/auth/profile', () => ({ getProfile: m.getProfile }));
 vi.mock('@/lib/jobs/store', () => ({
   loadSearch: m.loadSearch,
@@ -41,6 +43,7 @@ beforeEach(() => {
   m.loadCachedScores.mockResolvedValue(new Map());
   m.saveScores.mockResolvedValue(undefined);
   m.saveRanking.mockResolvedValue(undefined);
+  m.listDismissedIds.mockResolvedValue([]);
 });
 
 describe('rankLatestSearch', () => {
@@ -73,6 +76,19 @@ describe('rankLatestSearch', () => {
 
     await rankLatestSearch('u1');
     expect(m.matchJobs.mock.calls[0][1]).toHaveLength(MAX_JOBS_PER_MATCH);
+  });
+
+  it('vaga descartada não é pontuada e cede o lugar no teto para a próxima', async () => {
+    const jobs = Array.from({ length: MAX_JOBS_PER_MATCH + 1 }, (_, i) => job(`j${i}`));
+    m.loadSearch.mockResolvedValue(jobs);
+    m.listDismissedIds.mockResolvedValue(['j0']);
+    m.matchJobs.mockImplementation(async (_p: CVProfile, js: Job[]) => js.map((j) => score(j.id, 50)));
+
+    await rankLatestSearch('u1');
+    const ids = m.matchJobs.mock.calls[0][1].map((j: Job) => j.id);
+    expect(ids).not.toContain('j0');
+    expect(ids).toContain(`j${MAX_JOBS_PER_MATCH}`);
+    expect(ids).toHaveLength(MAX_JOBS_PER_MATCH);
   });
 
   it('sem perfil ou sem busca recente, erra com a mensagem certa e não chama a IA', async () => {

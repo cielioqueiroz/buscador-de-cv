@@ -28,6 +28,8 @@ import {
   toggleFavoriteStore,
 } from '@/lib/client/sync-client';
 import { AdaptedCVPanel } from './AdaptedCVPanel';
+import { DismissButton } from './DismissButton';
+import type { DismissReason } from '@/lib/dismiss-reasons';
 import type { CVProfile } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
 
@@ -36,9 +38,11 @@ interface JobCardProps {
   index?: number;
   /** Necessário para escrever a carta. Sem perfil, o botão nem aparece. */
   profile?: CVProfile | null;
+  /** "Não tenho interesse". Sem ele, o botão não aparece (ex.: fora do ranking). */
+  onDismiss?: (reason: DismissReason) => void;
 }
 
-export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
+export function JobCard({ ranked, index = 0, profile, onDismiss }: JobCardProps) {
   const { job, match } = ranked;
   const authed = useAuthed();
   const [fav, setFav] = useState(false);
@@ -251,6 +255,8 @@ export function JobCard({ ranked, index = 0, profile }: JobCardProps) {
         >
           <FiHeart className={cn('h-[18px] w-[18px]', fav && 'fill-current')} />
         </button>
+
+        {onDismiss && <DismissButton jobTitle={job.title} onDismiss={onDismiss} />}
       </div>
 
       {letterOpen && profile && (
