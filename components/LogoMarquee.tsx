@@ -18,9 +18,10 @@ export function LogoMarquee() {
   return (
     <section aria-label="Fontes de vagas" className="border-y border-border bg-surface-2/40 py-8 sm:py-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 md:flex-row md:items-center md:gap-8">
-        <p className="shrink-0 text-sm text-muted md:w-52 md:border-r md:border-border md:pr-8">
-          Vagas reunidas de{' '}
-          <span className="whitespace-nowrap font-semibold text-foreground">{SOURCES.length} fontes</span>, como:
+        {/* Sem contagem: as fontes integradas são 3 (JSearch, Adzuna, Remotive);
+            os demais nomes chegam pelo JSearch, que agrega esses sites. */}
+        <p className="shrink-0 text-sm text-muted md:w-44 md:border-r md:border-border md:pr-8">
+          Vagas reunidas de sites como:
         </p>
         <ul className="sr-only">
           {SOURCES.map((name) => <li key={name}>{name}</li>)}
