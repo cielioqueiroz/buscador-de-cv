@@ -131,7 +131,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
       const res = await fetch('/api/cover-letter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile, job, tone, length }),
+        body: JSON.stringify({ jobId: job.id, tone, length }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Não deu para escrever a carta.');

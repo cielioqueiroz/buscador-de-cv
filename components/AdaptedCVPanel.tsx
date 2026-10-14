@@ -57,7 +57,7 @@ export function AdaptedCVPanel({
     fetch('/api/cv/adapt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile, job }),
+      body: JSON.stringify({ jobId: job.id }),
     })
       .then(async (response) => {
         const body = await response.json() as { adaptedCV?: AdaptedCV; error?: string };

@@ -26,8 +26,10 @@ const ExplanationText = z.string().trim().min(1).max(600);
 export const SeniorityEnum = z.enum(['estagio', 'junior', 'pleno', 'senior', 'lead']);
 export type Seniority = z.infer<typeof SeniorityEnum>;
 
+export const JobIdSchema = ShortText.max(500);
+
 export const JobSchema = z.object({
-  id: ShortText.max(500),
+  id: JobIdSchema,
   title: ShortText.max(240),
   company: ShortText.max(240),
   location: ShortText.max(240),

@@ -4,10 +4,11 @@ import { CoverLetterRequestSchema } from '@/lib/cover-letter';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
+import { requireProfileAndJob } from '@/lib/jobs/user-context';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
-const MAX_BODY_BYTES = 256 * 1024;
+const MAX_BODY_BYTES = 2_000;
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +18,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Requisição inválida.' }, { status });
   }
 
-  if (!(await sessionUserId())) return unauthorized();
+  const userId = await sessionUserId();
+  if (!userId) return unauthorized();
 
   // Uma chamada ao Gemini por carta — mais barata que /match, que dispara o
   // lote inteiro. Mas o botão "regenerar" convida a insistir, então o teto
@@ -30,7 +32,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { profile, job, tone, length } = await readJson(req, CoverLetterRequestSchema, MAX_BODY_BYTES);
+    const { jobId, tone, length } = await readJson(req, CoverLetterRequestSchema, MAX_BODY_BYTES);
+    const { profile, job } = await requireProfileAndJob(userId, jobId);
     const letter = await generateCoverLetter(profile, job, tone, length);
     return NextResponse.json({ letter });
   } catch (err) {

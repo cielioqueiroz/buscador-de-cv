@@ -95,6 +95,32 @@ export async function loadRanking(userId: string): Promise<RankedJob[] | null> {
   return parsed.success ? parsed.data : null;
 }
 
+/**
+ * Uma vaga que o usuário de fato viu: no ranking, na última busca ou no
+ * tracker (que guarda o snapshot da vaga). Carta e CV adaptado partem daqui —
+ * a vaga não vem mais do corpo da requisição, onde qualquer texto caberia.
+ */
+export async function findUserJob(userId: string, jobId: string): Promise<Job | null> {
+  const result = await userQuery<{ job: unknown }>(
+    userId,
+    `select elem->'job' as job
+       from rankings, jsonb_array_elements(ranked) elem
+      where user_id = $1 and elem->'job'->>'id' = $2
+     union all
+     select elem as job
+       from job_searches, jsonb_array_elements(jobs) elem
+      where user_id = $1 and elem->>'id' = $2
+     union all
+     select coalesce(job_payload->'job', job_payload) as job
+       from applications
+      where user_id = $1 and job_id = $2
+     limit 1`,
+    [userId, jobId],
+  );
+  const parsed = JobSchema.safeParse(result.rows[0]?.job);
+  return parsed.success ? parsed.data : null;
+}
+
 /** Perfil trocado (novo CV, edição): o ranking antigo não vale mais. */
 export async function clearRanking(userId: string): Promise<void> {
   await userQuery(userId, `delete from rankings where user_id = $1`, [userId]);

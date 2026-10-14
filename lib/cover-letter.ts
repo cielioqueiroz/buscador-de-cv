@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JobSchema, CVProfileSchema } from '@/lib/providers/types';
+import { JobIdSchema } from '@/lib/providers/types';
 
 export const ToneEnum = z.enum(['formal', 'entusiasmado', 'direto']);
 export type Tone = z.infer<typeof ToneEnum>;
@@ -24,9 +24,9 @@ export const CoverLetterSchema = z.object({
 });
 export type CoverLetter = z.infer<typeof CoverLetterSchema>;
 
+/** Perfil e vaga saem do servidor (lib/jobs/user-context.ts); daqui só a escolha. */
 export const CoverLetterRequestSchema = z.object({
-  profile: CVProfileSchema,
-  job: JobSchema,
+  jobId: JobIdSchema,
   tone: ToneEnum,
   length: LengthEnum,
 });

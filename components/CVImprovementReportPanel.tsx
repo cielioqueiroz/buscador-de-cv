@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { FiAlertCircle, FiCheckCircle, FiLoader } from 'react-icons/fi';
 import { toast } from 'sonner';
 import type { CVImprovementReport } from '@/lib/cv-features';
-import type { CVProfile } from '@/lib/providers/types';
 
-export function CVImprovementReportPanel({ profile }: { profile: CVProfile }) {
+/** O relatório é sobre o CV salvo na conta — o servidor o lê de lá. */
+export function CVImprovementReportPanel() {
   const [report, setReport] = useState<CVImprovementReport | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ export function CVImprovementReportPanel({ profile }: { profile: CVProfile }) {
       const response = await fetch('/api/cv/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile }),
+        body: JSON.stringify({}),
       });
       const body = await response.json() as { report?: CVImprovementReport; error?: string };
       if (!response.ok || !body.report) throw new Error(body.error ?? 'Não foi possível gerar o relatório.');

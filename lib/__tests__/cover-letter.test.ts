@@ -62,31 +62,14 @@ describe('CoverLetterSchema', () => {
 });
 
 describe('CoverLetterRequestSchema', () => {
-  const base = {
-    profile: {
-      title: 'Dev',
-      seniority: 'pleno',
-      skills: ['React'],
-      areas: ['ti'],
-      searchQueries: ['react'],
-      rawText: 'cv',
-    },
-    job: {
-      id: 'j1',
-      title: 'Dev',
-      company: 'Acme',
-      location: 'SP',
-      remote: false,
-      description: 'vaga',
-      source: 'adzuna',
-      applyUrl: 'https://acme.com/j1',
-    },
-    tone: 'formal',
-    length: 'curta',
-  };
+  const base = { jobId: 'j1', tone: 'formal', length: 'curta' };
 
-  it('aceita um corpo completo', () => {
+  it('aceita o id da vaga com tom e tamanho', () => {
     expect(CoverLetterRequestSchema.safeParse(base).success).toBe(true);
+  });
+
+  it('não aceita mais perfil e vaga no corpo (strip silencioso não serve: o id é obrigatório)', () => {
+    expect(CoverLetterRequestSchema.safeParse({ tone: 'formal', length: 'curta', job: { id: 'j1' } }).success).toBe(false);
   });
 
   it('recusa tom inventado — o prompt só sabe lidar com os três', () => {

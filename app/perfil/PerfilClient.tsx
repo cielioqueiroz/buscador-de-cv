@@ -251,7 +251,7 @@ function Dashboard({ account, name, profile, stats, updatedLabel, replacing, onR
         </section>
       </div>
 
-      <CVImprovementReportPanel profile={profile} />
+      <CVImprovementReportPanel />
     </div>
   );
 }

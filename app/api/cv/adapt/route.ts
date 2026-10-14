@@ -4,21 +4,24 @@ import { AdaptCVRequestSchema } from '@/lib/cv-features';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
+import { requireProfileAndJob } from '@/lib/jobs/user-context';
 
 export const runtime = 'nodejs';
-const MAX_BODY_BYTES = 256 * 1024;
+const MAX_BODY_BYTES = 1_000;
 
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
-    if (!(await sessionUserId())) return unauthorized();
+    const userId = await sessionUserId();
+    if (!userId) return unauthorized();
     if (!(await checkRateLimit(`adapt:${clientIp(req)}`, 8, 60_000))) {
       return NextResponse.json(
         { error: 'Muitas adaptações seguidas. Aguarde um minuto.' },
         { status: 429, headers: { 'Retry-After': '60' } },
       );
     }
-    const { profile, job } = await readJson(req, AdaptCVRequestSchema, MAX_BODY_BYTES);
+    const { jobId } = await readJson(req, AdaptCVRequestSchema, MAX_BODY_BYTES);
+    const { profile, job } = await requireProfileAndJob(userId, jobId);
     return NextResponse.json({ adaptedCV: await adaptCV(profile, job) });
   } catch (error) {
     if (error instanceof ApiRequestError) {

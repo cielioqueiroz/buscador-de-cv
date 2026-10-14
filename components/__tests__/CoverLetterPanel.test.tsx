@@ -77,7 +77,10 @@ describe('CoverLetterPanel', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.tone).toBe('direto');
     expect(body.length).toBe('curta');
-    expect(body.job.id).toBe('vaga-1');
+    expect(body.jobId).toBe('vaga-1');
+    // perfil e vaga saem do servidor; o navegador só diz qual vaga
+    expect(body.profile).toBeUndefined();
+    expect(body.job).toBeUndefined();
   });
 
   it('reabrir mostra a carta salva sem gastar outra chamada', async () => {

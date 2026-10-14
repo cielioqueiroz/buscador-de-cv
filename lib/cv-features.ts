@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CVProfileSchema, JobSchema } from '@/lib/providers/types';
+import { JobIdSchema } from '@/lib/providers/types';
 
 const ShortText = z.string().trim().min(1).max(240);
 const LongText = z.string().trim().min(1).max(1_200);
@@ -14,9 +14,9 @@ export const AdaptedCVSchema = z.object({
 });
 export type AdaptedCV = z.infer<typeof AdaptedCVSchema>;
 
+/** Perfil e vaga saem do servidor (lib/jobs/user-context.ts). */
 export const AdaptCVRequestSchema = z.object({
-  profile: CVProfileSchema,
-  job: JobSchema,
+  jobId: JobIdSchema,
 });
 
 const ImprovementSchema = z.object({
@@ -34,6 +34,3 @@ export const CVImprovementReportSchema = z.object({
 });
 export type CVImprovementReport = z.infer<typeof CVImprovementReportSchema>;
 
-export const CVImprovementRequestSchema = z.object({
-  profile: CVProfileSchema,
-});
