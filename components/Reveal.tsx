@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from '@/lib/client/browser-state';
 
 /**
  * Aparece quando entra na tela — uma vez só, sem piscar ao rolar de volta.
@@ -25,21 +26,19 @@ export function Reveal({
   as?: 'div' | 'section' | 'li';
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [dentro, setDentro] = useState(false);
+  const reduced = usePrefersReducedMotion();
+  const [visto, setVisto] = useState(false);
+  // Sem movimento, nada a revelar: o conteúdo já nasce no lugar.
+  const dentro = reduced || visto;
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDentro(true);
-      return;
-    }
+    if (!el || reduced) return;
 
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
-          setDentro(true);
+          setVisto(true);
           io.disconnect();
         }
       },
@@ -48,7 +47,7 @@ export function Reveal({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [reduced]);
 
   return (
     <Tag

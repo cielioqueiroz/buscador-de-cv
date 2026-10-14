@@ -36,10 +36,12 @@ export function Confetti({ ativo }: { ativo: boolean }) {
     if (!ativo) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (sessionStorage.getItem(CHAVE)) return;
-    sessionStorage.setItem(CHAVE, '1');
 
-    setPecas(
-      Array.from({ length: QTD }, (_, id) => ({
+    // No próximo quadro: a tela de resultados pinta primeiro, a festa vem depois.
+    // A marca de "já comemorou" só entra quando a festa de fato começa.
+    const raf = requestAnimationFrame(() => {
+      sessionStorage.setItem(CHAVE, '1');
+      setPecas(Array.from({ length: QTD }, (_, id) => ({
         id,
         left: Math.random() * 100,
         dx: (Math.random() - 0.5) * 240,
@@ -48,11 +50,14 @@ export function Confetti({ ativo }: { ativo: boolean }) {
         delay: Math.random() * 0.5,
         size: 6 + Math.random() * 6,
         cor: CORES[id % CORES.length],
-      })),
-    );
+      })));
+    });
 
     const t = setTimeout(() => setPecas(null), 4200);
-    return () => clearTimeout(t);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+    };
   }, [ativo]);
 
   if (!pecas) return null;

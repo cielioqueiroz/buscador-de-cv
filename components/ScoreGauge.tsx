@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from '@/lib/client/browser-state';
 
 interface ScoreGaugeProps {
   score: number;
@@ -21,22 +22,22 @@ interface ScoreGaugeProps {
  */
 export function ScoreGauge({ score, size = 72, className, label = 'match', ariaLabel = 'Compatibilidade' }: ScoreGaugeProps) {
   const clamped = Math.max(0, Math.min(100, Math.round(score)));
+  const reduced = usePrefersReducedMotion();
   const [shown, setShown] = useState(clamped);
+  // Com "reduzir movimento", o número aparece direto, sem a contagem.
+  const display = reduced ? clamped : shown;
 
   const stroke = size < 60 ? 5 : 6;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const offset = c - (shown / 100) * c;
+  const offset = c - (display / 100) * c;
 
   const raf = useRef(0);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setShown(clamped);
-      return;
-    }
+    if (reduced) return;
 
-    setShown(0);
+    // O primeiro quadro (t≈0) já zera o arco; daí ele sobe até o valor.
     const inicio = performance.now();
     const DURACAO = 900;
 
@@ -51,7 +52,7 @@ export function ScoreGauge({ score, size = 72, className, label = 'match', ariaL
 
     raf.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf.current);
-  }, [clamped]);
+  }, [clamped, reduced]);
 
   const tone =
     clamped >= 75 ? 'var(--accent-bright)' : clamped >= 50 ? 'var(--caution)' : 'var(--warn)';
@@ -88,7 +89,7 @@ export function ScoreGauge({ score, size = 72, className, label = 'match', ariaL
       </svg>
       <div className="absolute flex flex-col items-center leading-none" aria-hidden>
         <span className="font-mono font-bold tabular-nums" style={{ fontSize: size * 0.3 }}>
-          {shown}
+          {display}
         </span>
         <span className="font-mono text-[9px] uppercase tracking-widest text-muted">
           {label}

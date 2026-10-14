@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FiSearch, FiHeart } from 'react-icons/fi';
 import type { FilterState } from '@/lib/filters';
 import type { SearchOpts } from '@/lib/journey';
 import { loadRegion, saveRegion } from '@/lib/store';
+import { useIsClient } from '@/lib/client/browser-state';
 import { cn } from '@/lib/utils';
 
 export type { FilterState };
@@ -91,20 +92,24 @@ export function Filters({
   // A primeira busca (do upload) equivale a escopo "qualquer lugar".
   const [ultimaBusca, setUltimaBusca] = useState('any||');
 
-  // Restaura a última região escolhida. Fica num efeito (não na inicialização
-  // do useState) porque ler o localStorage na primeira renderização causaria
-  // mismatch de hidratação — o servidor não tem acesso a ele.
-  useEffect(() => {
+  // Restaura a última região escolhida na primeira renderização já no
+  // navegador. Não pode ser na inicialização do useState: ler o localStorage
+  // na hidratação causaria mismatch — o servidor não tem acesso a ele.
+  const isClient = useIsClient();
+  const [restaurado, setRestaurado] = useState(false);
+  if (isClient && !restaurado) {
+    setRestaurado(true);
     const r = loadRegion();
-    if (!r) return;
-    setEscopo(r.escopo);
-    setUf(r.uf);
-    setCidade(r.cidade);
-    setPais(r.pais);
-    // Aquele ranking já está em cache, então o botão nasce desabilitado até
-    // o usuário mudar algo de novo.
-    setUltimaBusca(chaveDe(r.escopo, r.uf, r.cidade, r.pais));
-  }, []);
+    if (r) {
+      setEscopo(r.escopo);
+      setUf(r.uf);
+      setCidade(r.cidade);
+      setPais(r.pais);
+      // Aquele ranking já está em cache, então o botão nasce desabilitado até
+      // o usuário mudar algo de novo.
+      setUltimaBusca(chaveDe(r.escopo, r.uf, r.cidade, r.pais));
+    }
+  }
 
   const chave = chaveDe(escopo, uf, cidade, pais);
   const mudou = chave !== ultimaBusca;

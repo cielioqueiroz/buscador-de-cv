@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { useIsClient } from '@/lib/client/browser-state';
 import { createPortal } from 'react-dom';
 import { STAGES, type Stage } from '@/lib/journey';
 import { cn } from '@/lib/utils';
@@ -60,15 +61,16 @@ function embaralhar<T>(xs: T[]): T[] {
 export function LoadingJourney({ stage }: { stage: Stage }) {
   const atual = STAGES.indexOf(stage);
   const falas = useMemo(() => embaralhar(FALAS[stage]), [stage]);
-  const [fala, setFala] = useState(0);
+  // A fala volta para a primeira quando a etapa muda: o ajuste acontece na
+  // própria renderização (padrão do React para estado derivado de prop).
+  const [giro, setGiro] = useState({ falas, i: 0 });
+  if (giro.falas !== falas) setGiro({ falas, i: 0 });
+  const fala = giro.falas === falas ? giro.i : 0;
   const [segundos, setSegundos] = useState(0);
-  const [montado, setMontado] = useState(false);
-
-  useEffect(() => setMontado(true), []);
+  const montado = useIsClient();
 
   useEffect(() => {
-    setFala(0);
-    const id = setInterval(() => setFala((i) => (i + 1) % falas.length), 2600);
+    const id = setInterval(() => setGiro((g) => ({ ...g, i: (g.i + 1) % g.falas.length })), 2600);
     return () => clearInterval(id);
   }, [falas]);
 

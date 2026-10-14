@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FiRefreshCw, FiHome, FiAlertTriangle } from 'react-icons/fi';
-import { recuperarDeDeploy } from '@/lib/deploy-recovery';
+import { ehErroDeDeploy, recuperarDeDeploy } from '@/lib/deploy-recovery';
 
 /**
  * A rede de segurança do app.
@@ -26,10 +26,15 @@ export default function Error({
 }) {
   // Enquanto a recarga não acontece, não pisca a tela de erro na cara de quem
   // só precisava de um F5.
-  const [recuperando, setRecuperando] = useState(true);
+  // Só erro de deploy merece o "recuperando"; qualquer outro mostra a tela já.
+  const [recuperando, setRecuperando] = useState(() => ehErroDeDeploy(error));
 
   useEffect(() => {
     console.error('[app]', error);
+    if (!ehErroDeDeploy(error)) return;
+    // Recarga em laço (o mesmo erro logo depois de recarregar) não era deploy:
+    // desiste e mostra a tela. Só acontece depois de uma recarga real.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reage ao sessionStorage, que só existe aqui
     if (!recuperarDeDeploy(error)) setRecuperando(false);
   }, [error]);
 

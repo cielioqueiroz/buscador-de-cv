@@ -1,17 +1,24 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { FiMoon, FiSun } from 'react-icons/fi';
 
-export function ThemeToggle() {
-  const [dark, setDark] = useState(true);
+// O tema mora na classe `dark` do <html> (o script do layout a põe antes da
+// pintura); o botão só observa essa classe.
+function subscribeTheme(onChange: () => void) {
+  const mo = new MutationObserver(onChange);
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  return () => mo.disconnect();
+}
 
-  useEffect(() => {
-    setDark(document.documentElement.classList.contains('dark'));
-  }, []);
+export function ThemeToggle() {
+  const dark = useSyncExternalStore(
+    subscribeTheme,
+    () => document.documentElement.classList.contains('dark'),
+    () => true,
+  );
 
   function toggle() {
     const next = !dark;
-    setDark(next);
     document.documentElement.classList.toggle('dark', next);
     try {
       localStorage.setItem('jf_theme', next ? 'dark' : 'light');
