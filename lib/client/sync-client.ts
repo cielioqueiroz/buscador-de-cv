@@ -10,7 +10,7 @@
  * pode setar o state sem precisar fazer um read-after-write.
  */
 
-import type { Application, ApplicationStage } from '@/lib/application-schema';
+import type { Application, ApplicationPatch, ApplicationStage } from '@/lib/application-schema';
 import type { SavedLetter } from '@/lib/letter-schema';
 import type { RankedJob } from '@/lib/ranked';
 import type { DismissReason } from '@/lib/dismiss-reasons';
@@ -96,16 +96,39 @@ export async function saveApplicationStore(
   return fetchApplications(true);
 }
 
+/** Estágio, anotações e data da entrevista. Sem conta, só o estágio é guardado. */
+export async function updateApplicationStore(
+  authed: boolean,
+  jobId: string,
+  patch: ApplicationPatch,
+): Promise<Application[]> {
+  if (!authed) {
+    return patch.stage ? updateLocalApplicationStage(jobId, patch.stage) : listLocalApplications();
+  }
+  const res = await fetch(`/api/sync/applications/${encodeURIComponent(jobId)}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  await readJson(res, {});
+  return fetchApplications(true);
+}
+
 export async function updateApplicationStageStore(
   authed: boolean,
   jobId: string,
   stage: ApplicationStage,
 ): Promise<Application[]> {
-  if (!authed) return updateLocalApplicationStage(jobId, stage);
-  const res = await fetch(`/api/sync/applications/${encodeURIComponent(jobId)}`, {
-    method: 'PATCH',
+  return updateApplicationStore(authed, jobId, { stage });
+}
+
+/** Volta uma candidatura removida exatamente como era (o "Desfazer"). */
+export async function restoreApplicationStore(authed: boolean, application: Application): Promise<Application[]> {
+  if (!authed) return listLocalApplications();
+  const res = await fetch('/api/sync/applications', {
+    method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ stage }),
+    body: JSON.stringify({ application }),
   });
   await readJson(res, {});
   return fetchApplications(true);

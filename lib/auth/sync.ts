@@ -2,6 +2,7 @@ import { userQuery, userTransaction } from "@/lib/db/user-scope";
 import {
   ApplicationSchema,
   type Application,
+  type ApplicationPatch,
 } from "@/lib/application-schema";
 import { SavedLetterSchema, type SavedLetter } from "@/lib/letter-schema";
 import { AdaptedCVSchema, type AdaptedCV } from "@/lib/cv-features";
@@ -12,6 +13,7 @@ type ApplicationRow = {
   score: number | null;
   stage: string;
   notes: string | null;
+  interview_on: string | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -22,6 +24,8 @@ function rowToApplication(row: ApplicationRow): Application {
     job: (row.job_payload as { job?: unknown })?.job ?? row.job_payload,
     match: (row.job_payload as { match?: unknown })?.match,
     stage: row.stage,
+    notes: row.notes ?? undefined,
+    interviewOn: row.interview_on ?? undefined,
     createdAt: row.created_at.getTime(),
     updatedAt: row.updated_at.getTime(),
   });
@@ -38,7 +42,8 @@ function rowToApplication(row: ApplicationRow): Application {
 export async function listApplications(userId: string): Promise<Application[]> {
   const result = await userQuery<ApplicationRow>(
     userId,
-    `select job_id, job_payload, score, stage, notes, created_at, updated_at
+    `select job_id, job_payload, score, stage, notes, interview_on::text as interview_on,
+            created_at, updated_at
        from applications
       where user_id = $1
       order by updated_at desc
@@ -59,35 +64,53 @@ export async function upsertApplication(
   await userQuery(
     userId,
     `insert into applications
-       (user_id, job_id, job_payload, score, stage, created_at, updated_at)
-     values ($1, $2, $3::jsonb, $4, $5, to_timestamp($6/1000.0), to_timestamp($7/1000.0))
+       (user_id, job_id, job_payload, score, stage, notes, interview_on, created_at, updated_at)
+     values ($1, $2, $3::jsonb, $4, $5, $6, $7::date, to_timestamp($8/1000.0), to_timestamp($9/1000.0))
      on conflict (user_id, job_id) do update set
-       job_payload = excluded.job_payload,
-       score       = excluded.score,
-       stage       = excluded.stage,
-       updated_at  = excluded.updated_at`,
+       job_payload  = excluded.job_payload,
+       score        = excluded.score,
+       stage        = excluded.stage,
+       notes        = excluded.notes,
+       interview_on = excluded.interview_on,
+       updated_at   = excluded.updated_at`,
     [
       userId,
       application.id,
       payload,
       Math.round(application.match.score),
       application.stage,
+      application.notes ?? null,
+      application.interviewOn ?? null,
       application.createdAt,
       application.updatedAt,
     ],
   );
 }
 
-export async function updateApplicationStage(
+/**
+ * Atualiza só os campos que vieram (estágio, anotações, data da entrevista).
+ * Os nomes de coluna são fixos aqui; do cliente só entram valores.
+ */
+export async function updateApplication(
   userId: string,
   jobId: string,
-  stage: Application["stage"],
+  patch: ApplicationPatch,
 ): Promise<void> {
+  const sets: string[] = [];
+  const params: unknown[] = [userId, jobId];
+  const set = (column: string, value: unknown, cast = "") => {
+    params.push(value);
+    sets.push(`${column} = $${params.length}${cast}`);
+  };
+  if (patch.stage !== undefined) set("stage", patch.stage);
+  if (patch.notes !== undefined) set("notes", patch.notes?.trim() || null);
+  if (patch.interviewOn !== undefined) set("interview_on", patch.interviewOn, "::date");
+  if (sets.length === 0) return;
   await userQuery(
     userId,
-    `update applications set stage = $3, updated_at = now()
+    `update applications set ${sets.join(", ")}, updated_at = now()
       where user_id = $1 and job_id = $2`,
-    [userId, jobId, stage],
+    params,
   );
 }
 

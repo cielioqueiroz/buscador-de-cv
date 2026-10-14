@@ -10,7 +10,7 @@ vi.mock('@/lib/db/client', () => ({
 import {
   listApplications,
   upsertApplication,
-  updateApplicationStage,
+  updateApplication,
   removeApplication,
   setFavorite,
   listFavorites,
@@ -73,10 +73,21 @@ describe('applications', () => {
     expect(args[4]).toBe('aplicado');
   });
 
-  it('updateApplicationStage filtra por user+job', async () => {
+  it('updateApplication filtra por user+job e só mexe nos campos enviados', async () => {
     queryMock.mockResolvedValueOnce({ rows: [] });
-    await updateApplicationStage('u1', 'j1', 'entrevista');
+    await updateApplication('u1', 'j1', { stage: 'entrevista' });
+    expect(queryMock.mock.calls[0][0]).toContain('set stage = $3, updated_at = now()');
     expect(queryMock.mock.calls[0][1]).toEqual(['u1', 'j1', 'entrevista']);
+  });
+
+  it('updateApplication grava anotação e data; texto vazio e null apagam', async () => {
+    queryMock.mockResolvedValue({ rows: [] });
+    await updateApplication('u1', 'j1', { notes: 'Falar com a Ana', interviewOn: '2026-10-20' });
+    expect(queryMock.mock.calls[0][0]).toContain('notes = $3, interview_on = $4::date');
+    expect(queryMock.mock.calls[0][1]).toEqual(['u1', 'j1', 'Falar com a Ana', '2026-10-20']);
+
+    await updateApplication('u1', 'j1', { notes: '   ', interviewOn: null });
+    expect(queryMock.mock.calls[1][1]).toEqual(['u1', 'j1', null, null]);
   });
 
   it('remove filtra por user+job', async () => {
