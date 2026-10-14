@@ -46,7 +46,11 @@ export function LoginForm({ googleEnabled = true, passwordResetEnabled = true }:
     });
     setBusy(null);
     if (!result || result.error) {
-      setError("E-mail ou senha inválidos.");
+      setError(
+        result?.code === "rate_limited"
+          ? "Muitas tentativas. Espere alguns minutos e tente de novo."
+          : "E-mail ou senha inválidos.",
+      );
       return;
     }
     router.push(result.url || callbackUrl);
