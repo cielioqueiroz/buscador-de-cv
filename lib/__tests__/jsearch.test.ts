@@ -33,6 +33,30 @@ beforeEach(() => {
 });
 
 describe('jsearch.search', () => {
+  it('traz salário com moeda e período quando a vaga informa', async () => {
+    const comSalario = {
+      ...fake,
+      data: {
+        ...fake.data,
+        jobs: [{
+          ...fake.data.jobs[0],
+          job_min_salary: 8000,
+          job_max_salary: 12000,
+          job_salary_currency: 'BRL',
+          job_salary_period: 'MONTH',
+        }],
+      },
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => comSalario })));
+    const [job] = await jsearch.search('react', {});
+    expect(job.salary).toEqual({ min: 8000, max: 12000, currency: 'BRL', period: 'month' });
+  });
+
+  it('sem salário na vaga, nada de salário inventado', async () => {
+    const [job] = await jsearch.search('react', {});
+    expect(job.salary).toBeUndefined();
+  });
+
   it('lê as vagas de data.jobs (formato da v5)', async () => {
     const jobs = await jsearch.search('front-end react', {});
     expect(jobs).toHaveLength(1);

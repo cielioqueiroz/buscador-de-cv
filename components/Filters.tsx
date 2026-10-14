@@ -12,6 +12,7 @@ export type { FilterState };
 const ORDENS: { value: FilterState['order']; label: string }[] = [
   { value: 'score', label: 'Melhor match' },
   { value: 'recent', label: 'Mais recentes' },
+  { value: 'salary', label: 'Maior salário' },
 ];
 
 const MODALIDADES: { value: FilterState['modality']; label: string; title?: string }[] = [
@@ -153,6 +154,22 @@ export function Filters({
           <FiHeart className={cn('h-3.5 w-3.5', value.favorite && 'fill-current')} />
           Só favoritas
           <span className="font-mono opacity-70">{favCount}</span>
+        </button>
+      </Grupo>
+
+      <Grupo titulo="Salário">
+        <button
+          type="button"
+          onClick={() => onChange({ ...value, salaryOnly: !value.salaryOnly })}
+          aria-pressed={value.salaryOnly}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+            value.salaryOnly
+              ? 'border-accent bg-accent text-accent-foreground'
+              : 'border-border bg-surface-2 text-muted hover:border-accent-ink hover:text-foreground',
+          )}
+        >
+          Só com salário informado
         </button>
       </Grupo>
 

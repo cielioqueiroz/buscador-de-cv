@@ -1,4 +1,5 @@
 import {
+  asNumber,
   asRecord,
   asString,
   Job,
@@ -16,6 +17,15 @@ const HOST = 'jsearch.p.rapidapi.com';
  * as vagas agora vêm em `data.jobs`, não em `data`. O caminho antigo devolve 404.
  */
 const ENDPOINT = 'search-v2';
+
+/** `job_salary_period` do JSearch → o período do JobSchema. */
+const PERIODOS: Record<string, 'hour' | 'day' | 'week' | 'month' | 'year' | undefined> = {
+  HOUR: 'hour',
+  DAY: 'day',
+  WEEK: 'week',
+  MONTH: 'month',
+  YEAR: 'year',
+};
 
 export const jsearch: JobProvider = {
   name: 'jsearch',
@@ -49,12 +59,23 @@ export const jsearch: JobProvider = {
           .filter((part): part is string => typeof part === 'string' && Boolean(part.trim()))
           .join(', ') || 'Não informado');
         const title = asString(j.job_title, 'Vaga');
+        const salaryMin = asNumber(j.job_min_salary);
+        const salaryMax = asNumber(j.job_max_salary);
+        const period = typeof j.job_salary_period === 'string' ? PERIODOS[j.job_salary_period.toUpperCase()] : undefined;
 
         return {
           id: jobId(title, company, location),
           title, company, location,
           remote: Boolean(j.job_is_remote),
           description: asString(j.job_description, ''),
+          salary: (salaryMin !== undefined || salaryMax !== undefined)
+            ? {
+                min: salaryMin,
+                max: salaryMax,
+                currency: asString(j.job_salary_currency, opts.country && opts.country !== 'br' ? 'USD' : 'BRL'),
+                period,
+              }
+            : undefined,
           // A v5 devolve `null` aqui, e `null` não é `undefined`: o JobSchema
           // declara postedAt como string opcional, então um null reprovaria na
           // validação da rota /jobs/match e derrubaria a busca inteira.

@@ -32,6 +32,7 @@ import { DismissButton } from './DismissButton';
 import type { DismissReason } from '@/lib/dismiss-reasons';
 import type { CVProfile } from '@/lib/providers/types';
 import { cn } from '@/lib/utils';
+import { formatSalary } from '@/lib/salary';
 
 interface JobCardProps {
   ranked: RankedJob;
@@ -169,12 +170,12 @@ export function JobCard({ ranked, index = 0, profile, onDismiss, initial }: JobC
         </div>
       )}
 
-      {job.salary && (job.salary.min || job.salary.max) && (
-        <p className="mt-4 font-mono text-sm text-foreground">
-          {job.salary.min ? `R$ ${job.salary.min.toLocaleString('pt-BR')}` : ''}
-          {job.salary.min && job.salary.max ? ' – ' : ''}
-          {job.salary.max ? `R$ ${job.salary.max.toLocaleString('pt-BR')}` : ''}
-          <span className="ml-1 text-muted">/mês</span>
+      {job.salary && formatSalary(job.salary) && (
+        <p
+          className="mt-4 font-mono text-sm text-foreground"
+          title={job.salary.period ? undefined : 'A fonte não informa se o valor é mensal ou anual.'}
+        >
+          {formatSalary(job.salary)}
         </p>
       )}
 

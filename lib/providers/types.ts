@@ -41,6 +41,8 @@ export const JobSchema = z.object({
     min: z.number().optional(),
     max: z.number().optional(),
     currency: z.string().trim().min(1).max(12),
+    /** Só quando a fonte informa; sem ele, a tela não afirma mensal nem anual. */
+    period: z.enum(['hour', 'day', 'week', 'month', 'year']).optional(),
   }).optional(),
   postedAt: z.string().max(80).optional(),
   source: z.enum(['jsearch', 'adzuna', 'remotive']),

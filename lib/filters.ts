@@ -1,5 +1,6 @@
 import type { Job } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/ranked';
+import { monthlySalary } from '@/lib/salary';
 
 /**
  * Filtros que agem na hora sobre o ranking já carregado, sem custo.
@@ -15,11 +16,13 @@ export interface FilterState {
   modality: Modality | 'all';
   /** null = qualquer data. */
   maxDays: MaxDays;
-  order: 'score' | 'recent';
+  order: 'score' | 'recent' | 'salary';
   minScore: number;
   source: 'all' | 'jsearch' | 'adzuna' | 'remotive';
   /** Mostra só as vagas que o usuário favoritou (♥). */
   favorite: boolean;
+  /** Mostra só as vagas que informam salário. */
+  salaryOnly: boolean;
 }
 
 export const DEFAULT_FILTERS: FilterState = {
@@ -29,6 +32,7 @@ export const DEFAULT_FILTERS: FilterState = {
   minScore: 0,
   source: 'all',
   favorite: false,
+  salaryOnly: false,
 };
 
 /**
@@ -65,6 +69,14 @@ export function withinDays(job: Job, days: number, now: Date = new Date()): bool
 export function sortRanked(ranked: RankedJob[], order: FilterState['order']): RankedJob[] {
   const xs = [...ranked];
   if (order === 'score') return xs.sort((a, b) => b.match.score - a.match.score);
+  // Por salário: sem salário vai para o fim, empate desempata pelo match.
+  if (order === 'salary') {
+    return xs.sort(
+      (a, b) =>
+        (monthlySalary(b.job) ?? -Infinity) - (monthlySalary(a.job) ?? -Infinity) ||
+        b.match.score - a.match.score,
+    );
+  }
   // Por recente: sem-data vai para o fim — não dá para fingir que é nova.
   return xs.sort((a, b) => (postedTime(b.job) ?? -Infinity) - (postedTime(a.job) ?? -Infinity));
 }
@@ -82,6 +94,7 @@ export function applyFilters(
     if (f.modality !== 'all' && jobModality(r.job) !== f.modality) return false;
     if (f.maxDays !== null && !withinDays(r.job, f.maxDays, now)) return false;
     if (f.source !== 'all' && r.job.source !== f.source) return false;
+    if (f.salaryOnly && monthlySalary(r.job) === null) return false;
     if (r.match.score < f.minScore) return false;
     return true;
   });
