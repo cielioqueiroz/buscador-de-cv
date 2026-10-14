@@ -1,0 +1,72 @@
+# Backup diário do banco de produção (Neon, branch main).
+#
+# Por que aqui: o plano do Neon guarda só 6 h de histórico e não permite
+# agendar snapshots. Este job faz um pg_dump por dia e guarda 14 dias.
+#
+# O REPOSITÓRIO É PÚBLICO: artefatos de Actions ficam baixáveis por qualquer
+# conta do GitHub. Por isso o dump sai criptografado (AES-256, gpg simétrico)
+# e nunca é gravado em claro fora do runner.
+#
+# Secrets necessários (Settings → Secrets and variables → Actions):
+#   BACKUP_DATABASE_URL  connection string direta (sem -pooler) do branch main
+#   BACKUP_PASSPHRASE    senha longa para criptografar; guarde fora do GitHub
+# Sem eles, o job só avisa e termina.
+#
+# Restaurar:
+#   gpg --decrypt vaga-certa-AAAA-MM-DD.dump.gpg > backup.dump
+#   pg_restore --no-owner --dbname "$URL_DE_UM_BRANCH_NOVO" backup.dump
+name: Backup do banco
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # 03h em Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Conferir secrets
+        id: check
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::warning::BACKUP_DATABASE_URL e BACKUP_PASSPHRASE não configurados; backup pulado."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # pg_dump precisa ser da mesma versão do servidor (Neon usa Postgres 18).
+      - name: Instalar pg_dump 18
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-18
+
+      - name: Dump criptografado
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          umask 077
+          file="vaga-certa-$(date -u +%F).dump.gpg"
+          /usr/lib/postgresql/18/bin/pg_dump --format=custom --no-owner --no-privileges "$DATABASE_URL" \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-fd 3 --output "$file" 3<<<"$PASSPHRASE"
+          test -s "$file"
+          echo "FILE=$file" >> "$GITHUB_ENV"
+
+      - name: Guardar por 14 dias
+        if: steps.check.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILE }}
+          path: ${{ env.FILE }}
+          retention-days: 14
+          if-no-files-found: error
