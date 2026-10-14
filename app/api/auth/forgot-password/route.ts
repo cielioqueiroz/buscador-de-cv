@@ -22,6 +22,15 @@ function resetUrl(req: Request, token: string): string {
   return url.toString();
 }
 
+/**
+ * O nome é escolhido por quem cria a conta — e o cadastro não verifica o
+ * e-mail. Sem escape, alguém cadastraria o e-mail de outra pessoa com um
+ * "nome" em HTML e faria o Vaga Certa entregar esse HTML na caixa dela.
+ */
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
@@ -54,7 +63,7 @@ export async function POST(req: Request) {
           subject: 'Redefinir sua senha no Vaga Certa',
           text: `Para redefinir sua senha, abra: ${link}\nO link vale por 30 minutos. Se você não pediu, ignore.`,
           html: `
-            <p>Olá${user.name ? ', ' + user.name : ''}.</p>
+            <p>Olá${user.name ? ', ' + escapeHtml(user.name) : ''}.</p>
             <p>Para redefinir sua senha no Vaga Certa, abra o link abaixo (vale por 30 minutos):</p>
             <p><a href="${link}">${link}</a></p>
             <p>Se você não pediu, ignore este e-mail — nada muda.</p>
