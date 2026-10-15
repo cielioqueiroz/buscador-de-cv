@@ -5,6 +5,7 @@ import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { findUserByEmail } from '@/lib/auth/users';
 import { issueResetToken } from '@/lib/auth/reset-tokens';
 import { getMailer } from '@/lib/auth/email';
+import { publicBaseUrl } from '@/lib/api/public-url';
 
 export const runtime = 'nodejs';
 
@@ -13,11 +14,7 @@ const BodySchema = z.object({
 });
 
 function resetUrl(req: Request, token: string): string {
-  const base =
-    process.env.AUTH_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    new URL(req.url).origin;
-  const url = new URL('/redefinir-senha', base);
+  const url = new URL('/redefinir-senha', publicBaseUrl(req));
   url.searchParams.set('token', token);
   return url.toString();
 }
