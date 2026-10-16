@@ -5,6 +5,7 @@ import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { requireProfileAndJob } from '@/lib/jobs/user-context';
+import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
 
 export const runtime = 'nodejs';
 const MAX_BODY_BYTES = 1_000;
@@ -24,6 +25,8 @@ export async function POST(req: Request) {
     const { profile, job } = await requireProfileAndJob(userId, jobId);
     return NextResponse.json({ adaptedCV: await adaptCV(profile, job) });
   } catch (error) {
+    const busy = aiUnavailableResponse(error);
+    if (busy) return busy;
     if (error instanceof ApiRequestError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }

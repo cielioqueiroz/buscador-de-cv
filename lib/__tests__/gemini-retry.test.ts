@@ -9,7 +9,7 @@ vi.mock('@google/genai', () => ({
   ThinkingLevel: { LOW: 'LOW' },
 }));
 
-import { analyzeCV } from '@/lib/ai/gemini';
+import { AIUnavailableError, analyzeCV } from '@/lib/ai/gemini';
 
 const OK = {
   text: JSON.stringify({
@@ -58,7 +58,13 @@ describe('retry do Gemini', () => {
   it('desiste depois de 3 tentativas, em vez de repetir para sempre', async () => {
     generateContent.mockRejectedValue(apiError(503));
 
-    await expect(analyzeCV('x')).rejects.toThrow();
+    // e desiste com um erro que as rotas sabem traduzir para 503 + mensagem clara
+    await expect(analyzeCV('x')).rejects.toBeInstanceOf(AIUnavailableError);
     expect(generateContent).toHaveBeenCalledTimes(3);
+  });
+
+  it('erro que não é transitório chega como veio, sem virar "IA sobrecarregada"', async () => {
+    generateContent.mockRejectedValue(apiError(400));
+    await expect(analyzeCV('x')).rejects.not.toBeInstanceOf(AIUnavailableError);
   });
 });

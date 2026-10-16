@@ -3,6 +3,7 @@ import { MissingProfileError, MissingSearchError, rankLatestSearch } from '@/lib
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
+import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -35,6 +36,8 @@ export async function POST(req: Request) {
   try {
     return NextResponse.json(await rankLatestSearch(userId));
   } catch (err) {
+    const busy = aiUnavailableResponse(err);
+    if (busy) return busy;
     if (err instanceof MissingProfileError || err instanceof MissingSearchError) {
       return NextResponse.json({ error: err.message }, { status: 409 });
     }

@@ -16,6 +16,7 @@ vi.mock('@/lib/db/client', () => ({
 
 import { POST as matchPOST } from '@/app/api/jobs/match/route';
 import { MissingSearchError } from '@/lib/jobs/rank-search';
+import { AIUnavailableError } from '@/lib/ai/gemini';
 import { assertSameOrigin } from '@/lib/api/request';
 import { rateLimit, checkRateLimit } from '@/lib/rate-limit';
 
@@ -47,6 +48,15 @@ describe('POST /api/jobs/match — guardas', () => {
     const res = await matchPOST(post({}, '2.2.2.2'));
     expect(res.status).toBe(409);
     expect((await res.json()).error).toMatch(/expirou/);
+  });
+
+  it('IA sobrecarregada vira 503 com mensagem clara e Retry-After, não "Falha no matching"', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    rankLatestSearch.mockRejectedValueOnce(new AIUnavailableError());
+    const res = await matchPOST(post({}, '3.3.3.3'));
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('60');
+    expect((await res.json()).error).toMatch(/muita demanda/);
   });
 
   it('corta o abuso: o 6º request seguido do mesmo IP leva 429', async () => {

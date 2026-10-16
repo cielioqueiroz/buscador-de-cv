@@ -213,7 +213,9 @@ export function ResultadosClient({
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          {/* Os filtros passam da altura de uma tela baixa: sem o teto e a
+              rolagem própria, o "Onde" ficava fora de alcance enquanto fixo. */}
+          <div className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain">
             <Filters
               value={filters}
               onChange={setFilters}

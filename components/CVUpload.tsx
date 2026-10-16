@@ -24,6 +24,8 @@ export function CVUpload({ googleEnabled = false }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [stage, setStage] = useState<Stage | null>(null);
+  // A última etapa alcançada diz, numa falha, se o CV já foi lido e salvo.
+  const lastStage = useRef<Stage | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
   const closeGate = useCallback(() => setGateOpen(false), []);
@@ -53,10 +55,19 @@ export function CVUpload({ googleEnabled = false }: Props) {
     try {
       // A espera inteira roda aqui, sob o overlay: quando /resultados abre, o
       // ranking já está em cache e a página aparece pronta.
-      await runJourney(file, setStage);
+      lastStage.current = null;
+      await runJourney(file, (s) => {
+        lastStage.current = s;
+        setStage(s);
+      });
       router.push('/resultados');
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Erro inesperado.');
+      const message = e instanceof Error ? e.message : 'Erro inesperado.';
+      // Passou da leitura: o perfil já está na conta e só a busca falhou.
+      // Recarregar os dados tira o /perfil do "envie seu currículo".
+      const cvSalvo = lastStage.current !== null && lastStage.current !== 'reading';
+      toast.error(cvSalvo ? `Seu currículo foi salvo, mas a busca de vagas falhou. ${message}` : message);
+      if (cvSalvo) router.refresh();
       setStage(null);
       setFileName(null);
     }

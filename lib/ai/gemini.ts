@@ -46,6 +46,18 @@ function isTransient(err: unknown): boolean {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * O Gemini continuou sobrecarregado (503) ou sem cota (429) depois de todas as
+ * tentativas. Não é defeito nosso nem do pedido: as rotas devolvem 503 com esta
+ * mensagem, em vez de um "Falha" genérico.
+ */
+export class AIUnavailableError extends Error {
+  constructor(options?: { cause?: unknown }) {
+    super('A IA está com muita demanda agora. Espere um minuto e tente de novo.', options);
+    this.name = 'AIUnavailableError';
+  }
+}
+
+/**
  * O Gemini responde 503 "high demand" sob pico — visto em teste. Sem retry, um
  * pico derruba as 15 pontuações de uma vez e o usuário perde a busca inteira.
  */
@@ -54,7 +66,8 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
     try {
       return await fn();
     } catch (err) {
-      if (attempt >= MAX_ATTEMPTS || !isTransient(err)) throw err;
+      if (!isTransient(err)) throw err;
+      if (attempt >= MAX_ATTEMPTS) throw new AIUnavailableError({ cause: err });
       // Num 429 a própria API diz quanto esperar ("Please retry in 9.1s") — e o
       // valor dela é sempre melhor que um chute nosso.
       const delay = retryDelayMs(err) ?? 1000 * 2 ** (attempt - 1) + Math.random() * 400;

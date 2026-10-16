@@ -5,6 +5,7 @@ import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { requireProfileAndJob } from '@/lib/jobs/user-context';
+import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -37,6 +38,8 @@ export async function POST(req: Request) {
     const letter = await generateCoverLetter(profile, job, tone, length);
     return NextResponse.json({ letter });
   } catch (err) {
+    const busy = aiUnavailableResponse(err);
+    if (busy) return busy;
     if (err instanceof ApiRequestError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }

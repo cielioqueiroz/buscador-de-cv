@@ -6,6 +6,7 @@ import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { upsertProfile } from '@/lib/auth/profile';
 import { clearRanking } from '@/lib/jobs/store';
+import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
 
 export const runtime = 'nodejs';
 
@@ -77,6 +78,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ profile });
   } catch (err) {
+    const busy = aiUnavailableResponse(err);
+    if (busy) return busy;
     if (err instanceof ApiRequestError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
