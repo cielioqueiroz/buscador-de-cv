@@ -9,6 +9,10 @@ export type DashboardStats = {
   offers: number;
   favorites: number;
   profileUpdatedAt: string | null;
+  /** Vagas novas de nota alta na última busca, sem as descartadas. */
+  newJobs: number;
+  /** Quando a última busca foi pontuada; null se nunca houve. */
+  rankingUpdatedAt: string | null;
 };
 
 export type ChecklistItem = {

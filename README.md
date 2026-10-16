@@ -370,7 +370,9 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 - [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
 - [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência
 - [x] Tracker de candidaturas — Kanban local: Aplicado → Entrevista → Oferta
-- [ ] Alertas por e-mail de vagas novas com bom score
+- [x] Alerta de vagas novas no app — selo "Nova" e aviso no painel para vagas com nota 70+ que não estavam na busca anterior
+- [ ] Alertas por e-mail de vagas novas com bom score (depende de domínio próprio para o Resend)
+- [x] Retenção — contas sem acesso por 24 meses são excluídas pelo job diário, depois do backup
 - [x] Relatório "como melhorar seu CV" — forças, prioridades e termos para investigar
 
 <br/>

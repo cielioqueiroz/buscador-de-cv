@@ -1,7 +1,12 @@
-# Backup diário do banco de produção (Neon, branch main).
+# Backup diário do banco de produção (Neon, branch main) e retenção.
 #
 # Por que aqui: o plano do Neon guarda só 6 h de histórico e não permite
 # agendar snapshots. Este job faz um pg_dump por dia e guarda 14 dias.
+#
+# Depois do dump, exclui as contas sem uso há 24 meses (users.last_seen_at,
+# carimbado pela sessão — db/migrations/0012). Fica aqui, e não num cron à
+# parte, para só rodar quando o backup do dia já está guardado: um engano na
+# regra ainda tem 14 dias para ser desfeito. Tudo do usuário cai em cascata.
 #
 # O REPOSITÓRIO É PÚBLICO: artefatos de Actions ficam baixáveis por qualquer
 # conta do GitHub. Por isso o dump sai criptografado (AES-256, gpg simétrico)
@@ -70,3 +75,19 @@ jobs:
           path: ${{ env.FILE }}
           retention-days: 14
           if-no-files-found: error
+
+      - name: Excluir contas inativas há 24 meses
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          /usr/lib/postgresql/18/bin/psql "$DATABASE_URL" --no-psqlrc --quiet --tuples-only -v ON_ERROR_STOP=1 <<'SQL'
+          begin;
+          create temp table inativas on commit drop as
+            select id, email::text as email from users
+             where last_seen_at < now() - interval '24 months';
+          -- o token de verificação é ligado ao e-mail, não ao id (igual a deleteAccount)
+          delete from verification_token where identifier in (select email from inativas);
+          with apagadas as (delete from users where id in (select id from inativas) returning 1)
+          select 'contas inativas excluídas: ' || count(*) from apagadas;
+          commit;
+          SQL

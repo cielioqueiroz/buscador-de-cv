@@ -7,6 +7,7 @@ const m = vi.hoisted(() => ({
   loadCachedScores: vi.fn(),
   saveScores: vi.fn(),
   saveRanking: vi.fn(),
+  loadRankedIds: vi.fn(),
   matchJobs: vi.fn(),
   listDismissedIds: vi.fn(),
 }));
@@ -17,6 +18,7 @@ vi.mock('@/lib/jobs/store', () => ({
   loadCachedScores: m.loadCachedScores,
   saveScores: m.saveScores,
   saveRanking: m.saveRanking,
+  loadRankedIds: m.loadRankedIds,
 }));
 vi.mock('@/lib/ai/gemini', () => ({ matchJobs: m.matchJobs }));
 
@@ -44,6 +46,7 @@ beforeEach(() => {
   m.saveScores.mockResolvedValue(undefined);
   m.saveRanking.mockResolvedValue(undefined);
   m.listDismissedIds.mockResolvedValue([]);
+  m.loadRankedIds.mockResolvedValue(null);
 });
 
 describe('rankLatestSearch', () => {
@@ -51,12 +54,33 @@ describe('rankLatestSearch', () => {
     m.loadSearch.mockResolvedValue([job('a'), job('b')]);
     m.matchJobs.mockResolvedValue([score('a', 40), score('b', 90)]);
 
-    const ranked = await rankLatestSearch('u1');
+    const { ranked, newIds } = await rankLatestSearch('u1');
 
     expect(ranked.map((r) => r.job.id)).toEqual(['b', 'a']);
     expect(m.matchJobs).toHaveBeenCalledWith(profile, [job('a'), job('b')]);
     expect(m.saveScores).toHaveBeenCalledWith('u1', profileHash(profile), [score('a', 40), score('b', 90)]);
-    expect(m.saveRanking).toHaveBeenCalledWith('u1', ranked);
+    // primeira busca: sem ranking anterior, nada é "novo"
+    expect(newIds).toEqual([]);
+    expect(m.saveRanking).toHaveBeenCalledWith('u1', ranked, []);
+  });
+
+  it('marca como novas as vagas de nota alta que não estavam no ranking anterior', async () => {
+    m.loadRankedIds.mockResolvedValue(['a']);
+    m.loadSearch.mockResolvedValue([job('a'), job('b'), job('c')]);
+    m.matchJobs.mockResolvedValue([score('a', 95), score('b', 85), score('c', 50)]);
+
+    const { ranked, newIds } = await rankLatestSearch('u1');
+
+    expect(newIds).toEqual(['b']);
+    expect(m.saveRanking).toHaveBeenCalledWith('u1', ranked, ['b']);
+  });
+
+  it('sem conseguir ler o ranking anterior, a busca segue sem aviso de novas', async () => {
+    m.loadRankedIds.mockRejectedValue(new Error('db fora'));
+    m.loadSearch.mockResolvedValue([job('a')]);
+    m.matchJobs.mockResolvedValue([score('a', 90)]);
+
+    expect(await rankLatestSearch('u1')).toMatchObject({ newIds: [] });
   });
 
   it('só manda à IA as vagas sem nota em cache para este CV', async () => {
@@ -109,7 +133,7 @@ describe('rankLatestSearch', () => {
     m.saveScores.mockRejectedValue(new Error('db fora'));
     m.saveRanking.mockRejectedValue(new Error('db fora'));
 
-    expect(await rankLatestSearch('u1')).toHaveLength(1);
+    expect((await rankLatestSearch('u1')).ranked).toHaveLength(1);
   });
 
   it('a nota depende do conteúdo do CV, não das queries de busca', () => {

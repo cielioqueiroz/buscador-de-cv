@@ -6,7 +6,7 @@ const { userQuery, userTransaction } = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/db/user-scope', () => ({ userQuery, userTransaction }));
 
-import { loadCachedScores, loadRanking, loadSearch, saveScores, saveSearch } from '@/lib/jobs/store';
+import { loadCachedScores, loadRankedIds, loadRanking, loadSearch, saveRanking, saveScores, saveSearch } from '@/lib/jobs/store';
 
 const job = {
   id: 'a', title: 'Dev', company: 'A', location: 'SP', remote: false,
@@ -67,5 +67,41 @@ describe('lib/jobs/store', () => {
   it('ranking corrompido volta null em vez de quebrar /resultados', async () => {
     userQuery.mockResolvedValue({ rows: [{ ranked: [{ lixo: true }] }], rowCount: 1 });
     expect(await loadRanking('u1')).toBeNull();
+  });
+
+  it('ranking salvo volta com as vagas novas e a data da busca', async () => {
+    const updated = new Date('2026-10-10T12:00:00Z');
+    userQuery.mockResolvedValue({
+      rows: [{ ranked: [{ job, match }], new_ids: ['a'], updated_at: updated }],
+      rowCount: 1,
+    });
+    expect(await loadRanking('u1')).toEqual({
+      ranked: [{ job, match }],
+      newIds: ['a'],
+      updatedAt: updated.toISOString(),
+    });
+  });
+
+  it('new_ids inválido não derruba o ranking: só some o aviso', async () => {
+    userQuery.mockResolvedValue({
+      rows: [{ ranked: [{ job, match }], new_ids: [{ x: 1 }], updated_at: new Date() }],
+      rowCount: 1,
+    });
+    expect((await loadRanking('u1'))?.newIds).toEqual([]);
+  });
+
+  it('grava as vagas novas como text[] junto com o ranking', async () => {
+    userQuery.mockResolvedValue({ rows: [], rowCount: 1 });
+    await saveRanking('u1', [{ job, match }] as never, ['a']);
+    const [, sql, params] = userQuery.mock.calls[0];
+    expect(sql).toContain('$3::text[]');
+    expect(params[2]).toEqual(['a']);
+  });
+
+  it('ids do ranking anterior: null sem ranking, lista quando existe', async () => {
+    userQuery.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    expect(await loadRankedIds('u1')).toBeNull();
+    userQuery.mockResolvedValueOnce({ rows: [{ ids: ['a', 'b'] }], rowCount: 1 });
+    expect(await loadRankedIds('u1')).toEqual(['a', 'b']);
   });
 });

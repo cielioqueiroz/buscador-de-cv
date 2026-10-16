@@ -5,7 +5,7 @@ import PgAdapter from "@auth/pg-adapter";
 import { pool } from "@/lib/db/client";
 import { getAccount } from "@/lib/auth/users";
 import { authorizeCredentials } from "@/lib/auth/credentials";
-import { guardToken } from "@/lib/auth/session-guard";
+import { guardToken, touchLastSeen } from "@/lib/auth/session-guard";
 import { isGoogleEnabled } from "@/lib/auth/features";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -30,6 +30,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorize: (credentials, request) => authorizeCredentials(credentials, request),
     }),
   ],
+  events: {
+    // Carimbo de uso para a regra de contas inativas; falhar aqui não pode
+    // impedir o login.
+    async signIn({ user }) {
+      if (user.id) await touchLastSeen(user.id).catch((err) => console.error("[auth] last_seen_at:", err));
+    },
+  },
   callbacks: {
     async jwt({ token: current, user, trigger }) {
       if (user?.id) current.sub = user.id;

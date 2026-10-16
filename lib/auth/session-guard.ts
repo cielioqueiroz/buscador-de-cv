@@ -9,6 +9,9 @@ import { pool } from "@/lib/db/client";
  * - depois, no máximo a cada RECHECK_MS, consulta o usuário no banco e devolve
  *   `null` — o Auth.js apaga o cookie — se a conta sumiu ou se a senha foi
  *   trocada depois do login.
+ *
+ * Na mesma ida ao banco carimba `last_seen_at` (no máximo uma vez por dia):
+ * é por ele que o backup diário acha as contas paradas há 24 meses.
  */
 
 export const RECHECK_MS = 5 * 60_000;
@@ -25,7 +28,11 @@ type SessionState = { passwordChangedAt: Date | null } | null;
 
 export async function loadSessionState(userId: string): Promise<SessionState> {
   const result = await pool.query<{ password_changed_at: Date | null }>(
-    "select password_changed_at from users where id = $1",
+    `with visto as (
+       update users set last_seen_at = now()
+        where id = $1 and last_seen_at < now() - interval '1 day'
+     )
+     select password_changed_at from users where id = $1`,
     [userId],
   );
   const row = result.rows[0];
@@ -50,4 +57,9 @@ export async function guardToken<T extends GuardedToken>(
   if (state.passwordChangedAt && state.passwordChangedAt.getTime() > authAt) return null;
 
   return { ...token, authAt, checkedAt: now };
+}
+
+/** O login também conta como uso — a sessão nova só é rechecada daqui a RECHECK_MS. */
+export async function touchLastSeen(userId: string): Promise<void> {
+  await pool.query("update users set last_seen_at = now() where id = $1", [userId]);
 }

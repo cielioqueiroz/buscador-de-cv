@@ -46,9 +46,11 @@ interface JobCardProps {
    * ele, o card busca o próprio — caminho de quem usa o card avulso.
    */
   initial?: { fav: boolean; tracked: boolean; hasLetter: boolean };
+  /** Apareceu na última busca e não estava na anterior (lib/jobs/new-jobs.ts). */
+  isNew?: boolean;
 }
 
-export function JobCard({ ranked, index = 0, profile, onDismiss, initial }: JobCardProps) {
+export function JobCard({ ranked, index = 0, profile, onDismiss, initial, isNew = false }: JobCardProps) {
   const { job, match } = ranked;
   const authed = useAuthed();
   const [fav, setFav] = useState(initial?.fav ?? false);
@@ -125,6 +127,11 @@ export function JobCard({ ranked, index = 0, profile, onDismiss, initial }: JobC
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
+            {isNew && (
+              <span className="inline-flex items-center rounded-full border border-accent-ink/40 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-accent-ink">
+                Nova
+              </span>
+            )}
             <SourceBadge source={job.source} publisher={job.publisher} />
             {job.remote && (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-accent-foreground">

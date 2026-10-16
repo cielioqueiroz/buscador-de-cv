@@ -75,24 +75,52 @@ export async function saveScores(userId: string, cvHash: string, results: MatchR
   ]);
 }
 
-export async function saveRanking(userId: string, ranked: RankedJob[]): Promise<void> {
+export async function saveRanking(userId: string, ranked: RankedJob[], newIds: string[] = []): Promise<void> {
   await userQuery(
     userId,
-    `insert into rankings (user_id, ranked, updated_at) values ($1, $2::jsonb, now())
-     on conflict (user_id) do update set ranked = excluded.ranked, updated_at = now()`,
-    [userId, JSON.stringify(ranked)],
+    `insert into rankings (user_id, ranked, new_ids, updated_at) values ($1, $2::jsonb, $3::text[], now())
+     on conflict (user_id) do update set ranked = excluded.ranked, new_ids = excluded.new_ids, updated_at = now()`,
+    [userId, JSON.stringify(ranked), newIds],
   );
 }
 
-export async function loadRanking(userId: string): Promise<RankedJob[] | null> {
-  const result = await userQuery<{ ranked: unknown }>(
+export interface SavedRanking {
+  ranked: RankedJob[];
+  /** Vagas de nota alta que não estavam na busca anterior (lib/jobs/new-jobs.ts). */
+  newIds: string[];
+  updatedAt: string;
+}
+
+const NewIdsSchema = z.array(z.string().max(300)).max(200);
+
+export async function loadRanking(userId: string): Promise<SavedRanking | null> {
+  const result = await userQuery<{ ranked: unknown; new_ids: unknown; updated_at: Date }>(
     userId,
-    `select ranked from rankings where user_id = $1`,
+    `select ranked, new_ids, updated_at from rankings where user_id = $1`,
     [userId],
   );
-  if (!result.rows[0]) return null;
-  const parsed = RankedListSchema.safeParse(result.rows[0].ranked);
-  return parsed.success ? parsed.data : null;
+  const row = result.rows[0];
+  if (!row) return null;
+  const parsed = RankedListSchema.safeParse(row.ranked);
+  if (!parsed.success) return null;
+  const newIds = NewIdsSchema.safeParse(row.new_ids);
+  return {
+    ranked: parsed.data,
+    newIds: newIds.success ? newIds.data : [],
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}
+
+/** Só os ids do ranking salvo — base para saber o que é novo na próxima busca. */
+export async function loadRankedIds(userId: string): Promise<string[] | null> {
+  const result = await userQuery<{ ids: string[] | null }>(
+    userId,
+    `select array(select elem->'job'->>'id' from jsonb_array_elements(ranked) elem) as ids
+       from rankings where user_id = $1`,
+    [userId],
+  );
+  const row = result.rows[0];
+  return row ? (row.ids ?? []).filter((id): id is string => typeof id === 'string') : null;
 }
 
 /**

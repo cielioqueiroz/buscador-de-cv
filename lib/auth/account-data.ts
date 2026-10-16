@@ -46,7 +46,7 @@ export async function exportAccountData(userId: string) {
     adaptedCVs,
     // Busca e notas em cache são derivadas e expiram sozinhas; o ranking é o
     // resultado que o usuário vê, então vai junto.
-    ranking,
+    ranking: ranking?.ranked ?? null,
     dismissedJobs: dismissals,
     avatar: avatar
       ? { mime: avatar.mime, base64: Buffer.from(avatar.data).toString("base64") }

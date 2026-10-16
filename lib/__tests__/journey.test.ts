@@ -108,7 +108,7 @@ describe('searchAndRank (re-busca regional)', () => {
   it('manda os opts regionais para a busca e atualiza o cache', async () => {
     const fetchMock = mockFetch({
       '/api/jobs/search': { jobs: [job] },
-      '/api/jobs/match': { ranked },
+      '/api/jobs/match': { ranked, newIds: ['j1'] },
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -123,6 +123,7 @@ describe('searchAndRank (re-busca regional)', () => {
     const corpo = JSON.parse((busca![1] as RequestInit).body as string);
     expect(corpo.opts).toEqual({ location: 'Goiânia, GO', country: 'br' });
     expect(stages).toEqual(['searching', 'scoring']);
-    expect(out).toHaveLength(1);
+    expect(out.ranked).toHaveLength(1);
+    expect(out.newIds).toEqual(['j1']);
   });
 });

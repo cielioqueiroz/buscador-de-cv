@@ -63,7 +63,7 @@ export async function searchAndRank(
   profile: CVProfile,
   opts: SearchOpts,
   onStage: (stage: Stage) => void,
-): Promise<RankedJob[]> {
+): Promise<{ ranked: RankedJob[]; newIds: string[] }> {
   onStage('searching');
   const found = await post(
     '/api/jobs/search',
@@ -74,7 +74,7 @@ export async function searchAndRank(
 
   // Sem vagas não é falha, é resultado: /resultados já tem estado vazio para
   // isso, e mandar lista vazia para a IA só queimaria uma chamada.
-  if (jobs.length === 0) return [];
+  if (jobs.length === 0) return { ranked: [], newIds: [] };
 
   // O servidor pontua a busca que ele mesmo acabou de guardar, contra o perfil
   // salvo na conta — nada disso viaja de volta daqui.
@@ -82,9 +82,12 @@ export async function searchAndRank(
   const matched = await post(
     '/api/jobs/match',
     json({}),
-    z.object({ ranked: z.array(RankedJobSchema).max(200) }),
+    z.object({
+      ranked: z.array(RankedJobSchema).max(200),
+      newIds: z.array(z.string()).max(200).default([]),
+    }),
   );
-  return matched.ranked;
+  return { ranked: matched.ranked, newIds: matched.newIds };
 }
 
 /**
@@ -108,6 +111,6 @@ export async function runJourney(
   onStage('profiling');
   forgetCVDerivedData();
 
-  const ranked = await searchAndRank(profile, {}, onStage);
+  const { ranked } = await searchAndRank(profile, {}, onStage);
   return { profile, ranked };
 }

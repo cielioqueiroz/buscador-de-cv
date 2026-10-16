@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { FiCheck, FiEdit2, FiRefreshCw, FiSearch, FiSettings } from 'react-icons/fi';
+import { FiBell, FiCheck, FiEdit2, FiRefreshCw, FiSearch, FiSettings } from 'react-icons/fi';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { CVUpload } from '@/components/CVUpload';
@@ -10,6 +10,7 @@ import { CVImprovementReportPanel } from '@/components/CVImprovementReportPanel'
 import { ProfileEditor } from '@/components/ProfileEditor';
 import { Avatar } from '@/components/auth/Avatar';
 import { profileChecklist, type DashboardStats } from '@/lib/auth/checklist';
+import { ALERT_MIN_SCORE, STALE_AFTER_DAYS } from '@/lib/jobs/new-jobs';
 import type { CVProfile } from '@/lib/providers/types';
 
 const SENIORITY_LABEL: Record<CVProfile['seniority'], string> = {
@@ -26,13 +27,15 @@ type Props = {
   stats: DashboardStats;
   updatedLabel: string | null;
   googleEnabled: boolean;
+  /** Dias desde a última busca; null se nunca houve. */
+  rankingAgeDays: number | null;
 };
 
 function displayName(account: Props['account']): string {
   return account.name?.trim() || account.email.split('@')[0];
 }
 
-export function PerfilClient({ account, profile, stats, updatedLabel, googleEnabled }: Props) {
+export function PerfilClient({ account, profile, stats, updatedLabel, googleEnabled, rankingAgeDays }: Props) {
   const [replacing, setReplacing] = useState(false);
 
   const name = displayName(account);
@@ -51,6 +54,7 @@ export function PerfilClient({ account, profile, stats, updatedLabel, googleEnab
             replacing={replacing}
             onReplace={() => setReplacing((v) => !v)}
             googleEnabled={googleEnabled}
+            rankingAgeDays={rankingAgeDays}
           />
         ) : (
           <Onboarding name={name} googleEnabled={googleEnabled} />
@@ -87,9 +91,20 @@ type DashboardProps = {
   replacing: boolean;
   onReplace: () => void;
   googleEnabled: boolean;
+  rankingAgeDays: number | null;
 };
 
-function Dashboard({ account, name, profile, stats, updatedLabel, replacing, onReplace, googleEnabled }: DashboardProps) {
+function Dashboard({
+  account,
+  name,
+  profile,
+  stats,
+  updatedLabel,
+  replacing,
+  onReplace,
+  googleEnabled,
+  rankingAgeDays,
+}: DashboardProps) {
   const { items, strength } = profileChecklist({
     hasCV: true,
     hasPhoto: Boolean(account.image),
@@ -161,6 +176,8 @@ function Dashboard({ account, name, profile, stats, updatedLabel, replacing, onR
             <FiSettings aria-hidden /> Editar conta
           </Link>
         </div>
+
+        <JobsAlert newJobs={stats.newJobs} ageDays={rankingAgeDays} />
 
         {replacing ? (
           <div id="trocar-cv" className="mt-6 scroll-mt-24">
@@ -284,5 +301,25 @@ function Stat({ label, value, highlight = false }: { label: string; value: numbe
         {value}
       </dd>
     </div>
+  );
+}
+
+/** O alerta de vagas do painel: o que a última busca trouxe de novo, ou que ela já envelheceu. */
+function JobsAlert({ newJobs, ageDays }: { newJobs: number; ageDays: number | null }) {
+  const stale = ageDays !== null && ageDays >= STALE_AFTER_DAYS;
+  if (newJobs === 0 && !stale) return null;
+  const texto =
+    newJobs > 0
+      ? `${newJobs === 1 ? '1 vaga nova' : `${newJobs} vagas novas`} com nota ${ALERT_MIN_SCORE}+ na sua última busca.`
+      : `Sua última busca foi há ${ageDays} dias. Vale ver se abriram vagas novas.`;
+  return (
+    <Link
+      href="/resultados"
+      className="mt-4 flex items-center gap-3 rounded-card border border-accent-ink/40 px-4 py-3 text-sm transition-colors hover:bg-background"
+    >
+      <FiBell className="h-4 w-4 shrink-0 text-accent-ink" aria-hidden />
+      <span className="font-medium">{texto}</span>
+      <span className="ml-auto shrink-0 text-accent-ink">Ver vagas</span>
+    </Link>
   );
 }

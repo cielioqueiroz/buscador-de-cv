@@ -5,6 +5,7 @@ import { getProfile } from '@/lib/auth/profile';
 import { getAccount } from '@/lib/auth/users';
 import { getDashboardStats, type DashboardStats } from '@/lib/auth/dashboard';
 import { isGoogleEnabled } from '@/lib/auth/features';
+import { daysSince } from '@/lib/jobs/new-jobs';
 import { PerfilClient } from './PerfilClient';
 
 export const metadata: Metadata = {
@@ -18,6 +19,8 @@ const EMPTY_STATS: DashboardStats = {
   offers: 0,
   favorites: 0,
   profileUpdatedAt: null,
+  newJobs: 0,
+  rankingUpdatedAt: null,
 };
 
 // Formatado aqui, com fuso fixo: no cliente o fuso do navegador mudaria o
@@ -47,6 +50,8 @@ export default async function PerfilPage() {
       stats={stats}
       updatedLabel={stats.profileUpdatedAt ? DATE_FMT.format(new Date(stats.profileUpdatedAt)) : null}
       googleEnabled={isGoogleEnabled()}
+      // em dias, calculado aqui: servidor e hidratação mostram o mesmo número
+      rankingAgeDays={daysSince(stats.rankingUpdatedAt)}
     />
   );
 }

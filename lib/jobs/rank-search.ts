@@ -3,7 +3,8 @@ import { getProfile } from '@/lib/auth/profile';
 import { rankJobs } from '@/lib/matching';
 import { MAX_JOBS_PER_MATCH, type CVProfile } from '@/lib/providers/types';
 import type { RankedJob } from '@/lib/ranked';
-import { loadCachedScores, loadSearch, saveRanking, saveScores } from '@/lib/jobs/store';
+import { loadCachedScores, loadRankedIds, loadSearch, saveRanking, saveScores } from '@/lib/jobs/store';
+import { newJobIds } from '@/lib/jobs/new-jobs';
 import { listDismissedIds } from '@/lib/jobs/dismissals';
 
 export class MissingProfileError extends Error {
@@ -38,13 +39,16 @@ export function profileHash(profile: CVProfile): string {
 /**
  * Pontua a última busca do usuário contra o perfil dele — os dois lidos do
  * banco, nunca do corpo da requisição. Notas já conhecidas para este CV vêm do
- * cache; só as novas vão à IA. O ranking final fica salvo para /resultados.
+ * cache; só as novas vão à IA. O ranking final fica salvo para /resultados,
+ * junto com as vagas de nota alta que não estavam no ranking anterior.
  */
-export async function rankLatestSearch(userId: string): Promise<RankedJob[]> {
-  const [profile, jobs, dismissed] = await Promise.all([
+export async function rankLatestSearch(userId: string): Promise<{ ranked: RankedJob[]; newIds: string[] }> {
+  const [profile, jobs, dismissed, previousIds] = await Promise.all([
     getProfile(userId),
     loadSearch(userId),
     listDismissedIds(userId),
+    // Sem o ranking anterior o aviso de "novas" só some; a busca segue.
+    loadRankedIds(userId).catch(() => null),
   ]);
   if (!profile) throw new MissingProfileError();
   if (!jobs) throw new MissingSearchError();
@@ -56,17 +60,18 @@ export async function rankLatestSearch(userId: string): Promise<RankedJob[]> {
   const batch = jobs.filter((job) => !skip.has(job.id)).slice(0, MAX_JOBS_PER_MATCH);
   if (batch.length === 0) {
     await saveRanking(userId, []);
-    return [];
+    return { ranked: [], newIds: [] };
   }
 
   const hash = profileHash(profile);
   const cached = await loadCachedScores(userId, hash, batch.map((job) => job.id));
   const { ranked, fresh } = await rankJobs(profile, batch, cached);
+  const newIds = newJobIds(previousIds, ranked);
 
   // Falhar ao guardar não pode custar o resultado que o usuário já pagou para ter.
   await Promise.all([
     saveScores(userId, hash, fresh).catch((err) => console.error('[rank-search] cache de notas:', err)),
-    saveRanking(userId, ranked).catch((err) => console.error('[rank-search] ranking:', err)),
+    saveRanking(userId, ranked, newIds).catch((err) => console.error('[rank-search] ranking:', err)),
   ]);
-  return ranked;
+  return { ranked, newIds };
 }

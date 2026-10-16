@@ -11,6 +11,7 @@ import { Filters } from '@/components/Filters';
 import { LoadingJourney } from '@/components/LoadingJourney';
 import { Confetti } from '@/components/Confetti';
 import { SkillsGap } from '@/components/SkillsGap';
+import { NewJobsNotice } from '@/components/NewJobsNotice';
 import { topMissingSkills } from '@/lib/skills-gap';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
@@ -31,9 +32,20 @@ type Props = {
   serverDismissed: string[];
   /** Favoritos, tracker e cartas da lista inteira, carregados com a página. */
   serverCards: CardState;
+  /** Vagas de nota alta que não estavam na busca anterior. */
+  serverNewIds: string[];
+  /** Idade do ranking salvo, em dias; null sem ranking. */
+  serverAgeDays: number | null;
 };
 
-export function ResultadosClient({ serverProfile, serverRanked, serverDismissed, serverCards }: Props) {
+export function ResultadosClient({
+  serverProfile,
+  serverRanked,
+  serverDismissed,
+  serverCards,
+  serverNewIds,
+  serverAgeDays,
+}: Props) {
   const router = useRouter();
   const profile = serverProfile;
   const [ranked, setRanked] = useState<RankedJob[]>(serverRanked ?? []);
@@ -41,6 +53,8 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed,
     serverRanked ? 'done' : 'idle',
   );
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [newIds, setNewIds] = useState(() => new Set(serverNewIds));
+  const [ageDays, setAgeDays] = useState(serverAgeDays);
   // Overlay da re-busca regional. Vive em estado próprio (e não no `status`)
   // para a página continuar montada por baixo: trocar a árvore inteira pelo
   // overlay desmontava o Filters e o formulário de região esquecia a escolha.
@@ -84,7 +98,9 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed,
         const result = await searchAndRank(serverProfile, {}, (s) =>
           setStatus(s === 'searching' ? 'searching' : 'matching'),
         );
-        setRanked(result);
+        setRanked(result.ranked);
+        setNewIds(new Set(result.newIds));
+        setAgeDays(0);
         setStatus('done');
       } catch (e: unknown) {
         setStatus('error');
@@ -105,9 +121,11 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed,
       const result = await searchAndRank(profile, opts, (s) =>
         setRegionStage(s === 'searching' ? 'searching' : 'scoring'),
       );
-      setRanked(result);
+      setRanked(result.ranked);
+      setNewIds(new Set(result.newIds));
+      setAgeDays(0);
       setStatus('done'); // também tira a tela do erro quando é o "tentar de novo"
-      if (result.length === 0) toast.info('Nenhuma vaga nessa região. Tente ampliar o escopo.');
+      if (result.ranked.length === 0) toast.info('Nenhuma vaga nessa região. Tente ampliar o escopo.');
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Erro ao buscar vagas.');
     } finally {
@@ -157,6 +175,7 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed,
     [kept, filters, favSet],
   );
   const lacunas = useMemo(() => topMissingSkills(kept), [kept]);
+  const novas = useMemo(() => kept.filter((r) => newIds.has(r.job.id)).length, [kept, newIds]);
   const filtrosAtivos = useMemo(
     () => JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS),
     [filters],
@@ -206,6 +225,15 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed,
           </div>
 
           <div className="space-y-4">
+            {status === 'done' && (
+              <NewJobsNotice
+                count={novas}
+                ageDays={ageDays}
+                onRefresh={() => void buscarRegiao({})}
+                refreshing={regionStage !== null}
+              />
+            )}
+
             {status === 'done' && <SkillsGap skills={lacunas} total={kept.length} />}
 
             {status === 'done' && visible.length === 0 && (
@@ -244,6 +272,7 @@ export function ResultadosClient({ serverProfile, serverRanked, serverDismissed,
                   hasLetter: withLetter.has(r.job.id),
                 }}
                 onDismiss={(reason) => void descartar(r.job.id, reason)}
+                isNew={newIds.has(r.job.id)}
               />
             ))}
           </div>

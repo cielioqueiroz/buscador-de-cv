@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/lib/db/client", () => ({ pool: { query: vi.fn() } }));
 
-import { guardToken, RECHECK_MS } from "@/lib/auth/session-guard";
+import { pool } from "@/lib/db/client";
+import { guardToken, loadSessionState, RECHECK_MS, touchLastSeen } from "@/lib/auth/session-guard";
 
 const NOW = 1_800_000_000_000;
 
@@ -45,5 +46,29 @@ describe("guardToken", () => {
     const depois = { sub: "u1", iat: (NOW - 1_000) / 1000 };
     expect(await guardToken(antes, false, NOW, load)).toBeNull();
     expect(await guardToken(depois, false, NOW, load)).toMatchObject({ authAt: NOW - 1_000 });
+  });
+});
+
+describe("last_seen_at (contas inativas)", () => {
+  const query = vi.mocked(pool.query);
+
+  it("a rechecagem da sessão carimba o uso no máximo uma vez por dia", async () => {
+    query.mockResolvedValueOnce({ rows: [{ password_changed_at: null }] } as never);
+    expect(await loadSessionState("u1")).toEqual({ passwordChangedAt: null });
+    const [sql, params] = query.mock.calls.at(-1)!;
+    expect(sql).toMatch(/update users set last_seen_at = now\(\)/);
+    expect(sql).toContain("last_seen_at < now() - interval '1 day'");
+    expect(params).toEqual(["u1"]);
+  });
+
+  it("conta excluída continua derrubando a sessão", async () => {
+    query.mockResolvedValueOnce({ rows: [] } as never);
+    expect(await loadSessionState("u1")).toBeNull();
+  });
+
+  it("o login carimba o uso na hora", async () => {
+    query.mockResolvedValueOnce({ rows: [] } as never);
+    await touchLastSeen("u1");
+    expect(query.mock.calls.at(-1)).toEqual(["update users set last_seen_at = now() where id = $1", ["u1"]]);
   });
 });

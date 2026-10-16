@@ -33,8 +33,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const ranked = await rankLatestSearch(userId);
-    return NextResponse.json({ ranked });
+    return NextResponse.json(await rankLatestSearch(userId));
   } catch (err) {
     if (err instanceof MissingProfileError || err instanceof MissingSearchError) {
       return NextResponse.json({ error: err.message }, { status: 409 });

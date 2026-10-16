@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // vi.mock é içado para o topo, então a fn precisa nascer em vi.hoisted.
 const { rankLatestSearch } = vi.hoisted(() => ({
-  rankLatestSearch: vi.fn(async (_userId: string) => [] as unknown[]),
+  rankLatestSearch: vi.fn(async (_userId: string) => ({ ranked: [] as unknown[], newIds: [] as string[] })),
 }));
 vi.mock('@/lib/jobs/rank-search', async () => {
   const real = await vi.importActual<typeof import('@/lib/jobs/rank-search')>('@/lib/jobs/rank-search');
@@ -30,7 +30,7 @@ function post(body: unknown, ip: string) {
 
 beforeEach(() => {
   rankLatestSearch.mockReset();
-  rankLatestSearch.mockResolvedValue([]);
+  rankLatestSearch.mockResolvedValue({ ranked: [], newIds: [] });
 });
 
 describe('POST /api/jobs/match — guardas', () => {
