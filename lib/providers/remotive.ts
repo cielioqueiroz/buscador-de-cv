@@ -1,5 +1,5 @@
 import { asRecord, asString, Job, JobProvider, jobId, parseProviderJobs, SearchOpts } from './types';
-import { fetchJson } from './http';
+import { fetchJson, logProviderFailure } from './http';
 
 const BASE = 'https://remotive.com/api/remote-jobs';
 
@@ -73,7 +73,7 @@ export const remotive: JobProvider = {
 
       return parseProviderJobs(jobs).filter((job) => matchesQuery(job, query));
     } catch (err) {
-      console.error('[provider/remotive]', err);
+      logProviderFailure('remotive', err);
       return [];
     }
   },

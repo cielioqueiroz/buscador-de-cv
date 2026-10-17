@@ -8,7 +8,7 @@ import {
   parseProviderJobs,
   SearchOpts,
 } from './types';
-import { fetchJson } from './http';
+import { fetchJson, logProviderFailure } from './http';
 
 const BASE = 'https://api.adzuna.com/v1/api/jobs/br/search/1';
 
@@ -56,7 +56,7 @@ export const adzuna: JobProvider = {
       });
       return parseProviderJobs(jobs).filter((job) => !opts.remoteOnly || job.remote);
     } catch (err) {
-      console.error('[provider/adzuna]', err);
+      logProviderFailure('adzuna', err);
       return [];
     }
   },

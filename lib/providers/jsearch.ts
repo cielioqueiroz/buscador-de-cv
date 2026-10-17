@@ -8,7 +8,7 @@ import {
   parseProviderJobs,
   SearchOpts,
 } from './types';
-import { fetchJson } from './http';
+import { fetchJson, logProviderFailure } from './http';
 
 const HOST = 'jsearch.p.rapidapi.com';
 
@@ -89,7 +89,7 @@ export const jsearch: JobProvider = {
       });
       return parseProviderJobs(normalized).filter((job) => !opts.remoteOnly || job.remote);
     } catch (err) {
-      console.error('[provider/jsearch]', err);
+      logProviderFailure('jsearch', err);
       return [];
     }
   },
