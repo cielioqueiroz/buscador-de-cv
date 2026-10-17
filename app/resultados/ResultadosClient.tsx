@@ -15,7 +15,8 @@ import { NewJobsNotice } from '@/components/NewJobsNotice';
 import { topMissingSkills } from '@/lib/skills-gap';
 import { applyFilters, DEFAULT_FILTERS, type FilterState } from '@/lib/filters';
 import { searchAndRank, type SearchOpts } from '@/lib/journey';
-import { FAVORITES_EVENT } from '@/lib/store';
+import { FAVORITES_EVENT, loadRegion } from '@/lib/store';
+import { regionToOpts } from '@/lib/region';
 import { useAuthed } from '@/lib/client/use-authed';
 import { dismissJobRemote, fetchFavorites, undismissJobRemote } from '@/lib/client/sync-client';
 import type { DismissReason } from '@/lib/dismiss-reasons';
@@ -95,7 +96,8 @@ export function ResultadosClient({
     // com a mesma jornada de quem veio pela home.
     (async () => {
       try {
-        const result = await searchAndRank(serverProfile, {}, (s) =>
+        // A região salva em "Onde": o filtro já a mostra como a buscada.
+        const result = await searchAndRank(serverProfile, regionToOpts(loadRegion()), (s) =>
           setStatus(s === 'searching' ? 'searching' : 'matching'),
         );
         setRanked(result.ranked);
@@ -231,7 +233,7 @@ export function ResultadosClient({
               <NewJobsNotice
                 count={novas}
                 ageDays={ageDays}
-                onRefresh={() => void buscarRegiao({})}
+                onRefresh={() => void buscarRegiao(regionToOpts(loadRegion()))}
                 refreshing={regionStage !== null}
               />
             )}
@@ -253,7 +255,7 @@ export function ResultadosClient({
                 </p>
                 <button
                   type="button"
-                  onClick={() => void buscarRegiao({})}
+                  onClick={() => void buscarRegiao(regionToOpts(loadRegion()))}
                   disabled={regionStage !== null}
                   className="mt-4 rounded-pill bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
                 >

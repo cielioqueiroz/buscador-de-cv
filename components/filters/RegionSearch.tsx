@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 import type { SearchOpts } from '@/lib/journey';
 import { loadRegion, saveRegion } from '@/lib/store';
+import { regionToOpts } from '@/lib/region';
 import { useIsClient } from '@/lib/client/browser-state';
 import { cn } from '@/lib/utils';
 import { Chips, Grupo } from './controls';
@@ -77,19 +78,10 @@ export function RegionSearch({
   const mudou = chave !== ultimaBusca;
 
   function buscarRegiao() {
-    const cidadeLimpa = cidade.trim();
-    const opts: SearchOpts =
-      escopo === 'br'
-        ? {
-            country: 'br',
-            location: cidadeLimpa ? (uf ? `${cidadeLimpa}, ${uf}` : cidadeLimpa) : uf || undefined,
-          }
-        : escopo === 'intl'
-          ? { country: pais, location: cidadeLimpa || undefined }
-          : {};
+    const region = { escopo, uf, cidade, pais };
     setUltimaBusca(chave);
-    saveRegion({ escopo, uf, cidade, pais });
-    onSearch(opts);
+    saveRegion(region);
+    onSearch(regionToOpts(region));
   }
 
   return (

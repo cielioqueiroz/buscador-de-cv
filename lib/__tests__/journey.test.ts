@@ -50,6 +50,22 @@ describe('runJourney', () => {
     expect(out.profile.title).toBe('Analista de Dados');
   });
 
+  // Regressão: a região salva em "Onde" aparecia no filtro, mas a busca do
+  // upload ia para "qualquer lugar" — a lista não batia com o filtro.
+  it('busca na região salva no filtro "Onde"', async () => {
+    localStorage.setItem('jf_region', JSON.stringify({ escopo: 'br', uf: 'GO', cidade: 'Goiânia', pais: 'us' }));
+    const fetchMock = mockFetch({
+      '/api/cv/analyze': { profile },
+      '/api/jobs/search': { jobs: [job] },
+      '/api/jobs/match': { ranked },
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await runJourney(file, () => {});
+    const busca = fetchMock.mock.calls.find((c) => c[0] === '/api/jobs/search');
+    expect(JSON.parse((busca![1] as RequestInit).body as string).opts).toEqual({ country: 'br', location: 'Goiânia, GO' });
+  });
+
   // O servidor pontua a busca que ele guardou contra o perfil da conta: o
   // navegador não manda (nem pode adulterar) perfil e vagas.
   it('pede o match sem mandar perfil nem vagas', async () => {

@@ -1,6 +1,7 @@
 'use client';
 import { z } from 'zod';
-import { forgetCVDerivedData } from '@/lib/store';
+import { forgetCVDerivedData, loadRegion } from '@/lib/store';
+import { regionToOpts } from '@/lib/region';
 import type { CVProfile, Job } from '@/lib/providers/types';
 import { CVProfileSchema, JobSchema } from '@/lib/providers/types';
 import { RankedJobSchema, type RankedJob } from '@/lib/ranked';
@@ -111,6 +112,7 @@ export async function runJourney(
   onStage('profiling');
   forgetCVDerivedData();
 
-  const { ranked } = await searchAndRank(profile, {}, onStage);
+  // Busca na região que o filtro "Onde" vai mostrar ao abrir /resultados.
+  const { ranked } = await searchAndRank(profile, regionToOpts(loadRegion()), onStage);
   return { profile, ranked };
 }
