@@ -3,7 +3,9 @@ import type { IconType } from 'react-icons';
 import { FaGithub, FaLinkedinIn } from 'react-icons/fa6';
 import { FiGlobe } from 'react-icons/fi';
 
-const LINK = 'link-underline text-foreground/80 hover:text-foreground';
+// py com 3,5px leva a altura de toque a 24px (WCAG 2.2, 2.5.8); o space-y menor
+// das listas compensa, e o espaçamento visual fica o mesmo.
+const LINK = 'link-underline inline-block py-[3.5px] text-foreground/80 hover:text-foreground';
 
 const FONTES = [
   { label: 'Adzuna', href: 'https://www.adzuna.com.br' },
@@ -40,7 +42,7 @@ export function SiteFooter() {
 
           <div>
             <h2 className="font-mono text-[11px] uppercase tracking-widest text-muted">Navegar</h2>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-3 space-y-1 text-sm">
               <li><Link href="/#cv-upload" className={LINK}>Enviar currículo</Link></li>
               <li><Link href="/resultados" className={LINK}>Ver vagas</Link></li>
               <li><Link href="/perfil" className={LINK}>Meu perfil</Link></li>
@@ -50,7 +52,7 @@ export function SiteFooter() {
 
           <div>
             <h2 className="font-mono text-[11px] uppercase tracking-widest text-muted">Fontes legais</h2>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-3 space-y-1 text-sm">
               {FONTES.map(({ label, href }) => (
                 <li key={label}>
                   <a href={href} target="_blank" rel="noopener noreferrer" className={LINK}>

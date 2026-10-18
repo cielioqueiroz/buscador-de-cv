@@ -82,7 +82,7 @@ export function HeroField() {
         m.opacity = 0.9;
         m.size = compacto ? 0.045 : 0.04;
       } else {
-        m.color.set(css('--accent-ink') || '#4d7c0f');
+        m.color.set(css('--accent-ink') || '#49750e');
         m.blending = THREE.NormalBlending;
         // Sem o brilho aditivo para compensar, o ponto claro precisa de mais
         // corpo — senão vira poeira invisível sobre o papel.

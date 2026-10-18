@@ -14,12 +14,12 @@
   --surface: #ffffff;          /* cards brancos crocantes */
   --surface-2: #f0ede2;
   --foreground: #15140f;       /* quase-preto quente */
-  --muted: #6f6c5f;
+  --muted: #6d6a5e;           /* ≥4,6:1 em bg, surface e surface-2 (WCAG AA) */
   --accent: #c8f31d;           /* limão (preenchimento de botões) */
   --accent-foreground: #15170a;/* tinta sobre o limão */
-  --accent-ink: #4d7c0f;       /* verde legível p/ TEXTO no fundo claro */
+  --accent-ink: #49750e;       /* verde legível p/ TEXTO no fundo claro (≥4,6:1) */
   --accent-bright: #c8f31d;    /* brilhos/pontos */
-  --warn: #c2410c;
+  --warn: #bc3f0b;             /* ≥4,6:1 nos três fundos claros */
   --caution: #a16207;
   --focus: #4d7c0f;
   --border: rgba(20, 20, 12, 0.12);
