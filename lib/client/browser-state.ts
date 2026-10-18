@@ -31,3 +31,20 @@ export function usePrefersReducedMotion(): boolean {
     () => false,
   );
 }
+
+type NetworkInformation = { saveData?: boolean; effectiveType?: string };
+
+/**
+ * Pediu economia de dados ou está numa conexão lenta (2G/3G)? Lido uma vez:
+ * serve para decidir se vale baixar enfeites pesados.
+ */
+export function prefersLightweight(nav: Navigator = navigator): boolean {
+  const conn = (nav as Navigator & { connection?: NetworkInformation }).connection;
+  if (!conn) return false;
+  return conn.saveData === true || ['slow-2g', '2g', '3g'].includes(conn.effectiveType ?? '');
+}
+
+/** `false` no servidor e na hidratação; no navegador, o resultado de prefersLightweight. */
+export function usePrefersLightweight(): boolean {
+  return useSyncExternalStore(noSubscribe, () => prefersLightweight(), () => false);
+}

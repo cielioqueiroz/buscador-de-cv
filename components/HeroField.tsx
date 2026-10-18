@@ -10,9 +10,11 @@ import * as THREE from 'three';
  * promete que "seu currículo vira um radar de vagas", e até agora nada na tela
  * dizia isso.
  *
- * O peso do three.js (~130 KB) não entra no bundle inicial: quem monta este
- * componente é um `next/dynamic` com `ssr: false`, então o texto do herói pinta
- * primeiro e o campo acende depois. O LCP não paga por isso.
+ * O peso do three.js (~500 KB minificado, ~130 KB comprimido) não entra no
+ * bundle inicial: quem monta este componente é HeroFieldLazy, com `next/dynamic`
+ * e `ssr: false`, então o texto do herói pinta primeiro e o campo acende depois.
+ * O LCP não paga por isso — e quem pede movimento reduzido ou economia de dados
+ * nem baixa o pedaço.
  *
  * Três desligamentos, todos obrigatórios:
  * - `prefers-reduced-motion`: não monta nada, e o herói fica com o blur de antes.
