@@ -60,13 +60,14 @@ describe('CVUpload com conta obrigatória', () => {
     expect(screen.queryByRole('button', { name: /google/i })).not.toBeInTheDocument();
   });
 
-  it('logado solta o arquivo e a análise começa, sem modal', () => {
+  it('logado solta o arquivo e a análise começa, sem modal', async () => {
     sessionState.status = 'authenticated';
     runJourney.mockReturnValue(new Promise(() => {}));
     render(<CVUpload />);
     const file = new File(['cv'], 'cv.pdf', { type: 'application/pdf' });
     fireEvent.drop(screen.getByRole('button', { name: /enviar currículo/i }), { dataTransfer: { files: [file] } });
-    expect(runJourney).toHaveBeenCalledTimes(1);
+    // a jornada é importada sob demanda, então a chamada vem logo depois
+    await waitFor(() => expect(runJourney).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

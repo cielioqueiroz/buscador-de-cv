@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { FiLogOut, FiUser, FiBriefcase, FiSettings } from "react-icons/fi";
 import { Avatar } from "@/components/auth/Avatar";
-import { clearLocalUserData } from "@/lib/store";
+import { clearLocalUserData } from "@/lib/client/local-data";
 
 export function UserMenu() {
   const { data: session, status } = useSession();

@@ -3,12 +3,15 @@ import { z } from 'zod';
 import { LetterMapSchema, type SavedLetter } from '@/lib/letter-schema';
 export type { SavedLetter } from '@/lib/letter-schema';
 
-// Perfil e ranking moram na conta (cv_profiles, rankings). Estas duas chaves
-// são de quando o navegador guardava cópias; só ficam para serem apagadas.
-const LEGACY_CV_KEY = 'jf_cv_profile';
-const LEGACY_RANKED_KEY = 'jf_ranked';
-const FAV_KEY = 'jf_favorites';
-const LETTERS_KEY = 'jf_letters';
+import {
+  FAV_KEY,
+  LEGACY_CV_KEY,
+  LEGACY_RANKED_KEY,
+  LETTERS_KEY,
+  safeRemove,
+} from '@/lib/client/local-data';
+export { clearLocalUserData } from '@/lib/client/local-data';
+
 const REGION_KEY = 'jf_region';
 
 /**
@@ -19,18 +22,6 @@ export function forgetCVDerivedData() {
   safeRemove(LETTERS_KEY);
   safeRemove(LEGACY_CV_KEY);
   safeRemove(LEGACY_RANKED_KEY);
-}
-
-/**
- * Apaga deste navegador tudo que pertence à conta: perfil, ranking, cartas,
- * favoritos e tracker (a chave do tracker vive em lib/applications.ts). Roda
- * no logout para o próximo usuário do mesmo computador não herdar nada — nem
- * via banner de importação. Tema e região são preferências do aparelho e ficam.
- */
-export function clearLocalUserData() {
-  for (const key of [LEGACY_CV_KEY, LEGACY_RANKED_KEY, LETTERS_KEY, FAV_KEY, 'jf_applications']) {
-    safeRemove(key);
-  }
 }
 
 type LetterMap = Record<string, SavedLetter>;
@@ -138,8 +129,4 @@ function safeSet(key: string, value: string): boolean {
     console.warn(`[store] não foi possível salvar ${key}`);
     return false;
   }
-}
-
-function safeRemove(key: string): void {
-  try { localStorage.removeItem(key); } catch { /* storage indisponível */ }
 }

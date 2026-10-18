@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { FiAlertCircle, FiDownload, FiLoader, FiTrash2 } from 'react-icons/fi';
-import { clearLocalUserData } from '@/lib/store';
+import { clearLocalUserData } from '@/lib/client/local-data';
 
 type Props = {
   email: string;

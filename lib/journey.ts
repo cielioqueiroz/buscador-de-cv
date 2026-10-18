@@ -6,13 +6,8 @@ import type { CVProfile, Job } from '@/lib/providers/types';
 import { CVProfileSchema, JobSchema } from '@/lib/providers/types';
 import { RankedJobSchema, type RankedJob } from '@/lib/ranked';
 
-/**
- * As etapas que o usuário atravessa entre soltar o currículo e ver as vagas.
- * A UI (LoadingJourney) desenha uma delas por vez; aqui elas são só o roteiro.
- */
-export type Stage = 'reading' | 'profiling' | 'searching' | 'scoring';
-
-export const STAGES: Stage[] = ['reading', 'profiling', 'searching', 'scoring'];
+import type { Stage } from '@/lib/stages';
+export { STAGES, type Stage } from '@/lib/stages';
 
 async function post<T>(url: string, init: RequestInit, schema: z.ZodType<T>): Promise<T> {
   const controller = new AbortController();

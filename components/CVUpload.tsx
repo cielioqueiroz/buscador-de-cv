@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { FiUploadCloud, FiFileText } from 'react-icons/fi';
-import { runJourney, type Stage } from '@/lib/journey';
+import type { Stage } from '@/lib/stages';
 import { LoadingJourney } from '@/components/LoadingJourney';
 import { AuthGateModal } from '@/components/auth/AuthGateModal';
 import { cn } from '@/lib/utils';
@@ -56,6 +56,9 @@ export function CVUpload({ googleEnabled = false }: Props) {
       // A espera inteira roda aqui, sob o overlay: quando /resultados abre, o
       // ranking já está em cache e a página aparece pronta.
       lastStage.current = null;
+      // A jornada (e o Zod que valida as respostas) só baixa quando há um
+      // arquivo: fora do bundle inicial da landing, que é a porta de entrada.
+      const { runJourney } = await import('@/lib/journey');
       await runJourney(file, (s) => {
         lastStage.current = s;
         setStage(s);

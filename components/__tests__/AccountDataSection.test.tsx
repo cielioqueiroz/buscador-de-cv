@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 
 const { signOutMock, clearMock } = vi.hoisted(() => ({ signOutMock: vi.fn(), clearMock: vi.fn() }));
 vi.mock('next-auth/react', () => ({ signOut: signOutMock }));
-vi.mock('@/lib/store', () => ({ clearLocalUserData: clearMock }));
+vi.mock('@/lib/client/local-data', () => ({ clearLocalUserData: clearMock }));
 
 import { AccountDataSection } from '@/components/auth/AccountDataSection';
 

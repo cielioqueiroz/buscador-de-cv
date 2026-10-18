@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useIsClient } from '@/lib/client/browser-state';
 import { createPortal } from 'react-dom';
-import { STAGES, type Stage } from '@/lib/journey';
+import { STAGES, type Stage } from '@/lib/stages';
 import { cn } from '@/lib/utils';
 
 /**
