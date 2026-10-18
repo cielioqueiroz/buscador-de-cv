@@ -40,7 +40,7 @@ export default function Error({
 
   if (recuperando) {
     return (
-      <main className="grid flex-1 place-items-center px-5 py-24">
+      <main id="conteudo" tabIndex={-1} className="grid flex-1 place-items-center px-5 py-24 scroll-mt-24 outline-none">
         <p className="flex items-center gap-2 font-mono text-sm text-muted">
           <FiRefreshCw className="h-4 w-4 animate-spin-slow" />
           Atualizando para a versão nova…
@@ -50,7 +50,7 @@ export default function Error({
   }
 
   return (
-    <main className="grid flex-1 place-items-center px-5 py-24">
+    <main id="conteudo" tabIndex={-1} className="grid flex-1 place-items-center px-5 py-24 scroll-mt-24 outline-none">
       <div className="w-full max-w-md rounded-panel border border-border bg-surface p-8 text-center sm:p-10">
         <span className="mx-auto grid h-12 w-12 place-items-center rounded-card bg-warn/10 text-warn">
           <FiAlertTriangle className="h-6 w-6" />

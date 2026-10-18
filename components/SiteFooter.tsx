@@ -39,7 +39,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Navegar</h4>
+            <h2 className="font-mono text-[11px] uppercase tracking-widest text-muted">Navegar</h2>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li><Link href="/#cv-upload" className={LINK}>Enviar currículo</Link></li>
               <li><Link href="/resultados" className={LINK}>Ver vagas</Link></li>
@@ -49,7 +49,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Fontes legais</h4>
+            <h2 className="font-mono text-[11px] uppercase tracking-widest text-muted">Fontes legais</h2>
             <ul className="mt-4 space-y-2.5 text-sm">
               {FONTES.map(({ label, href }) => (
                 <li key={label}>
@@ -62,7 +62,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h4 className="font-mono text-[11px] uppercase tracking-widest text-muted">Contato</h4>
+            <h2 className="font-mono text-[11px] uppercase tracking-widest text-muted">Contato</h2>
             <ul className="mt-4 space-y-2 text-sm">
               {CONTATO.map(({ label, href, icon: Icon }) => (
                 <li key={label}>

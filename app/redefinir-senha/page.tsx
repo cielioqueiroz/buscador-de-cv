@@ -15,7 +15,7 @@ export default function RedefinirSenhaPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-5">
+      <main id="conteudo" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 sm:px-5 scroll-mt-24 outline-none">
         <AuthCard>
           <h1 className="font-display text-2xl font-extrabold tracking-tight">
             Redefinir senha

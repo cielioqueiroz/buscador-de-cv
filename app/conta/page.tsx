@@ -22,7 +22,7 @@ export default async function ContaPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-5">
+      <main id="conteudo" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-5 scroll-mt-24 outline-none">
         <h1 className="mb-6 font-display text-2xl font-extrabold tracking-tight">Conta</h1>
         <AccountSettings
           initialName={account.name}

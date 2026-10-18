@@ -43,7 +43,7 @@ export function PerfilClient({ account, profile, stats, updatedLabel, googleEnab
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-5">
+      <main id="conteudo" tabIndex={-1} className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-5 scroll-mt-24 outline-none">
         {profile ? (
           <Dashboard
             account={account}

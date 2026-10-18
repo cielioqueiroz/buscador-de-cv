@@ -8,11 +8,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        // /perfil e /resultados só têm conteúdo depois que o usuário sobe um CV
-        // (o estado vive no localStorage). Para o Google elas são cascas vazias
-        // — 8 e 98 palavras — e páginas vazias indexadas puxam o site inteiro
-        // para baixo. As rotas de API não têm nada a indexar.
-        disallow: ['/perfil', '/resultados', '/api/'],
+        // As áreas da conta exigem login: para o robô são só um redirecionamento
+        // para /entrar, e rastreá-las gasta orçamento de rastreio à toa (elas já
+        // têm noindex). As rotas de API não têm nada a indexar.
+        disallow: ['/perfil', '/resultados', '/candidaturas', '/conta', '/api/'],
       },
     ],
     sitemap: `${SITE}/sitemap.xml`,

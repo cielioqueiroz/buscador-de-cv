@@ -199,7 +199,7 @@ export function ResultadosClient({
       {regionStage && <LoadingJourney stage={regionStage} />}
       <Confetti ativo={temMatchForte} />
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8">
+      <main id="conteudo" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 scroll-mt-24 outline-none">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <Link

@@ -71,7 +71,7 @@ export default function Home() {
     <>
       <SiteHeader />
 
-      <main className="flex-1">
+      <main id="conteudo" tabIndex={-1} className="flex-1 scroll-mt-24 outline-none">
         {/* HERO */}
         <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-12 sm:pt-24">
           {/* O radar do slogan, em partículas. Chega depois do LCP (ssr: false). */}
