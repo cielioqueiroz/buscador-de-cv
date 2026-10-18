@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const { generateContent } = vi.hoisted(() => ({
   generateContent: vi.fn(),
@@ -21,7 +21,24 @@ const OK = {
 /** Reproduz o erro do SDK: um objeto com `.status`. */
 const apiError = (status: number) => Object.assign(new Error(`HTTP ${status}`), { status });
 
+// As esperas entre tentativas (1 s, 2 s) correm num relógio simulado: com o
+// relógio real, "desiste depois de 3 tentativas" levava ~3,4 s de um limite de
+// 5 s por teste e falhava de vez em quando com a máquina carregada.
+const comRelogioSimulado = async <T>(promessa: Promise<T>): Promise<T> => {
+  const resultado = promessa.then(
+    (v) => ({ ok: true as const, v }),
+    (e: unknown) => ({ ok: false as const, e }),
+  );
+  await vi.runAllTimersAsync();
+  const r = await resultado;
+  if (!r.ok) throw r.e;
+  return r.v;
+};
+
+afterEach(() => vi.useRealTimers());
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'Date'] });
   generateContent.mockReset();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
@@ -34,7 +51,7 @@ describe('retry do Gemini', () => {
       .mockRejectedValueOnce(apiError(503))
       .mockResolvedValueOnce(OK);
 
-    const profile = await analyzeCV('dev react');
+    const profile = await comRelogioSimulado(analyzeCV('dev react'));
     expect(profile.title).toBe('Dev');
     expect(generateContent).toHaveBeenCalledTimes(2);
   });
@@ -44,7 +61,7 @@ describe('retry do Gemini', () => {
       .mockRejectedValueOnce(apiError(429))
       .mockResolvedValueOnce(OK);
 
-    await expect(analyzeCV('x')).resolves.toBeDefined();
+    await expect(comRelogioSimulado(analyzeCV('x'))).resolves.toBeDefined();
     expect(generateContent).toHaveBeenCalledTimes(2);
   });
 
@@ -59,7 +76,7 @@ describe('retry do Gemini', () => {
     generateContent.mockRejectedValue(apiError(503));
 
     // e desiste com um erro que as rotas sabem traduzir para 503 + mensagem clara
-    await expect(analyzeCV('x')).rejects.toBeInstanceOf(AIUnavailableError);
+    await expect(comRelogioSimulado(analyzeCV('x'))).rejects.toBeInstanceOf(AIUnavailableError);
     expect(generateContent).toHaveBeenCalledTimes(3);
   });
 
@@ -78,6 +95,9 @@ describe('retry do Gemini', () => {
 // Regressão: em produção o /api/jobs/match passou dos 60s da Vercel (504 mudo)
 // somando uma chamada lenta com as esperas do retry.
 describe('orçamento de tempo do retry', () => {
+  // Aqui o tempo é o assunto: relógio real, para o "abortou rápido" valer.
+  beforeEach(() => vi.useRealTimers());
+
   it('chamada que não responde é abortada no fim do orçamento e vira AIUnavailableError', async () => {
     const travada = (signal: AbortSignal) =>
       new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
