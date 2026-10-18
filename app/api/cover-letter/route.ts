@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateCoverLetter } from '@/lib/ai/gemini';
 import { CoverLetterRequestSchema } from '@/lib/cover-letter';
-import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { requireProfileAndJob } from '@/lib/jobs/user-context';
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   // Uma chamada ao Gemini por carta — mais barata que /match, que dispara o
   // lote inteiro. Mas o botão "regenerar" convida a insistir, então o teto
   // existe para o dedo nervoso, não para o uso normal (uma carta por vaga).
-  if (!(await checkRateLimit(`letter:${clientIp(req)}`, 10, 60_000))) {
+  if (!(await checkRateLimit(`letter:${userId}`, 10, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas cartas seguidas. Aguarde um minuto.' },
       { status: 429, headers: { 'Retry-After': '60' } },

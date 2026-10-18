@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { extractText, hasValidSignature, SUPPORTED_EXTENSIONS } from '@/lib/cv/parser';
 import { analyzeCV } from '@/lib/ai/gemini';
-import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { upsertProfile } from '@/lib/auth/profile';
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const userId = await sessionUserId();
   if (!userId) return unauthorized();
 
-  if (!(await checkRateLimit(`analyze:${clientIp(req)}`, 5, 60_000))) {
+  if (!(await checkRateLimit(`analyze:${userId}`, 5, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas análises seguidas. Aguarde um minuto.' },
       { status: 429, headers: { 'Retry-After': '60' } },

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { searchAllProviders } from '@/lib/providers';
 import { parseProviderJobs, SearchRequestSchema } from '@/lib/providers/types';
-import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { saveSearch } from '@/lib/jobs/store';
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const userId = await sessionUserId();
   if (!userId) return unauthorized();
 
-  if (!(await checkRateLimit(`search:${clientIp(req)}`, 20, 60_000))) {
+  if (!(await checkRateLimit(`search:${userId}`, 20, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas buscas seguidas. Aguarde um minuto.' },
       { status: 429, headers: { 'Retry-After': '60' } },

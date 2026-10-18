@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { MissingProfileError, MissingSearchError, rankLatestSearch } from '@/lib/jobs/rank-search';
-import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
   // Cada request aqui pode disparar uma chamada de lote ao Gemini — é a rota
   // mais cara do app e a que mais precisa de freio.
-  if (!(await checkRateLimit(`match:${clientIp(req)}`, 5, 60_000))) {
+  if (!(await checkRateLimit(`match:${userId}`, 5, 60_000))) {
     return NextResponse.json(
       { error: 'Muitas buscas seguidas. Aguarde um minuto.' },
       { status: 429, headers: { 'Retry-After': '60' } },

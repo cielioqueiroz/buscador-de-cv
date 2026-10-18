@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { adaptCV } from '@/lib/ai/gemini';
 import { AdaptCVRequestSchema } from '@/lib/cv-features';
 import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
-import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { requireProfileAndJob } from '@/lib/jobs/user-context';
 import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     assertSameOrigin(req);
     const userId = await sessionUserId();
     if (!userId) return unauthorized();
-    if (!(await checkRateLimit(`adapt:${clientIp(req)}`, 8, 60_000))) {
+    if (!(await checkRateLimit(`adapt:${userId}`, 8, 60_000))) {
       return NextResponse.json(
         { error: 'Muitas adaptações seguidas. Aguarde um minuto.' },
         { status: 429, headers: { 'Retry-After': '60' } },

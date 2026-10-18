@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateCVImprovementReport } from '@/lib/ai/gemini';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
-import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { requireProfile } from '@/lib/jobs/user-context';
 import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     assertSameOrigin(req);
     const userId = await sessionUserId();
     if (!userId) return unauthorized();
-    if (!(await checkRateLimit(`report:${clientIp(req)}`, 5, 60_000))) {
+    if (!(await checkRateLimit(`report:${userId}`, 5, 60_000))) {
       return NextResponse.json(
         { error: 'Muitos relatórios seguidos. Aguarde um minuto.' },
         { status: 429, headers: { 'Retry-After': '60' } },
