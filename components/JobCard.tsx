@@ -186,7 +186,7 @@ export function JobCard({ ranked, index = 0, profile, onDismiss, initial, isNew 
         </p>
       )}
 
-      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
         {/* Candidatar-se continua sendo só um link: nenhum efeito colateral,
             nenhuma carta escrita nas costas do usuário. */}
         <a
@@ -247,6 +247,9 @@ export function JobCard({ ranked, index = 0, profile, onDismiss, initial, isNew 
           <FiBookmark className="h-4 w-4" /> {tracked ? 'Acompanhando' : 'Acompanhar'}
         </button>
 
+        {/* Os três ícones andam juntos: se a linha quebra, descem como grupo à
+            direita, em vez de deixar o "não tenho interesse" sozinho embaixo. */}
+        <div className="ml-auto flex items-center gap-2">
         <button
           type="button"
           onClick={compartilharVaga}
@@ -272,6 +275,7 @@ export function JobCard({ ranked, index = 0, profile, onDismiss, initial, isNew 
         </button>
 
         {onDismiss && <DismissButton jobTitle={job.title} onDismiss={onDismiss} />}
+        </div>
       </div>
 
       {letterOpen && profile && (

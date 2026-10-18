@@ -192,16 +192,19 @@ export function ApplicationTracker() {
                       </div>
                     )}
 
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="mt-4 space-y-2">
                       <label className="sr-only" htmlFor={`stage-${application.id}`}>Etapa de {application.job.title}</label>
                       <select
                         id={`stage-${application.id}`}
                         value={application.stage}
                         onChange={(event) => void move(application.id, event.target.value as ApplicationStage)}
-                        className="min-w-0 flex-1 rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-xs text-foreground"
+                        className="w-full rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-xs text-foreground"
                       >
                         {APPLICATION_STAGES.map((option) => <option key={option} value={option}>{STAGE_LABELS[option]}</option>)}
                       </select>
+                      {/* Os ícones numa linha própria: dividindo a linha com eles, o seletor
+                          ficava estreito e cortava o nome da etapa ("Entrevis…"). */}
+                      <div className="flex justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => setAberto(expandido ? null : application.id)}
@@ -216,6 +219,7 @@ export function ApplicationTracker() {
                       </button>
                       <a href={application.job.applyUrl} target="_blank" rel="noopener noreferrer" aria-label={`Abrir vaga de ${application.job.title}`} className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted hover:text-foreground"><FiArrowRight className="h-4 w-4" /></a>
                       <button type="button" onClick={() => void remove(application)} aria-label={`Remover ${application.job.title} do tracker`} className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted hover:text-warn"><FiTrash2 className="h-4 w-4" /></button>
+                      </div>
                     </div>
 
                     {expandido && (
