@@ -8,6 +8,10 @@
 # parte, para só rodar quando o backup do dia já está guardado: um engano na
 # regra ainda tem 14 dias para ser desfeito. Tudo do usuário cai em cascata.
 #
+# Também apaga o que já venceu e só ocupava espaço: notas da IA com mais de
+# 14 dias (o cache não as usa mais), buscas de mais de 1 dia (valem 2 h) e
+# tokens de senha vencidos ou usados — é o que a política de privacidade promete.
+#
 # O REPOSITÓRIO É PÚBLICO: artefatos de Actions ficam baixáveis por qualquer
 # conta do GitHub. Por isso o dump sai criptografado (AES-256, gpg simétrico)
 # e nunca é gravado em claro fora do runner.
@@ -75,6 +79,24 @@ jobs:
           path: ${{ env.FILE }}
           retention-days: 14
           if-no-files-found: error
+
+      - name: Apagar dados vencidos
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          /usr/lib/postgresql/18/bin/psql "$DATABASE_URL" --no-psqlrc --quiet --tuples-only -v ON_ERROR_STOP=1 <<'SQL'
+          begin;
+          -- mesmos prazos de lib/jobs/store.ts (SCORE_TTL 14 dias; a busca vale 2 h, guardamos 1 dia de folga)
+          with n as (delete from match_cache where created_at < now() - interval '14 days' returning 1)
+          select 'notas da IA vencidas apagadas: ' || count(*) from n;
+          with b as (delete from job_searches where created_at < now() - interval '1 day' returning 1)
+          select 'buscas antigas apagadas: ' || count(*) from b;
+          with t as (delete from password_reset_tokens where expires_at < now() or used_at is not null returning 1)
+          select 'tokens de senha apagados: ' || count(*) from t;
+          with v as (delete from verification_token where expires < now() returning 1)
+          select 'tokens de verificação apagados: ' || count(*) from v;
+          commit;
+          SQL
 
       - name: Excluir contas inativas há 24 meses
         if: steps.check.outputs.ready == 'true'

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Quais dados o Vaga Certa coleta, para quê, com quem compartilha e como pedir a exclusão.',
 };
 
-const ATUALIZADA_EM = '16 de outubro de 2026';
+const ATUALIZADA_EM = '18 de outubro de 2026';
 const CONTATO = 'https://cielio-portfolio.vercel.app';
 
 /**
@@ -95,7 +95,9 @@ export default function PrivacidadePage() {
             <p>
               Enquanto a conta estiver em uso. Uma conta sem nenhum acesso por 24 meses seguidos é excluída automaticamente,
               com tudo o que guarda — sem aviso prévio, porque o Vaga Certa não envia e-mails desse tipo. Dados de apoio
-              expiram antes: a busca de vagas vale por 2 horas e as notas guardadas para não repetir a análise, por 14 dias.
+              saem antes, apagados automaticamente todo dia: a busca de vagas (que vale por 2 horas) em até 1 dia, as notas
+              guardadas para não repetir a análise depois de 14 dias, e os links de redefinição de senha assim que vencem ou
+              são usados.
               Ao excluir a conta (na página Conta), o perfil, o currículo, as buscas, o ranking, as candidaturas, os
               favoritos, as cartas, os CVs adaptados e a foto são apagados na hora.
             </p>
