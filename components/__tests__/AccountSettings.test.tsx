@@ -94,4 +94,14 @@ describe('AccountSettings', () => {
     await screen.findByText('Foto removida.');
     expect(container.querySelector('img')).toBeNull();
   });
+
+  // Regressão: o input de arquivo sr-only era um foco invisível e sem nome no
+  // Tab, antes do botão "Enviar foto" — que é o controle acessível de verdade.
+  it('o seletor de arquivo fica fora do Tab e do leitor de tela; o botão é o controle', () => {
+    const { container } = render(<AccountSettings initialName="Ana" email="ana@x.com" initialImage={null} />);
+    const input = container.querySelector('input[type="file"]')!;
+    expect(input.getAttribute('tabindex')).toBe('-1');
+    expect(input.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('button', { name: /enviar foto/i })).toBeInTheDocument();
+  });
 });

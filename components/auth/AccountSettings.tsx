@@ -121,12 +121,17 @@ export function AccountSettings({ initialName, email, initialImage }: Props) {
           <Avatar name={savedName} email={email} image={image} className="h-20 w-20 text-2xl" />
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
+              {/* O controle acessível é o botão abaixo, que abre este seletor. Sem
+                  tabIndex/aria-hidden, o input sr-only virava um foco invisível e
+                  sem nome logo antes do botão. */}
               <input
                 ref={fileRef}
                 id="avatar-file"
                 type="file"
                 accept={ACCEPT}
                 className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
                 onChange={onPickFile}
                 disabled={busy !== null}
               />
