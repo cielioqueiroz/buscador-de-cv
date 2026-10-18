@@ -299,7 +299,7 @@ function EmptyState({ hasAny, onClear }: { hasAny: boolean; onClear?: () => void
           : 'As fontes podem não ter retornado resultados para o seu perfil. Tente um CV com mais detalhes ou amplie o escopo da região.'}
       </p>
       {onClear && (
-        <button
+        <button type="button"
           onClick={onClear}
           className="mt-5 rounded-full bg-accent px-5 py-2 font-display text-sm font-bold text-accent-foreground transition-transform hover:scale-105"
         >

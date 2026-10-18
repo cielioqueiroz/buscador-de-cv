@@ -226,7 +226,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
             <h2 id="cover-letter-title" className="mt-1 truncate font-display text-xl font-bold">{job.title}</h2>
             <p className="truncate text-sm text-muted">{job.company}</p>
           </div>
-          <button
+          <button type="button"
             onClick={onClose}
             aria-label="Fechar"
             className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border text-muted transition-colors hover:text-foreground"
@@ -268,7 +268,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
                 escreve uma carta que só serve para <strong className="text-foreground">esta</strong>{' '}
                 empresa.
               </p>
-              <button
+              <button type="button"
                 onClick={gerar}
                 className="hover-glow mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 font-display text-sm font-bold text-accent-foreground"
               >
@@ -321,7 +321,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
 
         {letter && (
           <footer className="flex flex-wrap items-center gap-2 border-t border-border bg-surface px-6 py-4">
-            <button
+            <button type="button"
               onClick={baixarPdf}
               disabled={busy !== null}
               className="hover-glow inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-display text-sm font-bold text-accent-foreground disabled:opacity-60 sm:flex-none"
@@ -330,7 +330,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
               {busy === 'pdf' ? 'Abrindo…' : 'Salvar como PDF'}
             </button>
 
-            <button
+            <button type="button"
               onClick={compartilharCarta}
               disabled={busy !== null}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 px-4 py-2.5 font-display text-sm font-bold transition-colors hover:border-accent-ink disabled:opacity-60 sm:flex-none"
@@ -342,7 +342,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
             {/* Os três secundários andam juntos: soltos, o `flex-wrap` deixava um
                 deles órfão na linha de cima no celular. */}
             <div className="flex w-full items-center gap-2 sm:w-auto">
-              <button
+              <button type="button"
                 onClick={copiar}
                 aria-label="Copiar o texto da carta"
                 title="Copiar"
@@ -355,7 +355,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
                 )}
               </button>
 
-              <button
+              <button type="button"
                 onClick={baixarTxt}
                 aria-label="Baixar em .txt"
                 title="Baixar .txt"
@@ -364,7 +364,7 @@ export function CoverLetterPanel({ job, profile, onClose }: Props) {
                 <FiFileText className="h-[18px] w-[18px]" />
               </button>
 
-              <button
+              <button type="button"
                 onClick={gerar}
                 disabled={loading}
                 aria-label="Regenerar a carta"

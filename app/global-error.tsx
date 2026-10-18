@@ -42,7 +42,7 @@ export default function GlobalError({
           <p style={{ marginTop: '0.75rem', color: '#9b9b91', lineHeight: 1.6 }}>
             Não foi culpa sua, e o seu perfil continua salvo na sua conta.
           </p>
-          <button
+          <button type="button"
             onClick={reset}
             style={{
               marginTop: '1.75rem',

@@ -26,7 +26,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <button
+    <button type="button"
       onClick={toggle}
       aria-label="Alternar tema"
       aria-pressed={dark}
