@@ -11,7 +11,7 @@
 | Auth server-side / acessos | Ativo | Conta obrigatória para usar o app, com NextAuth v5 (e-mail/senha e, quando configurado, Google). Rotas de IA, busca, conta e sync checam a sessão no servidor e devolvem 401 sem ela; páginas de conta redirecionam para `/entrar`. A landing é pública. |
 | Mass assignment | Ativo | Schemas Zod aceitam somente contratos conhecidos e removem campos extras antes do uso. |
 | Cookies / senhas | Ativo | Sessão JWT em cookie `HttpOnly`, `SameSite=Lax` e `Secure` em produção (padrões do NextAuth), assinada com `AUTH_SECRET`. Senha: mínimo 8 caracteres com letra e número, bcrypt com 12 rounds. Reset: token aleatório de uso único, 30 minutos, tokens antigos invalidados; respostas idênticas para e-mail existente ou não. |
-| Rate limit / bots | Ativo com limite operacional | Rate limit por IP, `Retry-After` e guarda same-origin. Distribuído via Upstash Redis quando as variáveis existem; sem elas, cai para o limiter em memória. CAPTCHA fica na borda quando o tráfego exigir. |
+| Rate limit / bots | Ativo com limite operacional | Limite por minuto e cota diária de IA por conta (rotas com login) ou por IP/e-mail (rotas públicas), `Retry-After` e guarda same-origin. Distribuído via Upstash Redis quando as variáveis existem; sem elas, cai para o limiter em memória. CAPTCHA fica na borda quando o tráfego exigir. |
 | Queries parametrizadas | Ativo | Todo SQL usa parâmetros posicionais (`$1`, `$2`…) do driver; nenhum valor é concatenado na query. Parâmetros de APIs externas usam `URLSearchParams`. |
 | Vazamento de conteúdo | Ativo | Erros públicos são genéricos; CV, prompts e chaves não são devolvidos nos logs/respostas. |
 | Uploads | Ativo | CV: allowlist, limite de 8 MB, assinatura binária e limite de texto/páginas. Foto de perfil: só JPEG/PNG/WebP por assinatura, 2 MB, teto de pixels e re-encode com `sharp` para WebP 256×256 sem metadados. |
@@ -25,7 +25,7 @@
 - Rotas rejeitam chamadas cross-site, limitam o corpo, validam JSON com Zod e retornam respostas sem cache.
 - Uploads aceitam somente PDF, Word (`.doc`/`.docx`), TXT, Markdown, RTF e CSV; há limite de 8 MB, validação de assinatura binária e limite de texto/PDF.
 - Dados dos providers e da IA são normalizados contra schemas antes de alcançar a interface ou outra chamada.
-- Rate limit por IP protege análise, busca, matching e geração de carta; respostas `429` informam `Retry-After`. Cadastro e "esqueci a senha" somam um limite por e-mail ao limite por IP; rotas de conta e sync limitam por usuário.
+- Análise, busca, matching, carta, adaptação e relatório têm limite por minuto **por conta** e as cinco rotas de IA têm cota diária por conta (10/30/20/20/5, renova à meia-noite de Brasília — `lib/api/ai-quota.ts`); respostas `429` informam `Retry-After`. Cadastro e "esqueci a senha" somam um limite por e-mail ao limite por IP; rotas de conta e sync limitam por usuário.
 - A foto de perfil é servida em `/api/perfil/avatar` sem id na URL: só devolve a foto de quem está logado, com `Content-Security-Policy: default-src 'none'`.
 - Na sessão, `update()` do cliente só sinaliza que algo mudou; nome, e-mail e foto são relidos do banco, nunca aceitos do navegador.
 - CSP, HSTS em produção, `nosniff`, anti-frame, políticas de origem/referer/permissões e `no-store` nas APIs estão configurados em `next.config.ts`.
@@ -45,7 +45,7 @@ Ainda faltam, e estão no roadmap: verificação de e-mail no cadastro e troca d
 
 ## Limitações operacionais
 
-O rate limit tem duas formas. Sem Redis configurado, usa um contador em memória por instância — barreira contra abuso casual, mas em serverless com múltiplas instâncias o teto real é `limite × nº de instâncias`. Com `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` definidos, o teto por IP passa a ser compartilhado (janela deslizante no Upstash), valendo para o app inteiro — recomendado em produção, já que num app aberto este é o principal freio da cota paga do Gemini. Se o Redis ficar indisponível, o app degrada para o limiter em memória em vez de falhar. Bot protection interativo (CAPTCHA) só deve ser introduzido se o tráfego real justificar o atrito.
+O rate limit tem duas formas. Sem Redis configurado, usa um contador em memória por instância — barreira contra abuso casual, mas em serverless com múltiplas instâncias o teto real é `limite × nº de instâncias`. Com `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` definidos, o teto passa a ser compartilhado (janela deslizante no Upstash), valendo para o app inteiro — recomendado em produção, já que este é o principal freio da cota paga do Gemini. Se o Redis ficar indisponível, o app degrada para o limiter em memória em vez de falhar. Bot protection interativo (CAPTCHA) só deve ser introduzido se o tráfego real justificar o atrito.
 
 ## CSP: por que `script-src` ainda aceita `'unsafe-inline'`
 

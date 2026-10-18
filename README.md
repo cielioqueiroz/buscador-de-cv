@@ -284,7 +284,8 @@ lib/
   providers/http.ts        fetch externo com timeout
   deploy-recovery.ts       recuperação de chunks antigos após deploy
   matching.ts              rankJobs — ordena e casa cada nota com sua vaga
-  rate-limit.ts            limite por IP nas API Routes
+  rate-limit.ts            limite por janela (Upstash, com queda para memória)
+  api/ai-quota.ts          cota diária de IA por conta
   store.ts                 persistência local (localStorage)
   auth/                    usuários, senha, reset, avatar, perfil e sync no banco
   db/client.ts             pool do Postgres (Neon serverless ou pg)
@@ -296,8 +297,12 @@ Cada fonte de vaga é um **adapter** que implementa `JobProvider` e devolve o ti
 unificado. Adicionar uma fonte é criar um arquivo — nada mais no projeto muda.
 
 **As rotas não confiam no cliente:** corpo validado com zod, teto de tamanho de arquivo
-no servidor, rate limit por IP e um teto de custo (quantas vagas a IA pontua) separado do
-teto de payload (quantas o corpo aceita).
+no servidor, limite por minuto e cota diária de IA por conta, e um teto de custo (quantas
+vagas a IA pontua) separado do teto de payload (quantas o corpo aceita).
+
+**Cota diária de IA por conta** (dia de calendário em Brasília, renova à meia-noite):
+10 análises de CV, 30 buscas pontuadas, 20 cartas, 20 adaptações de CV e 5 relatórios.
+A cota só é gasta quando a IA é de fato chamada — pedido inválido não consome.
 
 <br/>
 

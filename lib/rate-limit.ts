@@ -1,5 +1,5 @@
 /**
- * Rate limit por IP.
+ * Rate limit por chave (conta, IP ou e-mail — quem chama escolhe) e janela.
  *
  * Duas implementações atrás de uma única porta (`checkRateLimit`):
  *
@@ -9,8 +9,8 @@
  * 2. **Upstash Redis** (quando `UPSTASH_REDIS_REST_URL` e
  *    `UPSTASH_REDIS_REST_TOKEN` existem). Store compartilhado: o teto vale para
  *    o app inteiro, independente de quantas instâncias a Vercel suba. É o que dá
- *    garantia real num app aberto, sem login, cuja cota paga do Gemini depende
- *    deste freio ser a única barreira.
+ *    garantia real à cota paga do Gemini, que depende deste freio (inclusive da
+ *    cota diária de lib/api/ai-quota.ts).
  *
  * A chamada ao Upstash é feita do servidor (API Route), então não passa pela CSP
  * do navegador. Se o Redis falhar ou ficar indisponível, caímos no limiter em

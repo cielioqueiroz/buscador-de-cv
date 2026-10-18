@@ -4,6 +4,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { ApiRequestError, assertSameOrigin } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
+import { aiQuotaExceeded } from '@/lib/api/ai-quota';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
   }
 
   try {
+    const quota = await aiQuotaExceeded(userId, 'match');
+    if (quota) return quota;
     return NextResponse.json(await rankLatestSearch(userId));
   } catch (err) {
     const busy = aiUnavailableResponse(err);

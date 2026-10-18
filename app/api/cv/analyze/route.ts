@@ -7,6 +7,7 @@ import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { upsertProfile } from '@/lib/auth/profile';
 import { clearRanking } from '@/lib/jobs/store';
 import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
+import { aiQuotaExceeded } from '@/lib/api/ai-quota';
 
 export const runtime = 'nodejs';
 
@@ -64,6 +65,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'CV vazio ou ilegível. Tente outro formato.' }, { status: 422 });
     }
 
+    const quota = await aiQuotaExceeded(userId, 'analyze');
+    if (quota) return quota;
     const profile = await analyzeCV(text);
 
     // O servidor é a fonte de verdade do perfil. Se a gravação falhar, o

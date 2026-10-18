@@ -6,6 +6,7 @@ import { ApiRequestError, assertSameOrigin, readJson } from '@/lib/api/request';
 import { sessionUserId, unauthorized } from '@/lib/api/auth-guard';
 import { requireProfileAndJob } from '@/lib/jobs/user-context';
 import { aiUnavailableResponse } from '@/lib/api/ai-unavailable';
+import { aiQuotaExceeded } from '@/lib/api/ai-quota';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -35,6 +36,8 @@ export async function POST(req: Request) {
   try {
     const { jobId, tone, length } = await readJson(req, CoverLetterRequestSchema, MAX_BODY_BYTES);
     const { profile, job } = await requireProfileAndJob(userId, jobId);
+    const quota = await aiQuotaExceeded(userId, 'letter');
+    if (quota) return quota;
     const letter = await generateCoverLetter(profile, job, tone, length);
     return NextResponse.json({ letter });
   } catch (err) {
