@@ -13,7 +13,8 @@ com os motivos a favor, o que falta no seu perfil e o **link oficial de candidat
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-3.1_Flash--Lite-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/testes-139_passando-4d7c0f?style=flat-square)
+![Tests](https://img.shields.io/badge/testes-439_passando-4d7c0f?style=flat-square)
+![CI](https://github.com/cielioqueiroz/buscador-de-cv/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/licença-MIT-informational?style=flat-square)
 
 <br/>
@@ -42,8 +43,22 @@ Você solta o currículo — **PDF, Word (.doc/.docx), TXT, Markdown, RTF ou CSV
    Baixe em **PDF** ou **compartilhe** pelo menu do seu próprio celular.
 5. Você vai direto ao **link oficial** — sem intermediário.
 6. Em cada vaga, você pode **adaptar o CV** para destacar somente experiências reais relevantes.
-7. Adicione oportunidades ao **tracker Kanban** e acompanhe Aplicado → Entrevista → Oferta.
+7. Adicione oportunidades ao **tracker Kanban** — Aplicado → Entrevista → Oferta → Recusado —,
+   com anotações e a data da entrevista.
 8. No seu perfil, gere um relatório de **como melhorar o CV** com prioridades acionáveis.
+
+E no dia a dia:
+
+- **O que mais falta no seu CV** — as habilidades que as vagas pedem e o currículo não mostra,
+  somadas na lista inteira.
+- **Filtros** por modalidade, data, fonte, salário (com moeda e período certos) e nota mínima;
+  e **"Onde"** refaz a busca por estado, cidade ou país.
+- **"Não tenho interesse"** com motivo tira a vaga da lista (e das próximas buscas), com desfazer.
+- **Vagas novas**: depois de uma nova busca, as vagas com nota 70+ que não estavam na anterior
+  ganham o selo **Nova**, e o painel avisa quantas chegaram.
+- **Perfil editável** — se a IA entendeu errado alguma habilidade, você corrige e as próximas
+  buscas usam a sua versão.
+- **Seus dados são seus** — exporte tudo em JSON ou exclua a conta em `/conta` (LGPD).
 
 Para usar, basta **criar uma conta grátis** (e-mail e senha, ou Google). O perfil, o tracker,
 os favoritos, as cartas e a foto ficam salvos na conta — em qualquer aparelho. Quem está logado
@@ -74,7 +89,7 @@ flowchart LR
     M -.-> N[["CV direcionado<br/>resumo · skills · destaques"]]
     D -.-> O{{"🧠 Gemini<br/>generateCVImprovementReport"}}
     O -.-> P[["Relatório<br/>forças · lacunas · ações"]]
-    I -.-> Q["📌 Tracker local<br/>Aplicado → Entrevista → Oferta"]
+    I -.-> Q["📌 Tracker na conta<br/>Aplicado → Entrevista → Oferta → Recusado"]
 
     style C fill:#4285F4,stroke:#4285F4,color:#fff
     style H fill:#4285F4,stroke:#4285F4,color:#fff
@@ -89,6 +104,8 @@ flowchart LR
 
 ## Telas
 
+<sub>Prints com uma conta de demonstração e um currículo fictício.</sub>
+
 <table>
 <tr>
 <td width="50%" align="center"><b>🌙 Escuro</b></td>
@@ -99,14 +116,25 @@ flowchart LR
 <td><img src="assets/screenshots/resultados-light.png" alt="Resultados — tema claro"/></td>
 </tr>
 <tr>
-<td colspan="2" align="center"><sub>Vagas ranqueadas: nota de match, o que combina (✓) e o que falta (⚠), com link oficial.</sub></td>
+<td colspan="2" align="center"><sub>Vagas ranqueadas: nota de match, o que combina (✓) e o que falta (⚠), o que mais falta no CV, filtros e o link oficial.</sub></td>
 </tr>
 <tr>
 <td><img src="assets/screenshots/perfil-dark.png" alt="Perfil — tema escuro"/></td>
 <td><img src="assets/screenshots/perfil-light.png" alt="Perfil — tema claro"/></td>
 </tr>
 <tr>
-<td colspan="2" align="center"><sub>O perfil que a IA extraiu do seu currículo — e as buscas que ela gerou a partir dele.</sub></td>
+<td colspan="2" align="center"><sub>O painel: o perfil que a IA extraiu, as candidaturas em números, o que falta para o perfil ficar completo e as habilidades — editáveis.</sub></td>
+</tr>
+<tr>
+<td><img src="assets/screenshots/candidaturas-dark.png" alt="Tracker — tema escuro"/></td>
+<td><img src="assets/screenshots/candidaturas-light.png" alt="Tracker — tema claro"/></td>
+</tr>
+<tr>
+<td colspan="2" align="center"><sub>O tracker: arraste os cards ou troque a etapa pelo seletor; anotações e data da entrevista em cada card.</sub></td>
+</tr>
+<tr>
+<td><img src="assets/screenshots/landing-dark.png" alt="Landing — tema escuro"/></td>
+<td><img src="assets/screenshots/landing-light.png" alt="Landing — tema claro"/></td>
 </tr>
 </table>
 
@@ -123,9 +151,10 @@ cautelas para você revisar antes de enviar.
 
 ### Tracker de candidaturas
 
-O botão **Acompanhar** salva a vaga no tracker, disponível em `/candidaturas`.
-O quadro tem três colunas e aceita arrastar os cards ou mudar a etapa pelo
-seletor. O tracker fica salvo na conta.
+O botão **Acompanhar** salva a vaga no tracker, em `/candidaturas`. São quatro colunas —
+Aplicado, Entrevista, Oferta e Recusado —, com arrastar e soltar ou o seletor de etapa (que
+funciona no teclado). Cada card guarda anotações e a data da entrevista, e remover tem desfazer.
+Tudo fica salvo na conta.
 
 ### Relatório de melhoria do CV
 
@@ -133,13 +162,14 @@ Em `/perfil`, o painel **Como melhorar seu CV** analisa o currículo atual e
 retorna pontos fortes, melhorias priorizadas e termos para investigar. A IA é
 instruída a diferenciar uma lacuna real de uma habilidade que não foi comprovada.
 
-### Alertas por e-mail
+### Vagas novas, dentro do app
 
-Esta é a próxima integração. A interface ainda não coleta e-mail porque o app
-não possui persistência de assinaturas nem provedor de envio. Para ativar
-alertas recorrentes com segurança, a próxima etapa será adicionar um adapter de
-e-mail, uma tabela protegida por RLS e um job agendado para buscar vagas novas
-com score mínimo.
+Não há busca em segundo plano — cada busca gasta cota da IA e das fontes. Então "nova" é a
+vaga que apareceu na busca mais recente e não estava na anterior, com nota **70 ou mais**: ela
+ganha o selo **Nova** em `/resultados`, e o painel do `/perfil` avisa quantas chegaram. Com a
+lista a 3 dias ou mais, aparece o convite **Buscar vagas novas**.
+
+Alertas **por e-mail** ficam para quando houver domínio próprio para o envio (Resend).
 
 <br/>
 
@@ -199,8 +229,7 @@ exatamente a carta que recrutador descarta: proibidos o clichê ("sempre fui apa
 por…"), o currículo reescrito em prosa, e — o pior — inventar experiência que não está no
 CV. Quando a vaga pede algo que falta, a carta reconhece com honestidade em vez de mentir.
 
-A carta é salva por vaga no `localStorage`: reabrir não gasta outra chamada. Trocar de
-currículo apaga as cartas — elas nasceram do CV antigo.
+A carta é salva por vaga na conta: reabrir não gasta outra chamada, em qualquer aparelho.
 
 **O PDF usa a impressão nativa do navegador.** A carta tem uma folha A4 própria, e o botão
 abre o diálogo para a pessoa escolher "Salvar como PDF". Assim o app não precisa manter uma
@@ -235,15 +264,39 @@ gerava buscas descritivas e longas — que não retornavam nada:
 O prompt agora limita a 3 palavras e proíbe senioridade nas buscas. Parece um detalhe; é a
 diferença entre o app achar vagas e não achar.
 
-### 6. Página vazia não vai para o índice
+### 6. Página sem conteúdo público não vai para o índice
 
-`/perfil` e `/resultados` só ganham conteúdo depois que você envia um CV — o estado vive no
-`localStorage`. Para um robô, elas são cascas de **8 e 98 palavras**. Estão em `noindex` e fora
-do sitemap: página vazia indexada não deixa de ranquear, ela **puxa o site inteiro para baixo**.
+As áreas da conta (`/perfil`, `/resultados`, `/candidaturas`, `/conta`) exigem login — para um
+robô, são só um redirecionamento. Ficam em `noindex` e bloqueadas no `robots.txt`: página vazia
+indexada não deixa de ranquear, ela **puxa o site inteiro para baixo**.
 
 O que o site expõe para máquinas: `robots.txt`, `sitemap.xml`, JSON-LD (`WebApplication` +
 `FAQPage`), Open Graph com banner próprio, e um `llms.txt` para ChatGPT/Perplexity entenderem
 e citarem o projeto.
+
+### 7. O custo da IA tem freio por conta — e prazo
+
+A IA é a parte paga do app, então ela tem três travas:
+
+- **Limite por minuto** e **cota diária por conta** (10 análises de CV, 30 buscas pontuadas,
+  20 cartas, 20 adaptações, 5 relatórios — renova à meia-noite de Brasília). A cota só é
+  gasta quando a IA é chamada de fato.
+- **Cache de notas** por versão do CV: a mesma vaga com o mesmo currículo não volta à IA por
+  14 dias.
+- **Orçamento de tempo**: retry com espera crescente quando o Gemini está sobrecarregado,
+  mas tudo dentro de 50 s — nunca o 504 mudo da Vercel. Esgotou, a pessoa lê "A IA está com
+  muita demanda agora", não "Falha".
+
+### 8. Segurança e privacidade no servidor, não na promessa
+
+- **RLS no Postgres**: as consultas de dados do usuário rodam numa role sem `BYPASSRLS`; uma
+  consulta que esqueça o `where user_id` volta vazia, nunca com dado de outra pessoa.
+- **A IA nunca lê o corpo da requisição**: perfil e vaga saem do banco — ninguém injeta texto
+  no prompt editando o request.
+- **Sessão revalidada**: senha trocada ou conta excluída derrubam os logins abertos.
+- **Retenção de verdade**: um job diário faz o backup criptografado do banco e, depois dele,
+  apaga notas vencidas, buscas antigas, tokens usados e contas sem acesso há 24 meses — o que
+  a [política de privacidade](https://vaga-certa-sooty.vercel.app/privacidade) promete.
 
 <br/>
 
@@ -254,42 +307,39 @@ Para a matriz de controles e os limites conhecidos, consulte [`SECURITY.md`](SEC
 ```text
 app/
   page.tsx                 landing + upload do CV
-  resultados/page.tsx      vagas com score + filtros
-  perfil/page.tsx          perfil extraído do CV
-  candidaturas/page.tsx    tracker Kanban (local ou na conta)
-  entrar · cadastrar       login e cadastro (NextAuth v5)
+  resultados/              vagas com score, filtros, "Onde" e vagas novas
+  perfil/                  painel: perfil, candidaturas, checklist, habilidades
+  candidaturas/            tracker Kanban (na conta)
+  conta/                   foto, nome, exportar dados e excluir conta
+  entrar · cadastrar       login e cadastro (NextAuth v5, e-mail ou Google)
   esqueci-senha · redefinir-senha
-  conta/page.tsx           foto de perfil e nome
+  privacidade/             política de privacidade (LGPD)
+  not-found.tsx            404 com caminho de volta
   api/
     auth/                  NextAuth + cadastro + reset de senha
-    perfil/                import de dados antigos do navegador, foto (avatar) e conta
-    sync/                  tracker, favoritos, cartas e CVs adaptados no banco
+    perfil/                avatar, conta, CV editado e exportação
+    sync/                  tracker, favoritos, cartas, CVs adaptados, descartes e estado
     cv/analyze             extrai texto → Gemini devolve o CVProfile
     cv/adapt               adapta o CV para uma vaga específica
     cv/report              relatório de melhorias do CV
     jobs/search            busca nos providers (paralelo) → normaliza → dedup
-    jobs/match             Gemini pontua CV × vagas, em lote único
+    jobs/match             Gemini pontua CV × vagas, em lote único (com cache)
     cover-letter           Gemini escreve a carta de UMA vaga — só sob clique
 lib/
-  providers/               adapters isolados + agregador
+  providers/               adapters isolados + agregador + fetch com timeout
     types.ts               schemas zod — o contrato de tudo
     adzuna · remotive · jsearch
-  ai/gemini.ts             analyzeCV + matchJobs + generateCoverLetter
-  cover-letter.ts          schemas da carta + serialização (tom, tamanho, ATS)
-  cv-features.ts           schemas de adaptação e relatório do CV
-  applications.ts          persistência validada do tracker local
-  share.ts                 Web Share API com queda para a área de transferência
+  ai/gemini.ts             análise · matching · carta · adaptação · relatório (retry com prazo)
+  jobs/                    busca, ranking, cache de notas, vagas novas e descartes no banco
+  api/                     leitura limitada de JSON, guarda de origem, cota de IA, erro 503
+  auth/                    usuários, senha, sessão, reset, avatar, perfil, sync e LGPD
+  db/                      pool do Postgres (Neon) + escopo RLS por usuário
   cv/parser.ts             extração de texto (PDF · Word · TXT · Markdown · RTF · CSV)
-  api/request.ts           limite de corpo, JSON e proteção de origem
-  providers/http.ts        fetch externo com timeout
-  deploy-recovery.ts       recuperação de chunks antigos após deploy
-  matching.ts              rankJobs — ordena e casa cada nota com sua vaga
   rate-limit.ts            limite por janela (Upstash, com queda para memória)
-  api/ai-quota.ts          cota diária de IA por conta
-  store.ts                 persistência local (localStorage)
-  auth/                    usuários, senha, reset, avatar, perfil e sync no banco
-  db/client.ts             pool do Postgres (Neon serverless ou pg)
-db/migrations/             SQL fonte de verdade do schema
+  client/                  estado do navegador, sync com a API, diálogos
+  matching · filters · salary · skills-gap · region · share
+db/migrations/             SQL fonte de verdade do schema (0001–0012)
+.github/workflows/         CI (lint, tipos, testes, build, audit) e backup diário
 components/                UI própria — sem kit genérico
 ```
 
@@ -324,7 +374,7 @@ npm run dev                  # http://localhost:3000
 | `GEMINI_API_KEY` | Análise do CV e matching | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | ✅ |
 | `ADZUNA_APP_ID` · `ADZUNA_APP_KEY` | Vagas no Brasil | [developer.adzuna.com](https://developer.adzuna.com) | recomendada |
 | `RAPIDAPI_KEY` | JSearch | [rapidapi.com](https://rapidapi.com) → assine "JSearch" | recomendada |
-| `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` | Rate limit distribuído por IP | [upstash.com](https://upstash.com) (Redis grátis) | produção |
+| `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` | Limites e cota de IA compartilhados entre instâncias (a integração da Vercel injeta `KV_REST_API_*`, também aceitas) | [upstash.com](https://upstash.com) (Redis grátis) | produção |
 | `DATABASE_URL` | Contas e dados salvos (Postgres) | [neon.tech](https://neon.tech) → connection string *pooled* | para contas |
 | `AUTH_SECRET` | Assina a sessão | `openssl rand -base64 32` | para contas |
 | `AUTH_GOOGLE_ID` · `AUTH_GOOGLE_SECRET` | "Entrar com Google" | Google Cloud Console → OAuth client | opcional |
@@ -336,9 +386,9 @@ Talent.com** e outros. Sem elas, sobra só o Remotive (público, mas só vagas r
 internacionais).
 
 Cada provider degrada com elegância — faltando uma chave, ele retorna vazio e os outros seguem
-funcionando. O Upstash é opcional: sem ele, o rate limit usa um contador em memória por
-instância; com ele, o teto por IP vale para o app inteiro (recomendado em produção, pois é o
-principal freio da cota paga do Gemini num app aberto).
+funcionando. O Upstash é opcional: sem ele, os limites usam um contador em memória por
+instância; com ele, valem para o app inteiro (recomendado em produção, pois é o principal
+freio da cota paga do Gemini).
 
 O app exige conta para analisar o CV, buscar e pontuar vagas e gerar textos — as rotas de IA
 devolvem 401 sem sessão. Com `DATABASE_URL` e `AUTH_SECRET`, o login por e-mail e senha
@@ -354,16 +404,22 @@ Rode nos dois branches do Neon (main e preview).
 ## Scripts
 
 ```bash
-npm run dev      # desenvolvimento
-npm run build    # build de produção
-npm start        # serve o build
-npm test         # testes unitários e de integração (Vitest)
-npm run lint     # ESLint
+npm run dev        # desenvolvimento
+npm run build      # build de produção
+npm start          # serve o build
+npm test           # testes unitários e de integração (Vitest)
+npm run lint       # ESLint
+npm run db:migrate # aplica as migrations pendentes
+npm run db:status  # lista o estado das migrations
 ```
 
-Os testes cobrem os adapters, o parser, o agregador, as guardas das rotas, o retry do Gemini,
-o matching em lote, os contratos de adaptação/relatório e o tracker — com as APIs externas
-mockadas. **Nenhum teste gasta chamada de IA.**
+São **439 testes**: adapters, parser, agregador, guardas e limites das rotas, cota de IA,
+retry com prazo do Gemini, matching em lote, cache de notas, vagas novas, RLS, sessão, LGPD,
+tracker, componentes — e até o contraste das cores dos dois temas e a estrutura de
+acessibilidade das páginas. As APIs externas são mockadas: **nenhum teste gasta chamada de IA.**
+
+O CI roda lint, tipos, testes, build e `npm audit` a cada push; o deploy na Vercel sai do
+`master`.
 
 <br/>
 
@@ -371,14 +427,17 @@ mockadas. **Nenhum teste gasta chamada de IA.**
 
 - [x] Contas — e-mail/senha ou Google, reset de senha, foto de perfil, painel e dados salvos no Neon
 - [x] Excluir conta e exportar os dados — em `/conta`, com confirmação por e-mail e senha
-- [ ] Trocar o e-mail com verificação
-- [x] ~~Gerar carta de apresentação por vaga~~ — feito: tom, tamanho, ATS, editar, PDF, compartilhar
+- [x] Gerar carta de apresentação por vaga — tom, tamanho, ATS, editar, PDF, compartilhar
 - [x] Adaptar o CV por vaga — rascunho direcionado, sem inventar experiência
-- [x] Tracker de candidaturas — Kanban local: Aplicado → Entrevista → Oferta
-- [x] Alerta de vagas novas no app — selo "Nova" e aviso no painel para vagas com nota 70+ que não estavam na busca anterior
-- [ ] Alertas por e-mail de vagas novas com bom score (depende de domínio próprio para o Resend)
-- [x] Retenção — contas sem acesso por 24 meses são excluídas pelo job diário, depois do backup
+- [x] Tracker de candidaturas — Kanban na conta, com anotações, data da entrevista e etapa Recusado
 - [x] Relatório "como melhorar seu CV" — forças, prioridades e termos para investigar
+- [x] Lacunas do CV, filtros de salário, descarte com motivo e perfil editável
+- [x] Alerta de vagas novas no app — selo "Nova" e aviso no painel (nota 70+)
+- [x] Cota diária de IA por conta e orçamento de tempo nas chamadas
+- [x] Retenção — backup diário criptografado, limpeza de dados vencidos e contas inativas há 24 meses
+- [x] Acessibilidade — "pular para o conteúdo", contraste AA nos dois temas, alvos de toque
+- [ ] Alertas por e-mail de vagas novas (depende de domínio próprio para o Resend)
+- [ ] Trocar o e-mail com verificação (idem)
 
 <br/>
 

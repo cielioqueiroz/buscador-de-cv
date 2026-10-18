@@ -4,7 +4,7 @@ Este arquivo orienta agentes que trabalham neste repositório. O README explica 
 
 ## Objetivo do projeto
 
-O Vaga Certa recebe um currículo, extrai um perfil com IA, busca vagas reais, calcula compatibilidade e permite gerar uma carta específica por vaga. O produto não exige cadastro: o estado do usuário fica no navegador e as chaves de integração ficam no servidor.
+O Vaga Certa recebe um currículo, extrai um perfil com IA, busca vagas reais, calcula compatibilidade e permite gerar uma carta específica por vaga. Usar exige conta (e-mail e senha, ou Google): perfil, ranking, tracker, favoritos, cartas e foto ficam no Postgres (Neon) com RLS por usuário; o navegador guarda só preferências do aparelho (tema, região) e as chaves de integração ficam no servidor.
 
 ## Antes de editar
 
@@ -18,26 +18,32 @@ O Vaga Certa recebe um currículo, extrai um perfil com IA, busca vagas reais, c
 ```text
 app/
   api/                  rotas HTTP e composição dos módulos de domínio
-  candidaturas/         tracker Kanban local de candidaturas
-  perfil/               visualização do perfil salvo
-  resultados/           ranking, filtros e ações das vagas
+  candidaturas/         tracker Kanban de candidaturas (na conta)
+  conta/                foto, nome, exportar dados e excluir conta (LGPD)
+  perfil/               painel: perfil salvo, candidaturas, habilidades editáveis
+  resultados/           ranking, filtros, "Onde", vagas novas e ações das vagas
+  privacidade/          política de privacidade (texto fiel ao que o código faz)
+  not-found.tsx         404 próprio
   page.tsx              landing page e ponto de entrada do upload
 components/             interface visual e interações do navegador
 db/
-  migrations/           SQL fonte de verdade (aplicado em Neon via MCP)
+  migrations/           SQL fonte de verdade (npm run db:migrate, branches main e preview)
 lib/
-  ai/                   adapter do Gemini e contratos de resposta
-  api/                  leitura limitada e validação de requisições
+  ai/                   adapter do Gemini (retry com orçamento de tempo) e contratos
+  api/                  leitura limitada, guarda de origem, cota diária de IA, erro 503
+  auth/                 usuários, sessão revalidada, reset, avatar, perfil, sync e LGPD
+  client/               estado do navegador, sync com a API, diálogos
   cv/                   parsing seguro dos formatos aceitos
   cv-features.ts        schemas de adaptação e relatório do CV
-  applications.ts       persistência validada do tracker local
-  db/                   cliente Postgres (Neon serverless / pg)
+  db/                   cliente Postgres (Neon serverless / pg) e escopo RLS
+  jobs/                 busca, ranking, cache de notas, vagas novas e descartes
   providers/            adapters de fontes de vagas + agregação
   __tests__/            testes de módulos e rotas
   journey.ts            fluxo do upload até o ranking
-  matching.ts            pontuação e ordenação
-  store.ts              persistência validada no localStorage
-docs/                   especificações de design históricas
+  matching.ts           pontuação e ordenação
+  store.ts              cache validado no localStorage (cartas, região)
+.github/workflows/      CI e backup diário (dump criptografado + retenção)
+docs/                   especificações de design históricas (fora do git)
 assets/                 screenshots e material visual do README
 ```
 
